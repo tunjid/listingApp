@@ -1,0 +1,229 @@
+package com.tunjid.feature.feed
+
+import com.tunjid.listing.data.model.ImageQuery
+import com.tunjid.listing.data.model.ImageRepository
+import com.tunjid.listing.data.model.ListingQuery
+import com.tunjid.listing.data.model.ListingRepository
+import com.tunjid.listing.data.withDeferred
+import com.tunjid.listing.sync.SyncManager
+import com.tunjid.feature.feed.di.ListingFeedRoute
+import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.Mutation
+import com.tunjid.mutator.coroutines.SuspendingStateHolder
+import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.mapLatestToManyMutations
+import com.tunjid.mutator.coroutines.mapToMutation
+import com.tunjid.mutator.coroutines.toMutationStream
+import com.tunjid.scaffold.ByteSerializer
+import com.tunjid.scaffold.di.restoreState
+import com.tunjid.scaffold.navigation.NavigationMutation
+import com.tunjid.scaffold.navigation.consumeNavigationActions
+import com.tunjid.tiler.PivotRequest
+import com.tunjid.tiler.Tile
+import com.tunjid.tiler.distinctBy
+import com.tunjid.tiler.listTiler
+import com.tunjid.tiler.toPivotedTileInputs
+import com.tunjid.tiler.toTiledList
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
+
+typealias ListingFeedStateHolder = ActionStateProducer<Action, StateFlow<State>>
+
+@AssistedFactory
+interface ListingFeedStateHolderFactory {
+    fun create(
+        scope: CoroutineScope,
+        savedState: ByteArray?,
+        route: ListingFeedRoute,
+    ): ActualListingFeedStateHolder
+}
+
+class ActualListingFeedStateHolder @AssistedInject constructor(
+    listingRepository: ListingRepository,
+    imageRepository: ImageRepository,
+    syncManager: SyncManager,
+    byteSerializer: ByteSerializer,
+    navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
+    @Assisted scope: CoroutineScope,
+    @Assisted savedState: ByteArray?,
+    @Assisted route: ListingFeedRoute,
+) : ListingFeedStateHolder by scope.listingFeedStateHolder(
+    listingRepository = listingRepository,
+    imageRepository = imageRepository,
+    syncManager = syncManager,
+    byteSerializer = byteSerializer,
+    navigationActions = navigationActions,
+    savedState = savedState,
+    route = route
+)
+
+fun CoroutineScope.listingFeedStateHolder(
+    listingRepository: ListingRepository,
+    imageRepository: ImageRepository,
+    syncManager: SyncManager,
+    byteSerializer: ByteSerializer,
+    navigationActions: (NavigationMutation) -> Unit,
+    savedState: ByteArray?,
+    route: ListingFeedRoute,
+): ListingFeedStateHolder = actionStateFlowProducer(
+    initialState = byteSerializer.restoreState(savedState) ?: State(
+        currentQuery = ListingQuery(
+            propertyType = route.propertyType,
+            limit = route.limit,
+            offset = route.offset,
+        )
+    ),
+    started = SharingStarted.WhileSubscribed(3000),
+    mutationFlows = listOf(
+        syncManager.refreshStatusMutations()
+    ),
+    actionTransform = stateHolder@{ actions ->
+        actions.toMutationStream(Action::key) {
+            when (val action = type()) {
+                is Action.List -> action.flow.fetchListingFeedMutations(
+                    listingRepository = listingRepository,
+                    imageRepository = imageRepository
+                )
+
+                is Action.Refresh -> action.flow.refreshMutations(syncManager)
+                is Action.Navigation -> action.flow.consumeNavigationActions(
+                    navigationActions
+                )
+            }
+        }
+    }
+)
+
+/**
+ * Mutations caused by sync updates
+ */
+private fun SyncManager.refreshStatusMutations(): Flow<Mutation<State>> =
+    status.mapToMutation { copy(syncStatus = it) }
+
+/**
+ * On each invocation of the refresh action, check if we're refreshing. If not, request a refresh.
+ */
+context(SuspendingStateHolder<State>)
+private fun Flow<Action.Refresh>.refreshMutations(
+    syncManager: SyncManager
+): Flow<Mutation<State>> = mapLatestToManyMutations {
+    val isRefreshing = state().isRefreshing
+    if (!isRefreshing) syncManager.requestSync()
+
+    // Don't change the state, emit itself
+    emit { this }
+}
+
+/**
+ * Feed mutations as a function of the user's scroll position
+ */
+context(SuspendingStateHolder<State>)
+private suspend fun Flow<Action.List>.fetchListingFeedMutations(
+    listingRepository: ListingRepository,
+    imageRepository: ImageRepository,
+): Flow<Mutation<State>> {
+    // Read the starting state at the time of subscription
+    val startingState = state()
+
+    return scan(
+        initial = Pair(
+            MutableStateFlow(startingState.currentQuery),
+            MutableStateFlow(startingState.numColumns)
+        )
+    ) { accumulator, action ->
+        val (queries, numColumns) = accumulator
+        // update backing states as a side effect
+        when (action) {
+            is Action.List.GridSize -> numColumns.value = action.numColumns
+            is Action.List.LoadAround -> queries.value = action.query
+        }
+        // Emit the same item with each action
+        accumulator
+    }
+        // Only emit once
+        .distinctUntilChanged()
+        // Flatmap to the fields defined earlier
+        .flatMapLatest { (queries, numColumns) ->
+            val tileInputs = merge(
+                numColumns.map { columns ->
+                    Tile.Limiter(
+                        maxQueries = 3 * columns,
+                        itemSizeHint = null,
+                    )
+                },
+                queries.toPivotedTileInputs(
+                    numColumns.map(::listingPivotRequest)
+                )
+            )
+            // Merge all state changes that are a function of loading the list
+            merge(
+                queries.mapToMutation { copy(currentQuery = it) },
+                numColumns.mapToMutation { copy(numColumns = it) },
+                tileInputs.toTiledList(
+                    feedItemListTiler(
+                        startingQuery = queries.value,
+                        listingRepository = listingRepository,
+                        imageRepository = imageRepository
+                    )
+                )
+                    // The produced list can be debounced to keep the user's scroll
+                    // position if the query changes for filtering or sorting reasons.
+                    // It can also be introspected and filtered to guarantee the items
+                    // produced are always consecutive.
+                    // See the project readme for details: https://github.com/tunjid/Tiler
+                    .mapToMutation {
+                        // Queries update independently of each other, so duplicates may be emitted.
+                        // The maximum amount of items returned is bound by the size of the
+                        // view port. Typically << 100 items so the
+                        // distinct operation is cheap and fixed.
+                        copy(listings = it.distinctBy(FeedItem::id))
+                    }
+            )
+        }
+}
+
+private fun listingPivotRequest(numColumns: Int) =
+    PivotRequest<ListingQuery, FeedItem>(
+        onCount = numColumns * 3,
+        offCount = numColumns * 2,
+        comparator = ListingQueryComparator,
+        previousQuery = {
+            if ((offset - limit) < 0) null
+            else copy(offset = offset - limit)
+        },
+        nextQuery = {
+            copy(offset = offset + limit)
+        }
+    )
+
+
+private fun feedItemListTiler(
+    startingQuery: ListingQuery,
+    listingRepository: ListingRepository,
+    imageRepository: ImageRepository
+) = listTiler(
+    order = Tile.Order.PivotSorted(
+        query = startingQuery,
+        comparator = ListingQueryComparator,
+    ),
+    fetcher = { query ->
+        listingRepository.listings(query).withDeferred(
+            deferredFetcher = { listing ->
+                // This can also be paginated for a fully immersive experience
+                imageRepository.images(
+                    ImageQuery(
+                        listingId = listing.id,
+                        offset = 0L,
+                        limit = 10
+                    )
+                )
+            },
+            combiner = ::FeedItem
+        )
+    }
+)
+
+private val ListingQueryComparator = compareBy(ListingQuery::offset)

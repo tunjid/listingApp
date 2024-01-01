@@ -1,0 +1,110 @@
+package com.tunjid.scaffold.navigation
+
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.Mutation
+import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.mutation
+import com.tunjid.scaffold.adaptive.AdaptiveRoute
+import com.tunjid.scaffold.savedstate.SavedState
+import com.tunjid.scaffold.savedstate.SavedStateRepository
+import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.StackNav
+import com.tunjid.treenav.strings.RouteParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
+import javax.inject.Inject
+import javax.inject.Singleton
+
+typealias NavigationStateHolder = ActionStateProducer<@JvmSuppressWildcards NavigationMutation, @JvmSuppressWildcards StateFlow<MultiStackNav>>
+typealias NavigationMutation = NavigationContext.() -> MultiStackNav
+
+/**
+ * An action that causes mutations to navigation
+ */
+interface NavigationAction {
+    val navigationMutation: NavigationMutation
+}
+
+data class NavItem(
+    val name: String,
+    val icon: ImageVector,
+    val index: Int,
+    val selected: Boolean
+)
+
+private val EmptyNavigationState = MultiStackNav(
+    name = "emptyMultiStack",
+    stacks = listOf(
+        StackNav(
+            name = "emptyStack",
+            children = listOf(UnknownRoute())
+        )
+    )
+)
+
+@Singleton
+class PersistedNavigationStateHolder @Inject constructor(
+    appScope: CoroutineScope,
+    savedStateRepository: SavedStateRepository,
+    routeParser: RouteParser<@JvmSuppressWildcards AdaptiveRoute>,
+) : NavigationStateHolder by appScope.actionStateFlowProducer(
+    initialState = EmptyNavigationState,
+    started = SharingStarted.Eagerly,
+    actionTransform = { navMutations ->
+        flow {
+            // Restore saved nav from disk first
+            val savedState = savedStateRepository.savedState.first { !it.isEmpty }
+            val multiStackNav = routeParser.parseMultiStackNav(savedState)
+
+            emit { multiStackNav }
+            emitAll(
+                navMutations.map { navMutation ->
+                    mutation {
+                        navMutation(
+                            ImmutableNavigationContext(
+                                state = this,
+                                routeParser = routeParser
+                            )
+                        )
+                    }
+                }
+            )
+        }
+    },
+)
+
+/**
+ * A helper function for generic state producers to consume navigation actions
+ */
+fun <Action : NavigationAction, State> Flow<Action>.consumeNavigationActions(
+    navigationMutationConsumer: (NavigationMutation) -> Unit
+) = flatMapLatest { action ->
+    navigationMutationConsumer(action.navigationMutation)
+    emptyFlow<Mutation<State>>()
+}
+
+private fun RouteParser<AdaptiveRoute>.parseMultiStackNav(savedState: SavedState) =
+    savedState.navigation
+        .fold(
+            initial = MultiStackNav(name = "AppNav"),
+            operation = { multiStackNav, routesForStack ->
+                multiStackNav.copy(
+                    stacks = multiStackNav.stacks +
+                            routesForStack.fold(
+                                initial = StackNav(
+                                    name = routesForStack.firstOrNull() ?: "Unknown"
+                                ),
+                                operation = innerFold@{ stackNav, route ->
+                                    val resolvedRoute = parse(routeString = route) ?: UnknownRoute()
+                                    stackNav.copy(
+                                        children = stackNav.children + resolvedRoute
+                                    )
+                                }
+                            )
+                )
+            }
+        )
+        .copy(
+            currentIndex = savedState.activeNav
+        )

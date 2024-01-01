@@ -1,0 +1,42 @@
+pluginManagement {
+    includeBuild("build-logic")
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "AirbnbListing"
+
+include(":app")
+include(":app:workmanager")
+
+include(":scaffold")
+
+include(":data")
+include(":data:database")
+
+include(":data:model:listing")
+include(":data:model:listing:database")
+
+include(":data:model:image")
+include(":data:model:image:database")
+
+include(":data:model:user")
+include(":data:model:user:database")
+
+include(":data:network")
+
+include(":feature:listing:feed")
+include(":feature:listing:detail")
+include(":feature:listing:gallery")
+
+include(":data:sync")
+include(":data:test")
