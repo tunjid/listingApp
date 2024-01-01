@@ -23,14 +23,9 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.RouteParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.scan
 
 @Stable
 internal interface AdaptiveContentHost {
@@ -75,7 +70,6 @@ internal fun SavedStateAdaptiveContentHost(
         }
 
         adaptiveContentHost.content()
-        adaptiveContentHost.SavedStateCleanupEffect()
     }
 }
 
@@ -180,6 +174,12 @@ private fun SavedStateAdaptiveContentHost.Render(
                 ) {
                     SaveableStateProvider(route.id) {
                         route.Content()
+                        DisposableEffect(Unit) {
+                            onDispose {
+                                val backstackIds = adaptedState.backStackIds
+                                if (!backstackIds.contains(route.id)) removeState(route.id)
+                            }
+                        }
                     }
                 }
             }
@@ -226,46 +226,6 @@ private fun SavedStateAdaptiveContentHost.Render(
                 accept(Action.RouteExitEnd(routeId))
             }
         }
-    }
-}
-
-/**
- * Clean up after navigation routes that have been discarded
- */
-@Composable
-private fun SavedStateAdaptiveContentHost.SavedStateCleanupEffect() {
-    LaunchedEffect(Unit) {
-        val routeIdsInBackStack = state
-            .map { it.backStackIds }
-            .distinctUntilChanged()
-
-        val removedIds = routeIdsInBackStack
-            .distinctUntilChanged()
-            .scan(initial = emptySet<String>() to emptySet<String>()) { navPair, newBackstackIds ->
-                navPair.copy(first = navPair.second, second = newBackstackIds)
-            }
-            .map { (oldIds: Set<String>, newIds: Set<String>) ->
-                oldIds - newIds
-            }
-
-        val routesAnimatedOut = state
-            .distinctUntilChangedBy(Adaptive.NavigationState::routeIdsAnimatingOut)
-            .scan(emptySet<String>() to emptySet<String>()) { pair, state ->
-                pair.copy(first = pair.second, second = state.routeIdsAnimatingOut)
-            }
-            .map { (old, new) -> old - new }
-
-        combine(
-            routeIdsInBackStack,
-            routesAnimatedOut,
-            ::Pair
-        )
-            .distinctUntilChanged()
-            .collect { (backStackIds, animatedOutRouteIds) ->
-                animatedOutRouteIds
-                    .filterNot(backStackIds::contains)
-                    .forEach(::removeState)
-            }
     }
 }
 

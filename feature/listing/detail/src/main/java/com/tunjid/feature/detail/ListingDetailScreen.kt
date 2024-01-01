@@ -98,7 +98,8 @@ private fun ListingMediaPager(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(16f / 9),
-        state = pagerState
+        state = pagerState,
+        key = { index -> listingItems[index].url }
     ) { index ->
         val item = listingItems[index]
         val thumbnail = rememberSharedContent<ImageArgs>(

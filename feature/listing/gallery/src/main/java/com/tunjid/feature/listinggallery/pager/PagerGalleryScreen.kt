@@ -36,7 +36,8 @@ fun FullscreenGalleryScreen(
     HorizontalPager(
         modifier = modifier
             .fillMaxSize(),
-        state = pagerState
+        state = pagerState,
+        key = { index -> state.items[index].url }
     ) { index ->
         val item = state.items[index]
         val thumbnail = rememberSharedContent<ImageArgs>(

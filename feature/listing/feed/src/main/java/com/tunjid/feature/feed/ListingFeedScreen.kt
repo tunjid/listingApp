@@ -1,7 +1,15 @@
 package com.tunjid.feature.feed
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -24,7 +32,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.tunjid.data.image.Image
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.ImageArgs
@@ -129,7 +136,8 @@ private fun FeedItemCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f),
-                    state = rememberPagerState(pageCount = feedItem.images::size)
+                    state = rememberPagerState(pageCount = feedItem.images::size),
+                    key = { index -> feedItem.images[index].url }
                 ) { index ->
                     val image = feedItem.images[index]
                     val thumbnail = rememberSharedContent<ImageArgs>(
