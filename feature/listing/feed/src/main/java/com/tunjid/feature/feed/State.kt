@@ -1,6 +1,6 @@
 package com.tunjid.feature.feed
 
-import com.tunjid.data.image.Image
+import com.tunjid.data.media.Media
 import com.tunjid.data.listing.Listing
 import com.tunjid.feature.feed.di.ListingFeedRoute
 import com.tunjid.listing.data.model.ListingQuery
@@ -23,9 +23,9 @@ sealed class Action(val key: String) {
 
     data object Refresh : Action("Refresh")
 
-    sealed class List : Action("List") {
-        data class LoadAround(val query: ListingQuery) : List()
-        data class GridSize(val numColumns: Int) : List()
+    sealed class LoadFeed : Action("List") {
+        data class LoadAround(val query: ListingQuery) : LoadFeed()
+        data class GridSize(val numColumns: Int) : LoadFeed()
     }
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
@@ -51,15 +51,13 @@ sealed class Action(val key: String) {
 
         data class Gallery(
             val listingId: String,
-            val initialIndex: Int,
             val url: String,
         ) : Navigation() {
             override val navigationMutation: NavigationMutation = {
                 navState.push(
                     routeString(
-                        path = "listings/${listingId}/gallery/full",
+                        path = "listings/${listingId}/gallery/pager",
                         queryParams = mapOf(
-                            "initialIndex" to listOf(initialIndex.toString()),
                             "url" to listOf(url)
                         )
                     ).toRoute
@@ -85,7 +83,7 @@ val State.isRefreshing get() = syncStatus == SyncStatus.Running
 
 data class FeedItem(
     val listing: Listing,
-    val images: List<Image>
+    val medias: List<Media>
 )
 
 val FeedItem.id get() = listing.id

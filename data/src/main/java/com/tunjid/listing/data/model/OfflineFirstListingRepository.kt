@@ -1,7 +1,7 @@
 package com.tunjid.listing.data.model
 
-import com.tunjid.data.image.database.ImageDao
-import com.tunjid.data.image.database.model.ImageEntity
+import com.tunjid.data.media.database.MediaDao
+import com.tunjid.data.media.database.model.MediaEntity
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.database.ListingDao
 import com.tunjid.data.listing.database.UserDao
@@ -15,6 +15,7 @@ import com.tunjid.network.model.NetworkListing
 import com.tunjid.network.model.price
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,13 +23,15 @@ import javax.inject.Singleton
 @Singleton
 class OfflineFirstListingRepository @Inject constructor(
     private val listingDao: ListingDao,
-    private val imageDao: ImageDao,
+    private val mediaDao: MediaDao,
     private val userDao: UserDao,
     private val listingNetworkDataSource: ListingNetworkDataSource,
 ) : ListingRepository {
 
     override fun listing(id: String): Flow<Listing> =
         listingDao.listing(id)
+            .filterNotNull()
+            .distinctUntilChanged()
             .map(ListingEntity::asExternalModel)
 
     override fun listings(query: ListingQuery): Flow<List<Listing>> =
@@ -56,9 +59,9 @@ class OfflineFirstListingRepository @Inject constructor(
                 networkListing.asEntity(networkListing.primaryHost.id.toString())
             }
         )
-        imageDao.upsertMedia(
+        mediaDao.upsertMedia(
             networkListings.flatMap { networkListing ->
-                networkListing.images.mapNotNull { networkImage ->
+                networkListing.medias.mapNotNull { networkImage ->
                     networkImage.asEntity(networkListing.url.toListingId())
                 }
             }
@@ -71,14 +74,14 @@ private fun NetworkListing.asEntity(hostId: String) = ListingEntity(
     id = url.toListingId(),
     hostId = hostId,
     price = price,
-    description = description,
+    address = address,
     title = name,
     propertyType = roomType
 )
 
 private fun NetworkImage.asEntity(listingId: String) =
     MediaIdRegex.find(thumbnailUrl)?.value?.let { id ->
-        ImageEntity(
+        MediaEntity(
             id = id,
             listingId = listingId,
             url = pictureUrl.split("?").first(),
@@ -105,7 +108,7 @@ fun ListingEntity.asExternalModel() = Listing(
     id = id,
     hostId = hostId,
     price = price,
-    description = description,
+    address = address,
     title = title,
     propertyType = propertyType
 )

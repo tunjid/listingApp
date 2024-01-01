@@ -6,11 +6,13 @@ import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowProducer
 import com.tunjid.mutator.mutation
 import com.tunjid.scaffold.adaptive.AdaptiveRoute
+import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.strings.RouteParser
+import com.tunjid.treenav.strings.UrlRouteMatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -48,6 +50,8 @@ class PersistedNavigationStateHolder @Inject constructor(
     appScope: CoroutineScope,
     savedStateRepository: SavedStateRepository,
     routeParser: RouteParser<@JvmSuppressWildcards AdaptiveRoute>,
+    @UrlRouteMatcherBinding
+    routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<AdaptiveRoute>>
 ) : NavigationStateHolder by appScope.actionStateFlowProducer(
     initialState = EmptyNavigationState,
     started = SharingStarted.Eagerly,
@@ -56,6 +60,8 @@ class PersistedNavigationStateHolder @Inject constructor(
             // Restore saved nav from disk first
             val savedState = savedStateRepository.savedState.first { !it.isEmpty }
             val multiStackNav = routeParser.parseMultiStackNav(savedState)
+
+            println("KEYS: ${routeMatcherMap.keys}")
 
             emit { multiStackNav }
             emitAll(

@@ -13,7 +13,7 @@ android {
 dependencies {
     implementation(project(":data"))
     implementation(project(":data:model:listing"))
-    implementation(project(":data:model:image"))
+    implementation(project(":data:model:media"))
     implementation(project(":data:sync"))
 
     implementation(libs.coil.kt.compose)

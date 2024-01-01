@@ -50,7 +50,7 @@ internal class SharedElementData<T>(
     val sizeAnimation = DeferredAnimation(
         vectorConverter = IntSize.VectorConverter,
         animationSpec = spring(
-            stiffness = Spring.StiffnessMedium,
+            stiffness = Spring.StiffnessMediumLow,
             visibilityThreshold = IntSize.VisibilityThreshold
         )
     )

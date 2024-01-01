@@ -6,14 +6,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.AsyncImage
-import com.tunjid.scaffold.ImageArgs
 import com.tunjid.scaffold.adaptive.rememberSharedContent
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.media.Media
+import com.tunjid.scaffold.media.MediaArgs
 import com.tunjid.tiler.compose.PivotedTilingEffect
 
 @Composable
@@ -35,28 +35,31 @@ fun FullscreenGalleryScreen(
 
     HorizontalPager(
         modifier = modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .dragToDismiss(
+                onEnded = { actions(Action.Navigation.Pop) },
+                onCancelled = { actions(Action.Navigation.Pop) }
+            ),
         state = pagerState,
         key = { index -> state.items[index].url }
     ) { index ->
         val item = state.items[index]
-        val thumbnail = rememberSharedContent<ImageArgs>(
+        val thumbnail = rememberSharedContent<MediaArgs>(
             thumbnailSharedElementKey(item.url)
         ) { args, innerModifier ->
-            AsyncImage(
+            Media(
                 modifier = innerModifier,
-                model = args.url,
-                contentDescription = null,
-                contentScale = args.contentScale
+                mediaArgs = args
             )
         }
 
         thumbnail(
-            ImageArgs(
+            MediaArgs(
                 url = item.url,
                 contentScale = ContentScale.Fit
             ),
-            Modifier.fillMaxSize(),
+            Modifier
+                .fillMaxSize(),
         )
     }
 

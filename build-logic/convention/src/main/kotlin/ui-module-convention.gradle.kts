@@ -26,7 +26,8 @@ dependencies {
     "implementation"(libs.findLibrary("androidx.compose.ui.ui").get())
     "implementation"(libs.findLibrary("androidx.compose.ui.graphics").get())
     "implementation"(libs.findLibrary("androidx.compose.ui.tooling.preview").get())
-    "implementation"(libs.findLibrary("androidx.compose.material").get())
+    "implementation"(libs.findLibrary("androidx.compose.material.core").get())
+    "implementation"(libs.findLibrary("androidx.compose.material.iconsExtended").get())
     "implementation"(libs.findLibrary("androidx.compose.material3").get())
     "implementation"(libs.findLibrary("androidx.datastore.core.okio").get())
 

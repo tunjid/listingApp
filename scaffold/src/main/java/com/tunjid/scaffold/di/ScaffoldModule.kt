@@ -39,7 +39,12 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.protobuf.ProtoBuf
 import okio.Path
 import okio.Path.Companion.toPath
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class UrlRouteMatcherBinding
 
 interface ScreenStateHolderCreator :
         (@JvmSuppressWildcards CoroutineScope, ByteArray?, AdaptiveRoute) -> Any
@@ -101,6 +106,7 @@ object ScaffoldModule {
     @Provides
     @Singleton
     fun routeParser(
+        @UrlRouteMatcherBinding
         routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<AdaptiveRoute>>
     ): RouteParser<@JvmSuppressWildcards AdaptiveRoute> {
         val routeMatchers = routeMatcherMap

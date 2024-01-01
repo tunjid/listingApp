@@ -13,13 +13,13 @@ data class NetworkListing(
     @SerialName("primaryHost")
     val primaryHost: NetworkHost,
     @SerialName("address")
-    val description: String,
+    val address: String,
     @SerialName("name")
     val name: String,
     @SerialName("roomType")
     val roomType: String,
     @SerialName("photos")
-    val images: List<NetworkImage> // the 1st image is the cover image for the listing
+    val medias: List<NetworkImage> // the 1st media is the cover media for the listing
 )
 
 val NetworkListing.price get() = pricing.rate.amount.toString()

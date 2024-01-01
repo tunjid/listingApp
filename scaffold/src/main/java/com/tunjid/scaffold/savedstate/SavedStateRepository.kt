@@ -32,6 +32,10 @@ private val defaultSavedState = SavedState(
     isEmpty = true,
     navigation = listOf(
         listOf("listings"),
+        listOf("favorites"),
+        listOf("trips"),
+        listOf("messages"),
+        listOf("profile"),
     ),
     routeStates = emptyMap()
 )
@@ -76,7 +80,7 @@ private class SavedStateOkioSerializer(
     override suspend fun readFrom(source: BufferedSource): SavedState =
         byteSerializer.fromBytes(source.readByteArray())
 
-    override suspend fun writeTo(savedState: SavedState, sink: BufferedSink) {
-        sink.write(byteSerializer.toBytes(savedState))
+    override suspend fun writeTo(t: SavedState, sink: BufferedSink) {
+        sink.write(byteSerializer.toBytes(t))
     }
 }

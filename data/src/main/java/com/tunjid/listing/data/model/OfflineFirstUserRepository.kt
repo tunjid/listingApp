@@ -5,6 +5,7 @@ import com.tunjid.data.listing.database.UserDao
 import com.tunjid.data.listing.database.model.UserEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,6 +16,7 @@ class OfflineFirstUserRepository @Inject constructor(
 ) : UserRepository {
     override fun user(id: String): Flow<User> =
         userDao.user(id)
+            .filterNotNull()
             .distinctUntilChanged()
             .map(UserEntity::asExternalModel)
 }

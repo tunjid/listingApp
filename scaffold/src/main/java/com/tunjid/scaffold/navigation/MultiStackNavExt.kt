@@ -1,7 +1,12 @@
 package com.tunjid.scaffold.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.AirplaneTicket
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Apartment
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
 import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
@@ -21,7 +26,14 @@ val MultiStackNav.navItems
         .mapIndexed { index, name ->
             NavItem(
                 name = name,
-                icon = Icons.Default.Settings,
+                icon = when {
+                    name.contains("listings") -> Icons.Filled.Apartment
+                    name.contains("favorites") -> Icons.Filled.FavoriteBorder
+                    name.contains("trips") -> Icons.AutoMirrored.Filled.AirplaneTicket
+                    name.contains("messages") -> Icons.Filled.ChatBubbleOutline
+                    name.contains("profile") -> Icons.Filled.AccountCircle
+                    else -> Icons.Filled.MoreVert
+                },
                 index = index,
                 selected = currentIndex == index,
             )

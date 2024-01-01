@@ -1,0 +1,120 @@
+[versions]
+app-cash-sqldelight = "2.0.0"
+app-cash-turbine = "1.0.0"
+core-ktx = "1.12.0"
+junit = "4.13.2"
+androidx-compose-compiler = "1.5.4"
+androidx-test-ext-junit = "1.1.5"
+androidxDataStore = "1.1.0-alpha06"
+androidxMedia3 = "1.2.0"
+androidxRoom = "2.6.0"
+androidxWindow = "1.2.0"
+androidxWork = "2.9.0-rc01"
+coil = "2.4.0"
+espresso-core = "3.5.1"
+com-android-gradle-plugin = "8.1.4"
+com-android-application = "8.1.0"
+com-android-desugar-JdkLibs = "2.0.4"
+org-jetbrains-kotlin-android = "1.9.20"
+lifecycle-runtime-ktx = "2.6.2"
+activity-compose = "1.8.1"
+compose-bom = "2023.12.00-alpha04"
+hilt = "2.48.1"
+hiltExt = "1.1.0"
+kotlinxCoroutines = "1.7.3"
+kotlinxDatetime = "0.4.0"
+kotlinxSerialization = "1.5.1"
+ksp = "1.9.20-1.0.14"
+ktor = "2.2.4"
+okio = "3.6.0"
+okhttp = "4.12.0"
+retrofit = "2.9.0"
+retrofitKotlinxSerializationJson = "1.0.0"
+tunjidStateHolder = "0.0.9"
+tunjidTiler = "1.1.0-beta02"
+tunjidTreeNav = "0.0.5"
+turbine = "0.12.1"
+appcompat = "1.6.1"
+material = "1.10.0"
+
+[libraries]
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+#compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-bom = { group = "dev.chrisbanes.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-compiler = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
+androidx-compose-foundation-foundation = { group = "androidx.compose.foundation", name = "foundation"}
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
+androidx-compose-material-core = { group = "androidx.compose.material", name = "material" }
+androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
+androidx-compose-ui-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "androidxDataStore" }
+androidx-hilt-hilt = { group = "androidx.hilt", name = "hilt", version.ref = "hilt" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "androidxMedia3" }
+androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "androidxMedia3" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidxRoom" }
+androidx-window-window = { group = "androidx.window", name = "window", version.ref = "androidxWindow" }
+androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
+androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
+coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+com-android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "com-android-desugar-JdkLibs" }
+app-cash-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "app-cash-turbine" }
+app-cash-sqldelight-gradle-plugin = { group = "app.cash.sqldelight", name = "gradle-plugin", version.ref = "app-cash-sqldelight" }
+com-android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "com-android-gradle-plugin" }
+com-google-devtools-ksp-plugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
+hilt-gradle-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
+hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-serialization-cbor = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-cbor", version.ref = "kotlinxSerialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlinx-serialization-protobuf = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-protobuf", version.ref = "kotlinxSerialization" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+org-jetbrains-kotlin-android-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "org-jetbrains-kotlin-android" }
+org-jetbrains-kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "org-jetbrains-kotlin-android" }
+retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
+squareup-okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
+tunjid-mutator-core-common = { group = "com.tunjid.mutator", name = "core", version.ref = "tunjidStateHolder" }
+tunjid-mutator-coroutines-common = { group = "com.tunjid.mutator", name = "coroutines", version.ref = "tunjidStateHolder" }
+tunjid-tiler-compose = { group = "com.tunjid.tiler", name = "compose", version.ref = "tunjidTiler" }
+tunjid-tiler-tiler = { group = "com.tunjid.tiler", name = "tiler", version.ref = "tunjidTiler" }
+tunjid-treenav-core-common = { group = "com.tunjid.treenav", name = "treenav", version.ref = "tunjidTreeNav" }
+tunjid-treenav-strings-common = { group = "com.tunjid.treenav", name = "strings", version.ref = "tunjidTreeNav" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+[plugins]
+app-cash-sqldelight = { id = "app.cash.sqldelight", version.ref = "app-cash-sqldelight" }
+com-android-application = { id = "com.android.application", version.ref = "com-android-application" }
+com-android-library = { id = "com.android.library", version.ref = "com-android-application" }
+com-google-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "org-jetbrains-kotlin-android" }
+org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
+org-jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "org-jetbrains-kotlin-android" }
+
+[bundles]
+

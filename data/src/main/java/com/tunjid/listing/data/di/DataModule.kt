@@ -1,8 +1,8 @@
 package com.tunjid.listing.data.di
 
-import com.tunjid.listing.data.model.ImageRepository
+import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.listing.data.model.ListingRepository
-import com.tunjid.listing.data.model.OfflineFirstImageRepository
+import com.tunjid.listing.data.model.OfflineFirstMediaRepository
 import com.tunjid.listing.data.model.OfflineFirstListingRepository
 import com.tunjid.listing.data.model.OfflineFirstUserRepository
 import com.tunjid.listing.data.model.UserRepository
@@ -21,8 +21,8 @@ interface DataModule {
 
     @Binds
     fun bindMediaRepository(
-        repository: OfflineFirstImageRepository
-    ): ImageRepository
+        repository: OfflineFirstMediaRepository
+    ): MediaRepository
 
     @Binds
     fun bindUserRepository(

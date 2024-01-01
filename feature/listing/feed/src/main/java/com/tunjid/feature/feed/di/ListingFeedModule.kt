@@ -10,6 +10,7 @@ import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.adaptive.AdaptiveRoute
+import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
@@ -82,7 +83,8 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(ListingFeedRoutePattern)
-    fun listingFeedRouteParser(): UrlRouteMatcher<AdaptiveRoute> =
+    @UrlRouteMatcherBinding
+    fun listingFeedRouteParser(): UrlRouteMatcher<@JvmSuppressWildcards AdaptiveRoute> =
         urlRouteMatcher(
             routePattern = ListingFeedRoutePattern,
             routeMapper = ::ListingFeedRoute

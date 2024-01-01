@@ -1,9 +1,10 @@
 package com.tunjid.feature.listinggallery.grid
 
-import com.tunjid.data.image.Image
 import com.tunjid.feature.listinggallery.grid.di.GridGalleryRoute
-import com.tunjid.listing.data.model.ImageQuery
-import com.tunjid.listing.data.model.ImageRepository
+import com.tunjid.feature.listinggallery.mediaListTiler
+import com.tunjid.feature.listinggallery.mediaPivotRequest
+import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
@@ -18,8 +19,6 @@ import com.tunjid.tiler.PivotRequest
 import com.tunjid.tiler.Tile
 import com.tunjid.tiler.buildTiledList
 import com.tunjid.tiler.distinctBy
-import com.tunjid.tiler.listTiler
-import com.tunjid.tiler.map
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
 import dagger.assisted.Assisted
@@ -27,8 +26,13 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.scan
 
 typealias GridGalleryStateHolder = ActionStateProducer<Action, StateFlow<State>>
 
@@ -42,14 +46,14 @@ interface GridGalleryStateHolderFactory {
 }
 
 class ActualGridGalleryStateHolder @AssistedInject constructor(
-    imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
     @Assisted route: GridGalleryRoute,
 ) : GridGalleryStateHolder by scope.listingDetailMutator(
-    imageRepository = imageRepository,
+    mediaRepository = mediaRepository,
     navigationActions = navigationActions,
     byteSerializer = byteSerializer,
     savedState = savedState,
@@ -57,8 +61,8 @@ class ActualGridGalleryStateHolder @AssistedInject constructor(
 )
 
 private fun CoroutineScope.listingDetailMutator(
-    imageRepository: ImageRepository,
-    navigationActions: ( NavigationMutation) -> Unit,
+    mediaRepository: MediaRepository,
+    navigationActions: (NavigationMutation) -> Unit,
     byteSerializer: ByteSerializer,
     savedState: ByteArray?,
     route: GridGalleryRoute,
@@ -68,14 +72,16 @@ private fun CoroutineScope.listingDetailMutator(
         items = buildTiledList {
             addAll(
                 query = route.initialQuery,
-                items = route.startingMediaUrls.map(GalleryItem::Preview)
+                items = route.startingMediaUrls.mapIndexed(GalleryItem::Preview)
             )
         }
     ),
     actionTransform = { actions ->
         actions.toMutationStream(Action::key) {
             when (val action = type()) {
-                is Action.LoadImagesAround -> action.flow.paginationMutations(imageRepository)
+                is Action.LoadItems -> action.flow.loadMutations(
+                    mediaRepository = mediaRepository
+                )
                 is Action.Navigation -> action.flow.consumeNavigationActions(
                     navigationActions
                 )
@@ -85,43 +91,53 @@ private fun CoroutineScope.listingDetailMutator(
 )
 
 context(SuspendingStateHolder<State>)
-private suspend fun Flow<Action.LoadImagesAround>.paginationMutations(
-    imageRepository: ImageRepository
-): Flow<Mutation<State>> =
-    map { it.query }
-        .toPivotedTileInputs(imagesPivotRequest())
-        .toTiledList(
-            imageRepository.imageListTiler(
-                startingQuery = state().currentQuery
-            )
+private suspend fun Flow<Action.LoadItems>.loadMutations(
+    mediaRepository: MediaRepository
+): Flow<Mutation<State>> {
+    val startingState = state()
+    return scan(
+        initial = Pair(
+            MutableStateFlow(startingState.currentQuery),
+            MutableStateFlow(startingState.numColumns)
         )
-        .mapToMutation { images ->
-            images.distinctBy { }
-            copy(items = images.distinctBy(Image::url).map(GalleryItem::Loaded))
+    ) { accumulator, action ->
+        val (queries, numColumns) = accumulator
+        // update backing states as a side effect
+        when (action) {
+            is Action.LoadItems.GridSize -> numColumns.value = action.numOfColumns
+            is Action.LoadItems.Around -> queries.value = action.query
         }
-
-
-private fun imagesPivotRequest() = PivotRequest<ImageQuery, Image>(
-    onCount = 3,
-    offCount = 4,
-    comparator = ImageQueryComparator,
-    previousQuery = {
-        if ((offset - limit) < 0) null
-        else copy(offset = offset - limit)
-    },
-    nextQuery = {
-        copy(offset = offset + limit)
+        // Emit the same item with each action
+        accumulator
     }
-)
-
-private fun ImageRepository.imageListTiler(
-    startingQuery: ImageQuery
-) = listTiler(
-    order = Tile.Order.PivotSorted(
-        query = startingQuery,
-        comparator = ImageQueryComparator,
-    ),
-    fetcher = ::images
-)
-
-private val ImageQueryComparator = compareBy(ImageQuery::offset)
+        // Only emit once
+        .distinctUntilChanged()
+        // Flatmap to the fields defined earlier
+        .flatMapLatest { (queries, numColumns) ->
+            val tileInputs = merge(
+                numColumns.map { columns ->
+                    Tile.Limiter(
+                        maxQueries = 3 * columns,
+                        itemSizeHint = null,
+                    )
+                },
+                queries.toPivotedTileInputs(
+                    numColumns.map<Int, PivotRequest<MediaQuery, GalleryItem>>(::mediaPivotRequest)
+                )
+            )
+            // Merge all state changes that are a function of loading the list
+            merge(
+                queries.mapToMutation { copy(currentQuery = it) },
+                numColumns.mapToMutation { copy(numColumns = it) },
+                tileInputs.toTiledList(
+                    mediaRepository.mediaListTiler(
+                        startingQuery = state().currentQuery,
+                        mapper = GalleryItem::Loaded
+                    )
+                )
+                    .mapToMutation { items ->
+                        copy(items = items.distinctBy(GalleryItem::url))
+                    }
+            )
+        }
+}

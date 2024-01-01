@@ -27,7 +27,6 @@ private val PaneSpring = adaptiveSpringSpec(
 )
 
 @Stable
-// TODO: Migrate to AnchoredDraggable when moving to Compose 1.6
 internal class PaneAnchorState {
     var maxWidth by mutableIntStateOf(1000)
         internal set
@@ -94,7 +93,10 @@ fun SecondaryPaneCloseBackHandler(enabled: Boolean) {
     var started by remember { mutableStateOf(false) }
     var widthAtStart by remember { mutableIntStateOf(0) }
     var desiredPaneWidth by remember { mutableFloatStateOf(0f) }
-    val animatedDesiredPanelWidth by animateFloatAsState(desiredPaneWidth)
+    val animatedDesiredPanelWidth by animateFloatAsState(
+        label = "DesiredAppPanelWidth",
+        targetValue = desiredPaneWidth,
+    )
 
     BackHandler(
         enabled = enabled,

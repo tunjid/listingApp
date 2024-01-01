@@ -1,7 +1,7 @@
 package com.tunjid.feature.listinggallery.grid
 
-import com.tunjid.data.image.Image
-import com.tunjid.listing.data.model.ImageQuery
+import com.tunjid.data.media.Media
+import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -13,9 +13,16 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 sealed class Action(val key: String) {
-    data class LoadImagesAround(
-        val query: ImageQuery
-    ) : Action("LoadImagesAround")
+
+    sealed class LoadItems: Action("LoadItems") {
+        data class GridSize(
+            val numOfColumns: Int
+        ) : LoadItems()
+
+        data class Around(
+            val query: MediaQuery
+        ) : LoadItems()
+    }
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class FullScreen(
@@ -38,18 +45,30 @@ sealed class Action(val key: String) {
 
 @Serializable
 data class State(
-    val currentQuery: ImageQuery,
+    val currentQuery: MediaQuery,
+    val numColumns: Int = 2,
     @Transient
-    val items: TiledList<ImageQuery, GalleryItem> = emptyTiledList(),
+    val items: TiledList<MediaQuery, GalleryItem> = emptyTiledList(),
 ) : ByteSerializable
 
 sealed class GalleryItem {
-    data class Preview(val url: String) : GalleryItem()
-    data class Loaded(val image: Image) : GalleryItem()
+
+    abstract val index: Int
+
+    data class Preview(
+        override val index: Int,
+
+        val url: String,
+    ) : GalleryItem()
+
+    data class Loaded(
+        override val index: Int,
+        val media: Media,
+    ) : GalleryItem()
 }
 
 val GalleryItem.url
     get() = when (this) {
-        is GalleryItem.Loaded -> image.url
+        is GalleryItem.Loaded -> media.url
         is GalleryItem.Preview -> url
     }

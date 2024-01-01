@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="employee_directory">Employee Directory</string>
-    <string name="no_employees">There are no employees matching the current query</string>
-    <string name="employees_error">There was an error fetching employees</string>
-    <string name="contact_host">Contact host</string>
 </resources>

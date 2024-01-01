@@ -1,9 +1,9 @@
 package com.tunjid.feature.detail
 
-import com.tunjid.data.image.Image
+import com.tunjid.data.media.Media
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
-import com.tunjid.listing.data.model.ImageQuery
+import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.navigation.NavigationAction
@@ -19,7 +19,7 @@ import kotlinx.serialization.Transient
 sealed class Action(val key: String) {
 
     data class LoadImagesAround(
-        val query: ImageQuery
+        val query: MediaQuery
     ) : Action("LoadImagesAround")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
@@ -49,9 +49,9 @@ sealed class Action(val key: String) {
 
 @Serializable
 data class State(
-    val currentQuery: ImageQuery,
+    val currentQuery: MediaQuery,
     @Transient
-    val initialIndex: Int? = null,
+    val mediaAvailable: Long? = null,
     @Transient
     val isInPrimaryNav: Boolean = false,
     @Transient
@@ -63,16 +63,24 @@ data class State(
     @Transient
     val host: User? = null,
     @Transient
-    val listingItems: TiledList<ImageQuery, ListingItem> = emptyTiledList(),
+    val listingItems: TiledList<MediaQuery, ListingItem> = emptyTiledList(),
 ) : ByteSerializable
 
 sealed class ListingItem {
-    data class Preview(val url: String) : ListingItem()
-    data class Loaded(val image: Image) : ListingItem()
+
+    abstract val index: Int
+    data class Preview(
+        override val index: Int,
+        val url: String
+    ) : ListingItem()
+    data class Loaded(
+        override val index: Int,
+        val media: Media
+    ) : ListingItem()
 }
 
 val ListingItem.url
     get() = when (this) {
-        is ListingItem.Loaded -> image.url
+        is ListingItem.Loaded -> media.url
         is ListingItem.Preview -> url
     }

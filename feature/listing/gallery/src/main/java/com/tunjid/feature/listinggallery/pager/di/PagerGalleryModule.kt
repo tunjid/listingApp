@@ -6,10 +6,11 @@ import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolder
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.State
-import com.tunjid.listing.data.model.ImageQuery
+import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
@@ -38,10 +39,10 @@ data class PagerGalleryRoute(
 
     val startingMediaUrls get() = routeParams.queryParams["url"] ?: emptyList()
 
-    val initialQuery = ImageQuery(
+    val initialQuery = MediaQuery(
         listingId = listingId,
         offset = routeParams.queryParams["pageOffset"]?.first()?.toLongOrNull() ?: 0L,
-        limit = routeParams.queryParams["pageLimit"]?.first()?.toLongOrNull() ?: 4L,
+        limit = routeParams.queryParams["pageLimit"]?.first()?.toLongOrNull() ?: 12L,
     )
 
     @Composable
@@ -70,7 +71,8 @@ object PagerGalleryModule {
     @IntoMap
     @Provides
     @StringKey(PagerGalleryPattern)
-    fun fullscreenGalleryRouteParser(): UrlRouteMatcher<AdaptiveRoute> =
+    @UrlRouteMatcherBinding
+    fun fullscreenGalleryRouteParser(): UrlRouteMatcher<@JvmSuppressWildcards AdaptiveRoute> =
         urlRouteMatcher(
             routePattern = PagerGalleryPattern,
             routeMapper = ::PagerGalleryRoute

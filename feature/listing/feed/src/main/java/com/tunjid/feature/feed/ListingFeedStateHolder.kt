@@ -1,7 +1,7 @@
 package com.tunjid.feature.feed
 
-import com.tunjid.listing.data.model.ImageQuery
-import com.tunjid.listing.data.model.ImageRepository
+import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.data.model.ListingRepository
 import com.tunjid.listing.data.withDeferred
@@ -43,7 +43,7 @@ interface ListingFeedStateHolderFactory {
 
 class ActualListingFeedStateHolder @AssistedInject constructor(
     listingRepository: ListingRepository,
-    imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     syncManager: SyncManager,
     byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
@@ -52,7 +52,7 @@ class ActualListingFeedStateHolder @AssistedInject constructor(
     @Assisted route: ListingFeedRoute,
 ) : ListingFeedStateHolder by scope.listingFeedStateHolder(
     listingRepository = listingRepository,
-    imageRepository = imageRepository,
+    mediaRepository = mediaRepository,
     syncManager = syncManager,
     byteSerializer = byteSerializer,
     navigationActions = navigationActions,
@@ -62,7 +62,7 @@ class ActualListingFeedStateHolder @AssistedInject constructor(
 
 fun CoroutineScope.listingFeedStateHolder(
     listingRepository: ListingRepository,
-    imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     syncManager: SyncManager,
     byteSerializer: ByteSerializer,
     navigationActions: (NavigationMutation) -> Unit,
@@ -83,9 +83,9 @@ fun CoroutineScope.listingFeedStateHolder(
     actionTransform = stateHolder@{ actions ->
         actions.toMutationStream(Action::key) {
             when (val action = type()) {
-                is Action.List -> action.flow.fetchListingFeedMutations(
+                is Action.LoadFeed -> action.flow.fetchListingFeedMutations(
                     listingRepository = listingRepository,
-                    imageRepository = imageRepository
+                    mediaRepository = mediaRepository
                 )
 
                 is Action.Refresh -> action.flow.refreshMutations(syncManager)
@@ -121,9 +121,9 @@ private fun Flow<Action.Refresh>.refreshMutations(
  * Feed mutations as a function of the user's scroll position
  */
 context(SuspendingStateHolder<State>)
-private suspend fun Flow<Action.List>.fetchListingFeedMutations(
+private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
     listingRepository: ListingRepository,
-    imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
 ): Flow<Mutation<State>> {
     // Read the starting state at the time of subscription
     val startingState = state()
@@ -137,8 +137,8 @@ private suspend fun Flow<Action.List>.fetchListingFeedMutations(
         val (queries, numColumns) = accumulator
         // update backing states as a side effect
         when (action) {
-            is Action.List.GridSize -> numColumns.value = action.numColumns
-            is Action.List.LoadAround -> queries.value = action.query
+            is Action.LoadFeed.GridSize -> numColumns.value = action.numColumns
+            is Action.LoadFeed.LoadAround -> queries.value = action.query
         }
         // Emit the same item with each action
         accumulator
@@ -166,7 +166,7 @@ private suspend fun Flow<Action.List>.fetchListingFeedMutations(
                     feedItemListTiler(
                         startingQuery = queries.value,
                         listingRepository = listingRepository,
-                        imageRepository = imageRepository
+                        mediaRepository = mediaRepository
                     )
                 )
                     // The produced list can be debounced to keep the user's scroll
@@ -203,7 +203,7 @@ private fun listingPivotRequest(numColumns: Int) =
 private fun feedItemListTiler(
     startingQuery: ListingQuery,
     listingRepository: ListingRepository,
-    imageRepository: ImageRepository
+    mediaRepository: MediaRepository
 ) = listTiler(
     order = Tile.Order.PivotSorted(
         query = startingQuery,
@@ -213,8 +213,8 @@ private fun feedItemListTiler(
         listingRepository.listings(query).withDeferred(
             deferredFetcher = { listing ->
                 // This can also be paginated for a fully immersive experience
-                imageRepository.images(
-                    ImageQuery(
+                mediaRepository.media(
+                    MediaQuery(
                         listingId = listing.id,
                         offset = 0L,
                         limit = 10

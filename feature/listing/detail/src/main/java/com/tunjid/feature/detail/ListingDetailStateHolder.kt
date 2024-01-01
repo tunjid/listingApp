@@ -1,10 +1,9 @@
 package com.tunjid.feature.detail
 
-import com.tunjid.data.image.Image
 import com.tunjid.feature.detail.di.ListingDetailRoute
-import com.tunjid.listing.data.model.ImageQuery
-import com.tunjid.listing.data.model.ImageRepository
 import com.tunjid.listing.data.model.ListingRepository
+import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.listing.data.model.UserRepository
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.mutator.Mutation
@@ -21,12 +20,12 @@ import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.isInPrimaryNavMutations
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
+import com.tunjid.tiler.ListTiler
 import com.tunjid.tiler.PivotRequest
 import com.tunjid.tiler.Tile
 import com.tunjid.tiler.buildTiledList
 import com.tunjid.tiler.distinctBy
 import com.tunjid.tiler.listTiler
-import com.tunjid.tiler.map
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
 import com.tunjid.treenav.MultiStackNav
@@ -48,12 +47,12 @@ interface ListingStateHolderFactory {
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: ListingDetailRoute,
-    ): ActualEmployeeListStateHolder
+    ): ActualListingDetailStateHolder
 }
 
-class ActualEmployeeListStateHolder @AssistedInject constructor(
+class ActualListingDetailStateHolder @AssistedInject constructor(
     listingRepository: ListingRepository,
-    imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     userRepository: UserRepository,
     byteSerializer: ByteSerializer,
     uiStateFlow: StateFlow<UiState>,
@@ -64,7 +63,7 @@ class ActualEmployeeListStateHolder @AssistedInject constructor(
     @Assisted route: ListingDetailRoute,
 ) : ListingDetailStateHolder by scope.listingDetailMutator(
     listingRepository = listingRepository,
-    imageRepository = imageRepository,
+    mediaRepository = mediaRepository,
     userRepository = userRepository,
     byteSerializer = byteSerializer,
     uiStateFlow = uiStateFlow,
@@ -76,7 +75,7 @@ class ActualEmployeeListStateHolder @AssistedInject constructor(
 
 private fun CoroutineScope.listingDetailMutator(
     listingRepository: ListingRepository,
-    imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     userRepository: UserRepository,
     byteSerializer: ByteSerializer,
     uiStateFlow: StateFlow<UiState>,
@@ -87,15 +86,17 @@ private fun CoroutineScope.listingDetailMutator(
 ) = actionStateFlowProducer<Action, State>(
     initialState = byteSerializer.restoreState(savedState) ?: State(
         currentQuery = route.initialQuery,
-        initialIndex = route.initialIndex,
         listingItems = buildTiledList {
             addAll(
                 query = route.initialQuery,
-                items = route.startingMediaUrls.map(ListingItem::Preview)
+                items = route.startingMediaUrls.mapIndexed(ListingItem::Preview)
             )
         }
     ),
     mutationFlows = listOf(
+        mediaRepository.countMutations(
+            listingId = route.listingId
+        ),
         fetchListingMutations(
             listingId = route.listingId,
             listingRepository = listingRepository,
@@ -115,7 +116,7 @@ private fun CoroutineScope.listingDetailMutator(
                 )
 
                 is Action.LoadImagesAround -> action.flow.paginationMutations(
-                    imageRepository = imageRepository
+                    mediaRepository = mediaRepository
                 )
             }
         }
@@ -136,20 +137,26 @@ private fun fetchListingMutations(
         )
     }
 
+private fun MediaRepository.countMutations(
+    listingId: String
+): Flow<Mutation<State>> =
+    mediaAvailable(listingId)
+        .mapToMutation { copy(mediaAvailable = it) }
+
+
 context(SuspendingStateHolder<State>)
 private suspend fun Flow<Action.LoadImagesAround>.paginationMutations(
-    imageRepository: ImageRepository
+    mediaRepository: MediaRepository
 ): Flow<Mutation<State>> =
     map { it.query }
-        .toPivotedTileInputs(imagesPivotRequest())
+        .toPivotedTileInputs(mediaPivotRequest())
         .toTiledList(
-            imageRepository.imageListTiler(
+            mediaRepository.mediaListTiler(
                 startingQuery = state().currentQuery
             )
         )
-        .mapToMutation { images ->
-            images.distinctBy { }
-            copy(listingItems = images.distinctBy(Image::url).map(ListingItem::Loaded))
+        .mapToMutation { medias ->
+            copy(listingItems = medias.distinctBy(ListingItem::url))
         }
 
 private fun StateFlow<UiState>.paneMutations(): Flow<Mutation<State>> =
@@ -162,10 +169,10 @@ private fun StateFlow<UiState>.paneMutations(): Flow<Mutation<State>> =
             )
         }
 
-private fun imagesPivotRequest() = PivotRequest<ImageQuery, Image>(
+private fun mediaPivotRequest() = PivotRequest<MediaQuery, ListingItem>(
     onCount = 3,
     offCount = 4,
-    comparator = ImageQueryComparator,
+    comparator = MediaQueryComparator,
     previousQuery = {
         if ((offset - limit) < 0) null
         else copy(offset = offset - limit)
@@ -175,14 +182,23 @@ private fun imagesPivotRequest() = PivotRequest<ImageQuery, Image>(
     }
 )
 
-private fun ImageRepository.imageListTiler(
-    startingQuery: ImageQuery
-) = listTiler(
+private fun MediaRepository.mediaListTiler(
+    startingQuery: MediaQuery
+): ListTiler<MediaQuery, ListingItem> = listTiler(
     order = Tile.Order.PivotSorted(
         query = startingQuery,
-        comparator = ImageQueryComparator,
+        comparator = MediaQueryComparator,
     ),
-    fetcher = ::images
+    fetcher = { query ->
+        media(query).map { media ->
+            media.mapIndexed { index, image ->
+                ListingItem.Loaded(
+                    index = query.offset.toInt() + index,
+                    media = image,
+                )
+            }
+        }
+    }
 )
 
-private val ImageQueryComparator = compareBy(ImageQuery::offset)
+private val MediaQueryComparator = compareBy(MediaQuery::offset)

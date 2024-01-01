@@ -28,6 +28,6 @@ inline fun <In, Deferred, Out> deferredFetch(
     deferredFetcher: (In) -> Flow<Deferred>,
     crossinline combiner: (In, Deferred) -> Out
 ): Flow<Out> =
-    deferredFetcher(itemIn).map { images ->
-        combiner(itemIn, images)
+    deferredFetcher(itemIn).map { medias ->
+        combiner(itemIn, medias)
     }

@@ -6,11 +6,12 @@ import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailStateHolder
 import com.tunjid.feature.detail.ListingStateHolderFactory
 import com.tunjid.feature.detail.State
-import com.tunjid.listing.data.model.ImageQuery
+import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.scaffold.adaptive.ExternalRoute
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
@@ -39,11 +40,9 @@ data class ListingDetailRoute(
 
     val listingId get() = routeParams.pathArgs.getValue("listingId")
 
-    val initialIndex get() = routeParams.queryParams["initialIndex"]?.firstOrNull()?.toIntOrNull()
-
     val startingMediaUrls get() = routeParams.queryParams["url"] ?: emptyList()
 
-    val initialQuery = ImageQuery(
+    val initialQuery = MediaQuery(
         listingId = listingId,
         offset = routeParams.queryParams["pageOffset"]?.first()?.toLongOrNull() ?: 0L,
         limit = routeParams.queryParams["pageLimit"]?.first()?.toLongOrNull() ?: 4L,
@@ -83,7 +82,8 @@ object ListingDetailModule {
     @IntoMap
     @Provides
     @StringKey(ListingDetailRoutePattern)
-    fun archiveListRouteParser(): UrlRouteMatcher<AdaptiveRoute> =
+    @UrlRouteMatcherBinding
+    fun archiveListRouteParser(): UrlRouteMatcher<@JvmSuppressWildcards AdaptiveRoute> =
         urlRouteMatcher(
             routePattern = ListingDetailRoutePattern,
             routeMapper = ::ListingDetailRoute

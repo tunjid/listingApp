@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
@@ -173,11 +174,12 @@ fun Modifier.backPreviewBackgroundModifier(): Modifier = composed {
             animationSpec = spring(stiffness = Spring.StiffnessVeryLow)
         ) { value, _ -> elevation = value.dp }
     }
-    fillMaxSize()
-        .background(
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(elevation),
-            shape = RoundedCornerShape(16.dp)
-        )
+    background(
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(elevation),
+        shape = RoundedCornerShape(16.dp)
+    )
+        .clip(RoundedCornerShape(16.dp))
+
 }
 
 private const val BACK_PREVIEW_PADDING = 8

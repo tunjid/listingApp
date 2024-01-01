@@ -21,14 +21,18 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material.core)
+    implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.datastore.core.okio)
+    implementation(libs.androidx.media3.exoplayer)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.protobuf)
 
     implementation(libs.squareup.okio)
+
+    implementation(libs.coil.kt.compose)
 
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)

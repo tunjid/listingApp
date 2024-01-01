@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="host">Host</string>
+    <string name="property_description">%1$s in %2$s</string>
+    <string name="meet_your_host">Meet your host</string>
+    <string name="superhost">Superhost</string>
+    <string name="item_count">%1$s/%2$s</string>
 </resources>

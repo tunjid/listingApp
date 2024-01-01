@@ -19,15 +19,25 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.layout
@@ -201,6 +211,7 @@ private fun BoxScope.DraggableThumb(
                 .width(thumbWidth)
                 .height(DraggableDividerSizeDp),
             shape = RoundedCornerShape(DraggableDividerSizeDp),
+            color = MaterialTheme.colorScheme.onSurface,
             onClick = {
                 scope.launch { paneAnchorState.moveTo(PaneAnchor.OneThirds) }
             },
@@ -208,11 +219,12 @@ private fun BoxScope.DraggableThumb(
             Image(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .scale(0.6f),
-                imageVector = Icons.Filled.Done,
+                    .rotate(degrees = 90f)
+                    .scale(scale = 0.6f),
+                imageVector = Icons.Filled.UnfoldMore,
                 contentDescription = "Drag",
                 colorFilter = ColorFilter.tint(
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.surface
                 )
             )
         }
@@ -399,7 +411,7 @@ private val ContentSizeSpring = adaptiveSpringSpec(
 )
 
 private val ContainerSizeSpring = spring(
-    stiffness = Spring.StiffnessHigh,
+    stiffness = Spring.StiffnessMediumLow,
     visibilityThreshold = Dp.VisibilityThreshold
 )
 

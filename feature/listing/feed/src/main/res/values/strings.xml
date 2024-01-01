@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="listing_app">Home listings</string>
-    <string name="no_homes">There are no homes matching the current query</string>
-    <string name="search_error">There was an error fetching homes</string>
+    <string name="listing_app">Vacation rentals</string>
+    <string name="no_homes">There are no listings matching the current query</string>
+    <string name="search_error">There was an error fetching listings</string>
+    <string name="gallery">Gallery</string>
 </resources>

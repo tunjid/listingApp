@@ -1,7 +1,6 @@
 package com.tunjid.scaffold
 
 import androidx.compose.animation.core.spring
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.AdaptiveRoute
@@ -33,9 +32,4 @@ internal fun <T> adaptiveSpringSpec(visibilityThreshold: T) = spring(
     dampingRatio = 0.8f,
     stiffness = 600f,
     visibilityThreshold = visibilityThreshold
-)
-
-data class ImageArgs(
-    val url: String?,
-    val contentScale: ContentScale
 )
