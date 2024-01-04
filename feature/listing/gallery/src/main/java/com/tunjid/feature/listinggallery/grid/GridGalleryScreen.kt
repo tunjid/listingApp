@@ -16,7 +16,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.tunjid.listing.feature.listing.gallery.R
 import com.tunjid.scaffold.adaptive.rememberSharedContent
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
@@ -35,6 +37,7 @@ fun GridGalleryScreen(
 ) {
     ScreenUiState(
         UiState(
+            toolbarTitle = stringResource(R.string.gallery),
             toolbarShows = true,
             fabShows = false,
             navVisibility = NavVisibility.Gone,
@@ -81,7 +84,6 @@ fun GridGalleryScreen(
                         Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .animateItemPlacement()
                             .clickable {
                                 if (item is GalleryItem.Loaded) actions(
                                     Action.Navigation.FullScreen(
