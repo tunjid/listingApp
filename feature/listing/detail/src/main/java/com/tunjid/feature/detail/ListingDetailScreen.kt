@@ -69,9 +69,6 @@ fun ListingDetailScreen(
 ) {
     ScreenUiState(
         UiState(
-            toolbarOverlaps = true,
-            toolbarShows = false,
-            fabShows = false,
             navVisibility = NavVisibility.Gone,
             insetFlags = InsetFlags.NONE,
             statusBarColor = Color.Black.copy(alpha = 0.4f).toArgb()

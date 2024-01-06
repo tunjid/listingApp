@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tunjid.scaffold.globalui.slices.ToolbarItem
 import java.util.UUID
 
 sealed class NavMode {
@@ -58,10 +57,6 @@ operator fun MessageQueue.minus(message: Message): MessageQueue = copy(
 )
 
 data class UiState(
-    val toolbarItems: List<ToolbarItem> = listOf(),
-    val toolbarShows: Boolean = false,
-    val toolbarOverlaps: Boolean = false,
-    val toolbarTitle: CharSequence = "",
     val fabIcon: ImageVector = Icons.Default.Done,
     val fabShows: Boolean = false,
     val fabExtended: Boolean = true,
@@ -82,8 +77,6 @@ data class UiState(
     val backStatus: BackStatus = BackStatus.None,
     val paneAnchor: PaneAnchor = PaneAnchor.Zero,
     val fabClickListener: (Unit) -> Unit = emptyCallback(),
-    val toolbarMenuClickListener: (ToolbarItem) -> Unit = emptyCallback(),
-    val altToolbarMenuClickListener: (ToolbarItem) -> Unit = emptyCallback(),
     val snackbarMessageConsumer: (Message) -> Unit = emptyCallback(),
 )
 

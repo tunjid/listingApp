@@ -24,8 +24,6 @@ fun FullscreenGalleryScreen(
 ) {
     ScreenUiState(
         UiState(
-            toolbarShows = false,
-            toolbarOverlaps = true,
             fabShows = false,
             navVisibility = NavVisibility.Gone,
             insetFlags = InsetFlags.NONE

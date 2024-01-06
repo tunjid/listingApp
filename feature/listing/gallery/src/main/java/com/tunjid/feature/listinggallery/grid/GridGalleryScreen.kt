@@ -43,9 +43,6 @@ fun GridGalleryScreen(
 ) {
     ScreenUiState(
         UiState(
-            toolbarTitle = stringResource(R.string.gallery),
-            toolbarShows = false,
-            toolbarOverlaps = true,
             fabShows = false,
             navVisibility = NavVisibility.Gone,
             insetFlags = InsetFlags.NONE

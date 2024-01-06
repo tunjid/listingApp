@@ -52,9 +52,8 @@ internal fun AppNavRail(
     val statusBarSize = with(LocalDensity.current) {
         containerState.statusBarSize.toDp()
     } countIf containerState.insetDescriptor.hasTopInset
-    val toolbarHeight = windowSizeClass.toolbarSize() countIf !containerState.toolbarOverlaps
 
-    val topClearance by animateDpAsState(targetValue = statusBarSize + toolbarHeight)
+    val topClearance by animateDpAsState(targetValue = statusBarSize)
     val navRailWidth by animateDpAsState(
         targetValue = windowSizeClass.navRailWidth() countIf containerState.navRailVisible
     )

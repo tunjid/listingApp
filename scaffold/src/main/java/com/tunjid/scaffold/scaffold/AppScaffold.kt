@@ -56,10 +56,6 @@ fun Scaffold(
                     globalUiStateHolder = globalUiStateHolder,
                     navStateHolder = navStateHolder,
                 )
-                AppToolbar(
-                    globalUiStateHolder = globalUiStateHolder,
-                    navStateHolder = navStateHolder,
-                )
                 SavedStateAdaptiveContentHost(
                     routeParser = routeParser,
                     navState = navStateHolder.state,

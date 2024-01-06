@@ -62,7 +62,6 @@ import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.RouteContainerPositionalState
-import com.tunjid.scaffold.globalui.toolbarSize
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -352,16 +351,6 @@ private fun routeContainerPadding(
         animationSpec = ContainerSizeSpring
     )
 
-    val statusBarSize = with(LocalDensity.current) {
-        state.statusBarSize.toDp()
-    } countIf state.insetDescriptor.hasTopInset
-
-    val toolbarHeight = state.windowSizeClass.toolbarSize() countIf !state.toolbarOverlaps
-    val topClearance by animateDpAsState(
-        targetValue = statusBarSize + toolbarHeight,
-        animationSpec = ContainerSizeSpring
-    )
-
     val navRailSize = state.windowSizeClass.navRailWidth() countIf state.navRailVisible
 
     val startClearance by animateDpAsState(
@@ -370,7 +359,6 @@ private fun routeContainerPadding(
     )
 
     paddingValues[0] = startClearance
-    paddingValues[1] = topClearance
     paddingValues[3] = bottomClearance
 
     return paddingValues

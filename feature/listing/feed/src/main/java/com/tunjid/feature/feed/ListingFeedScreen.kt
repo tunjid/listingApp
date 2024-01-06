@@ -63,8 +63,6 @@ fun ListingFeedScreen(
 ) {
     ScreenUiState(
         UiState(
-            toolbarShows = false,
-            toolbarOverlaps = true,
             fabShows = false,
             navVisibility = NavVisibility.Visible,
             insetFlags = InsetFlags.NONE
