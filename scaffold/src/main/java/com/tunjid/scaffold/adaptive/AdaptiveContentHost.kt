@@ -10,14 +10,18 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.unit.dp
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.scaffold.backPreviewModifier
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.RouteParser
@@ -167,7 +171,10 @@ private fun SavedStateAdaptiveContentHost.Render(
         when (val route = targetContainerState.currentRoute) {
             null -> Unit
             else -> Box(
-                modifier = modifierFor(targetContainerState)
+                modifier = modifierFor(
+                    containerState = targetContainerState,
+                    windowSizeClass = adaptedState.windowSizeClass
+                )
             ) {
                 CompositionLocalProvider(
                     LocalAdaptiveContentScope provides scope
@@ -231,10 +238,19 @@ private fun SavedStateAdaptiveContentHost.Render(
 
 @Composable
 private fun AnimatedVisibilityScope.modifierFor(
-    containerState: Adaptive.ContainerState
+    containerState: Adaptive.ContainerState,
+    windowSizeClass: WindowSizeClass,
 ) = when (containerState.container) {
     Adaptive.Container.Primary, Adaptive.Container.Secondary -> FillSizeModifier
         .background(color = MaterialTheme.colorScheme.surface)
+        .then(
+            when {
+                windowSizeClass > WindowSizeClass.COMPACT -> Modifier.clip(
+                    RoundedCornerShape(16.dp)
+                )
+                else -> Modifier
+            }
+        )
         .then(
             when (val enterAndExit = containerState.currentRoute?.transitionsFor(containerState)) {
                 null -> Modifier
