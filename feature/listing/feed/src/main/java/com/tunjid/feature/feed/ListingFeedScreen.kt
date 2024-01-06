@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -28,6 +31,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,11 +63,11 @@ fun ListingFeedScreen(
 ) {
     ScreenUiState(
         UiState(
-            toolbarTitle = stringResource(id = R.string.listing_app),
-            toolbarShows = true,
+            toolbarShows = false,
+            toolbarOverlaps = true,
             fabShows = false,
             navVisibility = NavVisibility.Visible,
-            insetFlags = InsetFlags.NO_BOTTOM
+            insetFlags = InsetFlags.NONE
         )
     )
     val gridState = rememberLazyGridState()
@@ -79,34 +83,45 @@ fun ListingFeedScreen(
             state = pullRefreshState
         )
     ) {
-        LazyVerticalGrid(
+        Column(
             modifier = Modifier.fillMaxSize(),
-            state = gridState,
-            columns = GridCells.Adaptive(300.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 8.dp,
-            )
         ) {
-            items(
-                items = state.listings,
-                key = FeedItem::id,
-                span = {
-                    actions(Action.LoadFeed.GridSize(maxLineSpan))
-                    GridItemSpan(currentLineSpan = 1)
-                },
-                itemContent = { feedItem ->
-                    FeedItemCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItemPlacement(),
-                        feedItem = feedItem,
-                        actions = actions,
-                    )
+            TopAppBar(
+                modifier = Modifier
+                    .windowInsetsPadding(WindowInsets.statusBars),
+                title = {
+                    Text(text = stringResource(id = R.string.listing_app))
                 }
             )
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                state = gridState,
+                columns = GridCells.Adaptive(300.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(
+                    horizontal = 16.dp,
+                    vertical = 8.dp,
+                )
+            ) {
+                items(
+                    items = state.listings,
+                    key = FeedItem::id,
+                    span = {
+                        actions(Action.LoadFeed.GridSize(maxLineSpan))
+                        GridItemSpan(currentLineSpan = 1)
+                    },
+                    itemContent = { feedItem ->
+                        FeedItemCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItemPlacement(),
+                            feedItem = feedItem,
+                            actions = actions,
+                        )
+                    }
+                )
+            }
         }
         PullRefreshIndicator(
             refreshing = state.isRefreshing,

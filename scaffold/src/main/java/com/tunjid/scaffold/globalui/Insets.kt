@@ -33,7 +33,7 @@ fun ComponentActivity.insetMutations(): Flow<Mutation<UiState>> {
                 )
                 // Consume insets so other views will not see them.
             }
-            insets.consumeSystemWindowInsets()
+            insets
         }
         awaitClose { }
     }
