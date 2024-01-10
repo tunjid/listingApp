@@ -21,6 +21,12 @@ The above provide a system where "first frame readiness" is guaranteed when navi
 navigation destinations, obviating the need for legacy APIs from View such as
 [`Activity.postponeEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition()) and [`Activity.startPostponedEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()).
 
+## App videos
+
+|                      Portrait orientation                      |                                  Landscape orientation                                   |
+|:--------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
+| ![portrait](./docs/media/portrait.gif) | ![landscape](./docs/media/landscape.gif) |
+
 ## Screens
 
 There are 4 screens in the app:
