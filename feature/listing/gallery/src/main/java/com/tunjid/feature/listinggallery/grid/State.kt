@@ -7,6 +7,7 @@ import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.tiler.TiledList
 import com.tunjid.tiler.emptyTiledList
+import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
 import com.tunjid.treenav.strings.routeString
 import kotlinx.serialization.Serializable
@@ -25,6 +26,12 @@ sealed class Action(val key: String) {
     }
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
+
+        data object Pop : Navigation() {
+            override val navigationMutation: NavigationMutation = {
+                navState.pop()
+            }
+        }
         data class FullScreen(
             val listingId: String,
             val url: String,

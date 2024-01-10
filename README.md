@@ -29,3 +29,36 @@ There are 4 screens in the app:
 * `ListingDetailScreen`: Detail screen in a canonical list-detail implementation. Has a paginated horizontal list for media displayed.
 * `GridGalleryScreen`: Grid gallery layout for media, it is paginated.
 * `PagerGalleryScreen`: Full screen paged gallery layout for media, it is paginated. Also implements drag to dismiss with `Modifier.Node`.
+
+All screens have the same state declaration:
+
+```kotlin
+@Composable
+fun FeatureScreen(
+    modifier: Modifier = Modifier,
+    state: State,
+    actions: (Action) -> Unit,
+)
+```
+
+Where `State` is an immutable data class, however a class backed by compose state is as effective.
+`actions` is an event sink commonly used by MVI frameworks and is a stable Compose parameter.
+
+Routing to the screen is defined higher up using remember retained semantics scoped to navigation:
+
+```kotlin
+    @Composable
+     fun FeatureRoute() {
+        val stateHolder = rememberRetainedStateHolder<ListingDetailStateHolder>(
+            route = this@FeatureRoute
+        )
+        FeatureScreen(
+            modifier = Modifier.backPreviewBackgroundModifier(),
+            state = stateHolder.state.collectAsStateWithLifecycle().value,
+            actions = stateHolder.accept
+        )
+    }
+```
+
+Here, based on navigation and UI state including predictive back progress, the `FeatureScreen` can
+be Composed.

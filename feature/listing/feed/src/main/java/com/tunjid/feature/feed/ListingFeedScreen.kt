@@ -124,7 +124,10 @@ fun ListingFeedScreen(
         PullRefreshIndicator(
             refreshing = state.isRefreshing,
             state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(64.dp)
         )
         EmptyView(
             status = state.syncStatus,

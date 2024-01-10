@@ -17,6 +17,10 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -54,6 +58,18 @@ fun GridGalleryScreen(
         TopAppBar(
             modifier = Modifier
                 .windowInsetsPadding(WindowInsets.statusBars),
+            navigationIcon = {
+                IconButton(
+                    modifier = Modifier
+                        .windowInsetsPadding(WindowInsets.statusBars),
+                    onClick = { actions(Action.Navigation.Pop) }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = ""
+                    )
+                }
+            },
             title = {
                 Text(text = stringResource(id = R.string.gallery))
             }
