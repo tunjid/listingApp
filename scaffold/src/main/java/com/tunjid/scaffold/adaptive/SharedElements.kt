@@ -32,11 +32,6 @@ fun thumbnailSharedElementKey(
     property: Any?
 ) = "thumbnail-$property"
 
-fun Modifier.sharedElementAware(
-    block: Modifier.() -> Unit
-) {
-
-}
 @Stable
 internal class SharedElementData<T>(
     private val key: Any,

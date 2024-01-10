@@ -56,6 +56,7 @@ internal fun SavedStateAdaptiveContentHost(
     uiState: StateFlow<UiState>,
     content: @Composable AdaptiveContentHost.() -> Unit
 ) {
+    // Root LookaheadScope used to anchor all shared element transitions
     LookaheadScope {
         val coroutineScope = rememberCoroutineScope()
         val saveableStateHolder = rememberSaveableStateHolder()
