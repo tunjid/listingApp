@@ -20,3 +20,12 @@ The above are used to implement a system design that supports
 The above provide a system where "first frame readiness" is guaranteed when navigating between
 navigation destinations, obviating the need for legacy APIs from View such as
 [`Activity.postponeEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition()) and [`Activity.startPostponedEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()).
+
+## Screens
+
+There are 4 screens in the app:
+
+* `ListingFeedScreen`: Vertical grid. Feed and list in a list-detail canonical layout implementation. Each feed item has a horizontal list of non paginated images.
+* `ListingDetailScreen`: Detail screen in a canonical list-detail implementation. Has a paginated horizontal list for media displayed.
+* `GridGalleryScreen`: Grid gallery layout for media, it is paginated.
+* `PagerGalleryScreen`: Full screen paged gallery layout for media, it is paginated. Also implements drag to dismiss with `Modifier.Node`.
