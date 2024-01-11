@@ -10,11 +10,14 @@ import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -60,6 +63,10 @@ internal class SharedElementData<T>(
 
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
         movableContentOf { state, modifier ->
+            val scope = LocalAdaptiveContentScope.current
+            val startKey = remember { scope?.key }
+            val currentKey by derivedStateOf { scope?.key }
+
             @Suppress("UNCHECKED_CAST")
             sharedElement(
                 // The shared element composable will be created by the first screen and reused by
@@ -67,9 +74,9 @@ internal class SharedElementData<T>(
                 state as T,
                 Modifier
                     .sharedElement(
-                        enabled = LocalAdaptiveContentScope.current.let { scope ->
-                            scope?.canAnimateSharedElements == true && scope.isCurrentlyShared(key)
-                        },
+                        enabled = scope?.canAnimateSharedElements == true
+                                && scope.isCurrentlyShared(key)
+                                && startKey != currentKey,
                         sharedElementData = this,
                     ) then modifier,
             )

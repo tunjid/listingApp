@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,6 +21,10 @@ internal class AnimatedAdaptiveContentScope(
     val adaptiveContentHost: AdaptiveContentHost,
     val animatedContentScope: AnimatedContentScope
 ) : Adaptive.ContainerScope, AnimatedVisibilityScope by animatedContentScope {
+
+    override val key: String by derivedStateOf {
+        "${containerState.currentRoute?.id}-${containerState.container}"
+    }
 
     override var containerState by mutableStateOf(containerState)
     override var canAnimateSharedElements: Boolean by mutableStateOf(

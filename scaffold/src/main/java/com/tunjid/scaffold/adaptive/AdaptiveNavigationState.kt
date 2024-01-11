@@ -25,6 +25,11 @@ object Adaptive {
     @Stable
     interface ContainerScope : AnimatedVisibilityScope {
 
+        /**
+         * Unique key to identify this scope
+         */
+        val key: String
+
         val containerState: ContainerState
 
         val canAnimateSharedElements: Boolean
