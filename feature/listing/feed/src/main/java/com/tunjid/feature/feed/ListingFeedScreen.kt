@@ -32,10 +32,12 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -87,6 +89,13 @@ fun ListingFeedScreen(
             TopAppBar(
                 modifier = Modifier
                     .windowInsetsPadding(WindowInsets.statusBars),
+                colors = TopAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent,
+                    navigationIconContentColor = Color.Transparent,
+                    titleContentColor = Color.Transparent,
+                    actionIconContentColor = Color.Transparent,
+                ),
                 title = {
                     Text(text = stringResource(id = R.string.listing_app))
                 }
