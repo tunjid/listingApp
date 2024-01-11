@@ -157,7 +157,7 @@ internal fun Modifier.backPreviewModifier(): Modifier =
             .pointerInput(Unit) {}
     }
 
-fun Modifier.backPreviewBackgroundModifier(): Modifier = composed {
+fun Modifier.backPreviewBackgroundModifier(): Modifier = this then composed {
     val scope = LocalAdaptiveContentScope.current
     if (scope?.containerState?.container != Adaptive.Container.TransientPrimary)
         return@composed this
