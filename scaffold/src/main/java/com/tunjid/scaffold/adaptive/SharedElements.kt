@@ -44,6 +44,7 @@ internal class SharedElementData<T>(
         vectorConverter = IntOffset.VectorConverter,
         animationSpec = spring(
             stiffness = Spring.StiffnessMediumLow,
+            dampingRatio = Spring.DampingRatioLowBouncy,
             visibilityThreshold = IntOffset.VisibilityThreshold
         )
     )
