@@ -10,7 +10,6 @@ import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -18,10 +17,8 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.intermediateLayout
 import androidx.compose.ui.unit.Constraints
@@ -97,36 +94,34 @@ internal class SharedElementData<T>(
 internal fun Modifier.sharedElement(
     enabled: Boolean,
     sharedElementData: SharedElementData<*>,
-): Modifier = composed {
-    val coroutineScope = rememberCoroutineScope()
+): Modifier = intermediateLayout { measurable, _ ->
     // TODO: Optimize the not enabled path
-    intermediateLayout { measurable, _ ->
-        val (width, height) = sharedElementData.sizeAnimation.updateTarget(
-            coroutineScope = coroutineScope,
-            targetValue = lookaheadSize,
+    val coroutineScope = this
+    val (width, height) = sharedElementData.sizeAnimation.updateTarget(
+        coroutineScope = coroutineScope,
+        targetValue = lookaheadSize,
+    )
+    val animatedConstraints = Constraints.fixed(width, height)
+    val placeable = measurable.measure(animatedConstraints)
+
+    layout(placeable.width, placeable.height) layout@{
+        val currentCoordinates = coordinates ?: return@layout placeable.place(x = 0, y = 0)
+        val targetOffset = lookaheadScopeCoordinates.localLookaheadPositionOf(
+            currentCoordinates
         )
-        val animatedConstraints = Constraints.fixed(width, height)
-        val placeable = measurable.measure(animatedConstraints)
+        val animatedOffset = sharedElementData.offsetAnimation.updateTarget(
+            coroutineScope,
+            targetOffset.round(),
+        )
+        val currentOffset = lookaheadScopeCoordinates.localPositionOf(
+            sourceCoordinates = currentCoordinates,
+            relativeToSource = Offset.Zero
+        ).round()
 
-        layout(placeable.width, placeable.height) layout@{
-            val currentCoordinates = coordinates ?: return@layout placeable.place(x = 0, y = 0)
-            val targetOffset = lookaheadScopeCoordinates.localLookaheadPositionOf(
-                currentCoordinates
-            )
-            val animatedOffset = sharedElementData.offsetAnimation.updateTarget(
-                coroutineScope,
-                targetOffset.round(),
-            )
-            val currentOffset = lookaheadScopeCoordinates.localPositionOf(
-                sourceCoordinates = currentCoordinates,
-                relativeToSource = Offset.Zero
-            ).round()
+        val (x, y) = animatedOffset - currentOffset
 
-            val (x, y) = animatedOffset - currentOffset
-
-            if (enabled) placeable.place(x = x, y = y)
-            else placeable.place(x = 0, y = 0)
-        }
+        if (enabled) placeable.place(x = x, y = y)
+        else placeable.place(x = 0, y = 0)
     }
 }
 
