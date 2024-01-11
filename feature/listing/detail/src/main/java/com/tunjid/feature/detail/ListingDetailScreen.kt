@@ -144,7 +144,7 @@ private fun ListingMediaPager(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9)
+            .aspectRatio(4f / 3)
     ) {
         HorizontalPager(
             modifier = Modifier
