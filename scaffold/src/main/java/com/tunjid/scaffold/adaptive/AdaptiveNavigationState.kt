@@ -32,8 +32,6 @@ object Adaptive {
 
         val containerState: ContainerState
 
-        val canAnimateSharedElements: Boolean
-
         fun isCurrentlyShared(key: Any): Boolean
 
         @Composable
@@ -70,6 +68,8 @@ object Adaptive {
         val container: Container?
         val adaptation: Adaptation
     }
+
+    internal val ContainerState.key get() = "${currentRoute?.id}-$container"
 
     /**
      * Describes how a route transitions after an adaptive change

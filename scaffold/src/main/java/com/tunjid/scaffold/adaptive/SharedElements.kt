@@ -10,8 +10,8 @@ import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,7 +34,6 @@ fun thumbnailSharedElementKey(
 
 @Stable
 internal class SharedElementData<T>(
-    private val key: Any,
     sharedElement: @Composable (T, Modifier) -> Unit,
     onRemoved: () -> Unit
 ) {
@@ -61,8 +60,12 @@ internal class SharedElementData<T>(
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
         movableContentOf { state, modifier ->
             val scope = LocalAdaptiveContentScope.current
-            val startKey = remember { scope?.key }
-            val currentKey by derivedStateOf { scope?.key }
+            val firstKey = remember { scope?.key }
+            var firstKeySeenCount by remember { mutableIntStateOf(0) }
+
+            LaunchedEffect(scope?.key) {
+                if (firstKey == scope?.key) ++firstKeySeenCount
+            }
 
             @Suppress("UNCHECKED_CAST")
             sharedElement(
@@ -71,9 +74,11 @@ internal class SharedElementData<T>(
                 state as T,
                 Modifier
                     .sharedElement(
-                        enabled = scope?.canAnimateSharedElements == true
-                                && scope.isCurrentlyShared(key)
-                                && startKey != currentKey,
+                        enabled = isRunning && when (scope?.key) {
+                            firstKey -> firstKeySeenCount > 1
+                            null -> false
+                            else -> true
+                        },
                         sharedElementData = this,
                     ) then modifier,
             )

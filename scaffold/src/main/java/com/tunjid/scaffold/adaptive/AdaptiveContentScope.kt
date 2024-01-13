@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import com.tunjid.scaffold.adaptive.Adaptive.key
 
 /**
  * An implementation of [Adaptive.ContainerScope] that supports animations and shared elements
@@ -22,14 +23,9 @@ internal class AnimatedAdaptiveContentScope(
     val animatedContentScope: AnimatedContentScope
 ) : Adaptive.ContainerScope, AnimatedVisibilityScope by animatedContentScope {
 
-    override val key: String by derivedStateOf {
-        "${containerState.currentRoute?.id}-${containerState.container}"
-    }
+    override val key: String by derivedStateOf { containerState.key }
 
     override var containerState by mutableStateOf(containerState)
-    override var canAnimateSharedElements: Boolean by mutableStateOf(
-        value = containerState.adaptation != Adaptive.Adaptation.PrimaryToTransient
-    )
 
     override fun isCurrentlyShared(key: Any): Boolean =
         adaptiveContentHost.isCurrentlyShared(key)

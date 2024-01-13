@@ -27,9 +27,6 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.RouteParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 
 @Stable
 internal interface AdaptiveContentHost {
@@ -127,7 +124,6 @@ private class SavedStateAdaptiveContentHost(
     ): @Composable (T, Modifier) -> Unit {
         val sharedElementData = keysToSharedElements.getOrPut(key) {
             SharedElementData(
-                key = key,
                 sharedElement = sharedElement,
                 onRemoved = { keysToSharedElements.remove(key) }
             )
@@ -147,7 +143,10 @@ private class SavedStateAdaptiveContentHost(
 private fun SavedStateAdaptiveContentHost.Render(
     slot: Adaptive.Slot,
 ) {
-    val containerTransition = updateTransition(adaptedState.containerStateFor(slot))
+    val containerTransition = updateTransition(
+        targetState = adaptedState.containerStateFor(slot),
+        label = "$slot-ContainerTransition",
+    )
     containerTransition.AnimatedContent(
         contentKey = { it.currentRoute?.id },
         transitionSpec = {
@@ -164,10 +163,6 @@ private fun SavedStateAdaptiveContentHost.Render(
         // While technically a backwards write, it stabilizes and ensures the values are
         // correct at first composition
         scope.containerState = targetContainerState
-        // Animate if not fully visible or by the effects to run later
-        scope.canAnimateSharedElements = scope.canAnimateSharedElements
-                || scope.isInPreview
-                || transition.targetState != EnterExitState.Visible
 
         when (val route = targetContainerState.currentRoute) {
             null -> Unit
@@ -188,33 +183,6 @@ private fun SavedStateAdaptiveContentHost.Render(
                                 if (!backstackIds.contains(route.id)) removeState(route.id)
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        LaunchedEffect(transition.isRunning, transition.currentState) {
-            // Change transitions can stop animating shared elements when the transition is complete
-            scope.canAnimateSharedElements = when {
-                transition.isRunning -> true
-                else -> when (containerTransition.targetState.adaptation) {
-                    is Adaptive.Adaptation.Change -> when (transition.currentState) {
-                        EnterExitState.PreEnter,
-                        EnterExitState.PostExit -> true
-
-                        EnterExitState.Visible -> false
-                    }
-
-                    is Adaptive.Adaptation.Swap -> {
-                        // Wait till the swap becomes a change, if at all
-                        snapshotFlow { containerTransition.targetState.adaptation }
-                            .filterIsInstance<Adaptive.Adaptation.Change>()
-                            .first()
-                        // Wait for shared elements to stop animating
-                        snapshotFlow { hasAnimatingSharedElements }
-                            .filter(false::equals)
-                            .first()
-                        false
                     }
                 }
             }
@@ -249,6 +217,7 @@ private fun AnimatedVisibilityScope.modifierFor(
                 windowSizeClass > WindowSizeClass.COMPACT -> Modifier.clip(
                     RoundedCornerShape(16.dp)
                 )
+
                 else -> Modifier
             }
         )
