@@ -99,11 +99,9 @@ internal class SharedElementData<T>(
 internal fun Modifier.sharedElement(
     enabled: Boolean,
     sharedElementData: SharedElementData<*>,
-): Modifier = intermediateLayout { measurable, _ ->
-    // TODO: Optimize the not enabled path
-    val coroutineScope = this
+): Modifier = this then intermediateLayout { measurable, _ ->
     val (width, height) = sharedElementData.sizeAnimation.updateTarget(
-        coroutineScope = coroutineScope,
+        coroutineScope = this,
         targetValue = lookaheadSize,
     )
     val animatedConstraints = Constraints.fixed(width, height)
@@ -115,18 +113,19 @@ internal fun Modifier.sharedElement(
             currentCoordinates
         )
         val animatedOffset = sharedElementData.offsetAnimation.updateTarget(
-            coroutineScope,
-            targetOffset.round(),
+            coroutineScope = this@intermediateLayout,
+            targetValue = targetOffset.round(),
         )
+
+        if (!enabled) return@layout placeable.place(x = 0, y = 0)
+
         val currentOffset = lookaheadScopeCoordinates.localPositionOf(
             sourceCoordinates = currentCoordinates,
             relativeToSource = Offset.Zero
         ).round()
 
         val (x, y) = animatedOffset - currentOffset
-
-        if (enabled) placeable.place(x = x, y = y)
-        else placeable.place(x = 0, y = 0)
+        placeable.place(x = x, y = y)
     }
 }
 
