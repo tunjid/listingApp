@@ -58,7 +58,7 @@ internal class AnimatedAdaptiveContentScope(
  * @param sharedElement the element to be shared
  */
 @Composable
-fun <T> rememberSharedElement(
+fun <T> sharedElementOf(
     key: Any,
     sharedElement: @Composable (T, Modifier) -> Unit
 ): @Composable (T, Modifier) -> Unit =

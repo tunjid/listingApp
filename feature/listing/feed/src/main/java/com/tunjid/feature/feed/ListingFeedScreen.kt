@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
-import com.tunjid.scaffold.adaptive.rememberSharedElement
+import com.tunjid.scaffold.adaptive.sharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
@@ -222,7 +222,7 @@ private fun FeedMediaPager(
         key = { index -> feedItem.medias[index].url }
     ) { index ->
         val media = feedItem.medias[index]
-        val thumbnail = rememberSharedElement<MediaArgs>(
+        val thumbnail = sharedElementOf<MediaArgs>(
             thumbnailSharedElementKey(media.url)
         ) { args, innerModifier ->
             Media(

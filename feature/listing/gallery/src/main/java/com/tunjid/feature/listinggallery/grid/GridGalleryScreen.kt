@@ -31,7 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tunjid.listing.feature.listing.gallery.R
-import com.tunjid.scaffold.adaptive.rememberSharedElement
+import com.tunjid.scaffold.adaptive.sharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
@@ -100,7 +100,7 @@ fun GridGalleryScreen(
                     Box(
                         modifier = Modifier.heightIn(max = GridItemSize)
                     ) {
-                        val thumbnail = rememberSharedElement<MediaArgs>(
+                        val thumbnail = sharedElementOf<MediaArgs>(
                             thumbnailSharedElementKey(item.url)
                         ) { args, innerModifier ->
                             Media(

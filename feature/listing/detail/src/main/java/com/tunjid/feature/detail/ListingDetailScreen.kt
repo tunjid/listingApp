@@ -49,7 +49,7 @@ import coil.compose.AsyncImage
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
 import com.tunjid.listing.feature.listing.detail.R
-import com.tunjid.scaffold.adaptive.rememberSharedElement
+import com.tunjid.scaffold.adaptive.sharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
@@ -153,7 +153,7 @@ private fun ListingMediaPager(
             key = { index -> listingItems[index].url }
         ) { index ->
             val item = listingItems[index]
-            val thumbnail = rememberSharedElement<MediaArgs>(
+            val thumbnail = sharedElementOf<MediaArgs>(
                 thumbnailSharedElementKey(item.url)
             ) { args, innerModifier ->
                 Media(
