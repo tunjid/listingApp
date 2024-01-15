@@ -74,11 +74,11 @@ fun <T> sharedElementOf(
             // Allow shared elements in the primary or transient primary content only
             Adaptive.Container.Primary -> when {
                 // Show a blank space for shared elements between the destinations
-                scope.isInPreview && scope.isCurrentlyShared(key) -> { _, modifier ->
+                scope.isPreviewingBack && scope.isCurrentlyShared(key) -> { _, modifier ->
                     Box(modifier)
                 }
                 // If previewing and it won't be shared, show the item as is
-                scope.isInPreview -> sharedElement
+                scope.isPreviewingBack -> sharedElement
                 // Share the element
                 else -> scope.rememberSharedElement(
                     key = key,
@@ -99,6 +99,6 @@ internal val LocalAdaptiveContentScope = staticCompositionLocalOf<Adaptive.Conta
     null
 }
 
-internal val Adaptive.ContainerScope.isInPreview: Boolean
+internal val Adaptive.ContainerScope.isPreviewingBack: Boolean
     get() = containerState.container == Adaptive.Container.Primary
             && containerState.adaptation == Adaptive.Adaptation.PrimaryToTransient
