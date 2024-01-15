@@ -31,7 +31,7 @@ internal class AnimatedAdaptiveContentScope(
         adaptiveContentHost.isCurrentlyShared(key)
 
     @Composable
-    override fun <T> rememberSharedElement(
+    override fun <T> sharedElementOf(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
@@ -80,13 +80,13 @@ fun <T> sharedElementOf(
                 // If previewing and it won't be shared, show the item as is
                 scope.isPreviewingBack -> sharedElement
                 // Share the element
-                else -> scope.rememberSharedElement(
+                else -> scope.sharedElementOf(
                     key = key,
                     sharedElement = sharedElement
                 )
             }
             // Share the element when in the transient container
-            Adaptive.Container.TransientPrimary -> scope.rememberSharedElement(
+            Adaptive.Container.TransientPrimary -> scope.sharedElementOf(
                 key = key,
                 sharedElement = sharedElement
             )
