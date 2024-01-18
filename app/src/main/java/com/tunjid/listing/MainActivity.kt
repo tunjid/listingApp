@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         modifier = Modifier,
-                        routeParser = listingApp.routeParser,
+                        adaptiveRouter = listingApp.adaptiveRouter,
                         navStateHolder = listingApp.navigationStateHolder,
                         globalUiStateHolder = listingApp.globalUiStateHolder,
                     )

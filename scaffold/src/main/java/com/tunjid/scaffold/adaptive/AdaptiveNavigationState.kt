@@ -13,6 +13,7 @@ import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.slices.RouteContainerPositionalState
 import com.tunjid.scaffold.globalui.slices.routeContainerState
 import com.tunjid.scaffold.navigation.UnknownRoute
+import com.tunjid.treenav.strings.Route
 
 /**
  * Namespace for adaptive layout changes in an app
@@ -42,7 +43,7 @@ object Adaptive {
     }
 
     /**
-     * A layout in the hierarchy that hosts an [AdaptiveRoute]
+     * A layout in the hierarchy that hosts an [AdaptiveRouteConfiguration]
      */
     enum class Container {
         Primary, Secondary, TransientPrimary;
@@ -53,7 +54,7 @@ object Adaptive {
     }
 
     /**
-     * A spot taken by an [AdaptiveRoute] that may be moved in from [Container] to [Container]
+     * A spot taken by an [AdaptiveRouteConfiguration] that may be moved in from [Container] to [Container]
      */
     @JvmInline
     internal value class Slot(val index: Int)
@@ -63,8 +64,8 @@ object Adaptive {
      */
     @Stable
     sealed interface ContainerState {
-        val currentRoute: AdaptiveRoute?
-        val previousRoute: AdaptiveRoute?
+        val currentRoute: Route?
+        val previousRoute: Route?
         val container: Container?
         val adaptation: Adaptation
     }
@@ -84,8 +85,8 @@ object Adaptive {
      */
     internal data class SlotContainerState(
         val slot: Slot?,
-        override val currentRoute: AdaptiveRoute?,
-        override val previousRoute: AdaptiveRoute?,
+        override val currentRoute: Route?,
+        override val previousRoute: Route?,
         override val container: Container?,
         override val adaptation: Adaptation,
     ) : ContainerState
@@ -139,7 +140,7 @@ object Adaptive {
         /**
          * A mapping of [Container] to the routes in them
          */
-        val containersToRoutes: Map<Container, AdaptiveRoute?>,
+        val containersToRoutes: Map<Container, Route?>,
         /**
          * A mapping of route ids to the adaptive slots they are currently in.
          */
@@ -147,7 +148,7 @@ object Adaptive {
         /**
          * A mapping of adaptive container to the routes that were last in them.
          */
-        val previousContainersToRoutes: Map<Container, AdaptiveRoute?>,
+        val previousContainersToRoutes: Map<Container, Route?>,
         /**
          * A set of route ids that may be returned to.
          */
@@ -205,14 +206,14 @@ internal fun Adaptive.NavigationState.slotFor(
 }
 
 internal fun Adaptive.NavigationState.containerFor(
-    route: AdaptiveRoute
+    route: Route
 ): Adaptive.Container? = containersToRoutes.firstNotNullOfOrNull { (container, containerRoute) ->
     if (containerRoute?.id == route.id) container else null
 }
 
 internal fun Adaptive.NavigationState.routeFor(
     slot: Adaptive.Slot
-): AdaptiveRoute? = routeIdsToAdaptiveSlots.firstNotNullOfOrNull { (routeId, routeSlot) ->
+): Route? = routeIdsToAdaptiveSlots.firstNotNullOfOrNull { (routeId, routeSlot) ->
     if (routeSlot == slot) containersToRoutes.firstNotNullOfOrNull { (_, route) ->
         if (route?.id == routeId) route
         else null
@@ -222,4 +223,4 @@ internal fun Adaptive.NavigationState.routeFor(
 
 internal fun Adaptive.NavigationState.routeFor(
     container: Adaptive.Container
-): AdaptiveRoute? = containersToRoutes[container]
+): Route? = containersToRoutes[container]

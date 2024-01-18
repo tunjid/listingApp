@@ -1,6 +1,7 @@
 package com.tunjid.feature.listinggallery.grid
 
-import com.tunjid.feature.listinggallery.grid.di.GridGalleryRoute
+import com.tunjid.feature.listinggallery.grid.di.initialQuery
+import com.tunjid.feature.listinggallery.grid.di.startingMediaUrls
 import com.tunjid.feature.listinggallery.mediaListTiler
 import com.tunjid.feature.listinggallery.mediaPivotRequest
 import com.tunjid.listing.data.model.MediaQuery
@@ -21,6 +22,7 @@ import com.tunjid.tiler.buildTiledList
 import com.tunjid.tiler.distinctBy
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
+import com.tunjid.treenav.strings.Route
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -41,7 +43,7 @@ interface GridGalleryStateHolderFactory {
     fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
-        route: GridGalleryRoute,
+        route: Route,
     ): ActualGridGalleryStateHolder
 }
 
@@ -51,8 +53,8 @@ class ActualGridGalleryStateHolder @AssistedInject constructor(
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
-    @Assisted route: GridGalleryRoute,
-) : GridGalleryStateHolder by scope.listingDetailMutator(
+    @Assisted route: Route,
+) : GridGalleryStateHolder by scope.gridGalleryMutator(
     mediaRepository = mediaRepository,
     navigationActions = navigationActions,
     byteSerializer = byteSerializer,
@@ -60,19 +62,19 @@ class ActualGridGalleryStateHolder @AssistedInject constructor(
     route = route
 )
 
-private fun CoroutineScope.listingDetailMutator(
+private fun CoroutineScope.gridGalleryMutator(
     mediaRepository: MediaRepository,
     navigationActions: (NavigationMutation) -> Unit,
     byteSerializer: ByteSerializer,
     savedState: ByteArray?,
-    route: GridGalleryRoute,
+    route: Route,
 ) = actionStateFlowProducer<Action, State>(
     initialState = byteSerializer.restoreState(savedState) ?: State(
-        currentQuery = route.initialQuery,
+        currentQuery = route.routeParams.initialQuery,
         items = buildTiledList {
             addAll(
-                query = route.initialQuery,
-                items = route.startingMediaUrls.mapIndexed(GalleryItem::Preview)
+                query = route.routeParams.initialQuery,
+                items = route.routeParams.startingMediaUrls.mapIndexed(GalleryItem::Preview)
             )
         }
     ),

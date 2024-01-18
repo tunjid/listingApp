@@ -7,11 +7,11 @@ import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.canPop
 import com.tunjid.treenav.minus
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.switch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -25,13 +25,16 @@ val MultiStackNav.navItems
         .map(StackNav::name)
         .mapIndexed { index, name ->
             NavItem(
-                name = name,
+                name = name.replace(
+                    oldValue = "/",
+                    newValue = ""
+                ),
                 icon = when {
-                    name.contains("listings") -> Icons.Filled.Apartment
-                    name.contains("favorites") -> Icons.Filled.FavoriteBorder
-                    name.contains("trips") -> Icons.AutoMirrored.Filled.AirplaneTicket
-                    name.contains("messages") -> Icons.Filled.ChatBubbleOutline
-                    name.contains("profile") -> Icons.Filled.AccountCircle
+                    "listings" in name -> Icons.Filled.Apartment
+                    "favorites" in name -> Icons.Filled.FavoriteBorder
+                    "trips" in name -> Icons.AutoMirrored.Filled.AirplaneTicket
+                    "messages" in name -> Icons.Filled.ChatBubbleOutline
+                    "profile" in name -> Icons.Filled.AccountCircle
                     else -> Icons.Filled.MoreVert
                 },
                 index = index,
@@ -46,13 +49,13 @@ fun MultiStackNav.navItemSelected(item: NavItem) =
 /**
  * Route diff between consecutive emissions of [MultiStackNav]
  */
-fun Flow<MultiStackNav>.removedRoutes(): Flow<List<AdaptiveRoute>> =
+fun Flow<MultiStackNav>.removedRoutes(): Flow<List<Route>> =
     distinctUntilChanged()
         .scan(initial = EmptyNavigationState to EmptyNavigationState) { navPair, newNav ->
             navPair.copy(first = navPair.second, second = newNav)
         }
         .map { (prevNav: MultiStackNav, currentNav: MultiStackNav) ->
-            (prevNav - currentNav).filterIsInstance<AdaptiveRoute>()
+            (prevNav - currentNav).filterIsInstance<Route>()
         }
 
 private fun MultiStackNav.popToRoot(indexToPop: Int) = copy(

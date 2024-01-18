@@ -7,6 +7,7 @@ import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.adaptive.Adaptive.Container.Primary
 import com.tunjid.scaffold.adaptive.Adaptive.Container.Secondary
 import com.tunjid.scaffold.adaptive.Adaptive.Container.TransientPrimary
+import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.isPreviewing
@@ -16,7 +17,7 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
-import com.tunjid.treenav.strings.RouteParser
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.traverse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -35,14 +36,15 @@ internal sealed class Action {
 }
 
 internal fun CoroutineScope.adaptiveNavigationStateMutator(
-    routeParser: RouteParser<AdaptiveRoute>,
+    adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
 ) = actionStateFlowProducer<Action, Adaptive.NavigationState>(
     initialState = Adaptive.NavigationState.Initial,
     started = SharingStarted.WhileSubscribed(3_000),
     mutationFlows = listOf(
-        routeParser.adaptiveNavigationStateMutations(
+        adaptiveNavigationStateMutations(
+            adaptiveRouter= adaptiveRouter,
             navStateFlow = navStateFlow,
             uiStateFlow = uiStateFlow
         )
@@ -64,7 +66,8 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
  * Adapts the [MultiStackNav] navigation state to one best optimized for display in the current
  * UI window configuration.
  */
-private fun RouteParser<AdaptiveRoute>.adaptiveNavigationStateMutations(
+private fun adaptiveNavigationStateMutations(
+    adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>
 ): Flow<Mutation<Adaptive.NavigationState>> = combine(
@@ -72,12 +75,19 @@ private fun RouteParser<AdaptiveRoute>.adaptiveNavigationStateMutations(
     flow2 = uiStateFlow.distinctUntilChangedBy {
         listOf(it.backStatus.isPreviewing, it.routeContainerState)
     },
-    transform = this::adaptiveNavigationState
+    transform = { navState, uiState ->
+        adaptiveNavigationState(
+            adaptiveRouter = adaptiveRouter,
+            multiStackNav = navState,
+            uiState = uiState
+        )
+    }
 )
     .distinctUntilChanged()
     .scan(
         initial = Adaptive.NavigationState.Initial.adaptTo(
             new = adaptiveNavigationState(
+                adaptiveRouter = adaptiveRouter,
                 multiStackNav = navStateFlow.value,
                 uiState = uiStateFlow.value,
             )
@@ -89,7 +99,8 @@ private fun RouteParser<AdaptiveRoute>.adaptiveNavigationStateMutations(
         newState.copy(routeIdsAnimatingOut = routeIdsAnimatingOut)
     }
 
-private fun RouteParser<AdaptiveRoute>.adaptiveNavigationState(
+private fun adaptiveNavigationState(
+    adaptiveRouter: AdaptiveRouter,
     multiStackNav: MultiStackNav,
     uiState: UiState,
 ): Adaptive.NavigationState {
@@ -100,7 +111,7 @@ private fun RouteParser<AdaptiveRoute>.adaptiveNavigationState(
     } ?: multiStackNav.primaryRoute
 
     // Parse the secondary route from the primary route
-    val secondaryRoute = primaryRoute.secondaryRoute?.id?.let(this::parse)
+    val secondaryRoute = adaptiveRouter.secondary(primaryRoute)
 
     return Adaptive.NavigationState(
         containersToRoutes = mapOf(
@@ -223,7 +234,7 @@ private fun Adaptive.NavigationState.prune(): Adaptive.NavigationState = copy(
     }
 )
 
-private val MultiStackNav.primaryRoute: AdaptiveRoute
-    get() = current as? AdaptiveRoute ?: UnknownRoute()
+private val MultiStackNav.primaryRoute: Route
+    get() = current as? Route ?: UnknownRoute(path = "404")
 
-private val MultiStackNav.primaryRouteOnBackPress: AdaptiveRoute? get() = pop().current as? AdaptiveRoute
+private val MultiStackNav.primaryRouteOnBackPress: Route? get() = pop().current as? Route

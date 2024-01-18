@@ -1,6 +1,8 @@
 package com.tunjid.feature.detail
 
-import com.tunjid.feature.detail.di.ListingDetailRoute
+import com.tunjid.feature.detail.di.initialQuery
+import com.tunjid.feature.detail.di.listingId
+import com.tunjid.feature.detail.di.startingMediaUrls
 import com.tunjid.listing.data.model.ListingRepository
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.data.model.MediaRepository
@@ -29,6 +31,7 @@ import com.tunjid.tiler.listTiler
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.strings.Route
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -46,7 +49,7 @@ interface ListingStateHolderFactory {
     fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
-        route: ListingDetailRoute,
+        route: Route,
     ): ActualListingDetailStateHolder
 }
 
@@ -60,7 +63,7 @@ class ActualListingDetailStateHolder @AssistedInject constructor(
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
-    @Assisted route: ListingDetailRoute,
+    @Assisted route: Route,
 ) : ListingDetailStateHolder by scope.listingDetailMutator(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
@@ -82,23 +85,23 @@ private fun CoroutineScope.listingDetailMutator(
     navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (NavigationMutation) -> Unit,
     savedState: ByteArray?,
-    route: ListingDetailRoute,
-) = actionStateFlowProducer<Action, State>(
+    route: Route,
+): ActionStateProducer<Action, StateFlow<State>> = actionStateFlowProducer(
     initialState = byteSerializer.restoreState(savedState) ?: State(
-        currentQuery = route.initialQuery,
+        currentQuery = route.routeParams.initialQuery,
         listingItems = buildTiledList {
             addAll(
-                query = route.initialQuery,
-                items = route.startingMediaUrls.mapIndexed(ListingItem::Preview)
+                query = route.routeParams.initialQuery,
+                items = route.routeParams.startingMediaUrls.mapIndexed(ListingItem::Preview)
             )
         }
     ),
     mutationFlows = listOf(
         mediaRepository.countMutations(
-            listingId = route.listingId
+            listingId = route.routeParams.listingId
         ),
         fetchListingMutations(
-            listingId = route.listingId,
+            listingId = route.routeParams.listingId,
             listingRepository = listingRepository,
             userRepository = userRepository
         ),

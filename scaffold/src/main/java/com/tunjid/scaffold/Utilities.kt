@@ -3,11 +3,11 @@ package com.tunjid.scaffold
 import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.current
+import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -19,7 +19,7 @@ infix fun Dp.countIf(condition: Boolean) = if (condition) this else 0.dp
  * Updates [State] with whether it is the primary navigation container
  */
 fun <State> StateFlow<MultiStackNav>.isInPrimaryNavMutations(
-    route: AdaptiveRoute,
+    route: Route,
     mutation: State.(Boolean) -> State,
 ): Flow<Mutation<State>> =
     map { route.id == it.current?.id }

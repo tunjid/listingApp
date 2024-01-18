@@ -1,20 +1,20 @@
 package com.tunjid.feature.feed.di
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.feed.ListingFeedScreen
 import com.tunjid.feature.feed.ListingFeedStateHolder
 import com.tunjid.feature.feed.ListingFeedStateHolderFactory
 import com.tunjid.feature.feed.State
+import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.di.downcast
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
-import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.UrlRouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -28,47 +28,21 @@ import dagger.multibindings.StringKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.subclass
 
-private const val ListingFeedRoutePattern = "listings"
+private const val RoutePattern = "/listings"
 private const val DefaultItemsPerQuery = 10L
 
 @Serializable
-data class ListingFeedRoute(
+internal data class ListingFeedRoute(
     override val routeParams: SerializedRouteParams
-) : AdaptiveRoute {
+) : Route()
 
-    val limit
-        get() = routeParams.queryParams["limit"]?.firstOrNull()?.toLongOrNull()
-            ?: DefaultItemsPerQuery
+internal val RouteParams.limit
+    get() = queryParams["limit"]?.firstOrNull()?.toLongOrNull()
+        ?: DefaultItemsPerQuery
 
-    val offset get() = routeParams.queryParams["offset"]?.firstOrNull()?.toLongOrNull() ?: 0L
+internal val RouteParams.offset get() = queryParams["offset"]?.firstOrNull()?.toLongOrNull() ?: 0L
 
-    val propertyType get() = routeParams.queryParams["propertyType"]?.firstOrNull()
-
-    @Composable
-    override fun Content() {
-        val stateHolder = rememberRetainedStateHolder<ListingFeedStateHolder>(
-            route = this@ListingFeedRoute
-        )
-        ListingFeedScreen(
-            modifier = Modifier.backPreviewBackgroundModifier(),
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
-        )
-    }
-}
-
-@Composable
-private fun ListingFeedRoute(route: ListingFeedRoute) {
-    val stateHolder = rememberRetainedStateHolder<ListingFeedStateHolder>(
-        route = route
-    )
-    ListingFeedScreen(
-        modifier = Modifier.backPreviewBackgroundModifier(),
-        state = stateHolder.state.collectAsStateWithLifecycle().value,
-        actions = stateHolder.accept
-    )
-}
-
+internal val RouteParams.propertyType get() = queryParams["propertyType"]?.firstOrNull()
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -82,13 +56,26 @@ object ListingFeedModule {
 
     @IntoMap
     @Provides
-    @StringKey(ListingFeedRoutePattern)
-    @UrlRouteMatcherBinding
-    fun listingFeedRouteParser(): UrlRouteMatcher<@JvmSuppressWildcards AdaptiveRoute> =
+    @StringKey(RoutePattern)
+    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
         urlRouteMatcher(
-            routePattern = ListingFeedRoutePattern,
+            routePattern = RoutePattern,
             routeMapper = ::ListingFeedRoute
         )
+
+    @IntoMap
+    @Provides
+    @StringKey(RoutePattern)
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
+        val stateHolder = rememberRetainedStateHolder<ListingFeedStateHolder>(
+            route = route
+        )
+        ListingFeedScreen(
+            modifier = Modifier.backPreviewBackgroundModifier(),
+            state = stateHolder.state.collectAsStateWithLifecycle().value,
+            actions = stateHolder.accept
+        )
+    }
 
     @IntoMap
     @Provides

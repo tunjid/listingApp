@@ -1,25 +1,31 @@
 package com.tunjid.scaffold.di
 
 import android.content.Context
+import androidx.compose.runtime.Composable
+import com.tunjid.mutator.Mutation
+import com.tunjid.scaffold.ByteSerializable
+import com.tunjid.scaffold.ByteSerializer
+import com.tunjid.scaffold.DelegatingByteSerializer
+import com.tunjid.scaffold.adaptive.Adaptive
+import com.tunjid.scaffold.adaptive.AdaptiveRouteConfiguration
+import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.ActualLifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.Lifecycle
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
+import com.tunjid.scaffold.navigation.RouteNotFound
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.mutator.Mutation
-import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.DelegatingByteSerializer
-import com.tunjid.scaffold.fromBytes
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.strings.PathPattern
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
+import com.tunjid.treenav.strings.RouteTrie
 import com.tunjid.treenav.strings.UrlRouteMatcher
 import com.tunjid.treenav.strings.routeParserFrom
 import dagger.Binds
@@ -39,31 +45,39 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.protobuf.ProtoBuf
 import okio.Path
 import okio.Path.Companion.toPath
-import javax.inject.Qualifier
 import javax.inject.Singleton
 
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class UrlRouteMatcherBinding
-
 interface ScreenStateHolderCreator :
-        (@JvmSuppressWildcards CoroutineScope, ByteArray?, AdaptiveRoute) -> Any
+        (@JvmSuppressWildcards CoroutineScope, ByteArray?, Route) -> Any
 
-inline fun <reified Route : AdaptiveRoute> ((CoroutineScope, ByteArray?, Route) -> Any).downcast(): ScreenStateHolderCreator =
+inline fun <reified T : Route> ((CoroutineScope, ByteArray?, T) -> Any).downcast(): ScreenStateHolderCreator =
     object : ScreenStateHolderCreator {
-        override fun invoke(scope: CoroutineScope, savedState: ByteArray?, route: AdaptiveRoute): Any =
+        override fun invoke(
+            scope: CoroutineScope,
+            savedState: ByteArray?,
+            route: Route
+        ): Any =
             this@downcast(
                 scope,
                 savedState,
-                route as Route
+                route as T
             )
     }
 
-typealias SavedStateCache = (@JvmSuppressWildcards AdaptiveRoute) -> ByteArray?
+typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 
 data class SavedStateType(
     val apply: PolymorphicModuleBuilder<ByteSerializable>.() -> Unit
 )
+
+interface Router {
+    fun screenComposable(route: Route): @Composable () -> Unit
+}
+interface AdaptiveRouter: Router {
+    fun secondary(route: Route): Route?
+
+    fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions?
+}
 
 inline fun <reified T : ByteSerializable> ByteSerializer.restoreState(savedState: ByteArray?): T? {
     return try {
@@ -106,14 +120,38 @@ object ScaffoldModule {
     @Provides
     @Singleton
     fun routeParser(
-        @UrlRouteMatcherBinding
-        routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<AdaptiveRoute>>
-    ): RouteParser<@JvmSuppressWildcards AdaptiveRoute> {
+        routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<Route>>
+    ): RouteParser<@JvmSuppressWildcards Route> {
         val routeMatchers = routeMatcherMap
             .toList()
             .sortedWith(routeMatchingComparator())
-            .map(Pair<String, @kotlin.jvm.JvmSuppressWildcards UrlRouteMatcher<AdaptiveRoute>>::second)
+            .map(Pair<String, @kotlin.jvm.JvmSuppressWildcards UrlRouteMatcher<Route>>::second)
         return routeParserFrom(*(routeMatchers).toTypedArray())
+    }
+
+    @Provides
+    @Singleton
+    fun router(
+        routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveRouteConfiguration>,
+    ): AdaptiveRouter {
+        val configurationTrie = RouteTrie<AdaptiveRouteConfiguration>().apply {
+            routeConfigurationMap
+                .mapKeys { (template) -> PathPattern(template) }
+                .forEach(::set)
+        }
+
+        return object : AdaptiveRouter {
+            override fun secondary(route: Route): Route? =
+                configurationTrie[route]?.secondaryRoute(route)
+
+            override fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions? =
+                state.currentRoute?.let(configurationTrie::get)?.transitionsFor(state)
+
+
+            override fun screenComposable(route: Route): @Composable () -> Unit = {
+                configurationTrie[route]?.Render(route) ?: RouteNotFound()
+            }
+        }
     }
 
     @Provides
@@ -155,7 +193,7 @@ object ScaffoldModule {
 interface ScaffoldBindModule {
 
     @Multibinds
-    fun defaultRouteMatchers(): Map<String, @JvmSuppressWildcards UrlRouteMatcher<AdaptiveRoute>>
+    fun defaultRouteMatchers(): Map<String, @JvmSuppressWildcards UrlRouteMatcher<Route>>
 
     @Multibinds
     fun defaultSavedState(): Set<@JvmSuppressWildcards SavedStateType>
@@ -185,7 +223,7 @@ interface ScaffoldBindModule {
 }
 
 private fun routeMatchingComparator() =
-    compareBy<Pair<String, UrlRouteMatcher<AdaptiveRoute>>>(
+    compareBy<Pair<String, UrlRouteMatcher<Route>>>(
         // Order by number of path segments firs
         { (key) -> key.split("/").size },
         // Match more specific segments first, route params should be matched later

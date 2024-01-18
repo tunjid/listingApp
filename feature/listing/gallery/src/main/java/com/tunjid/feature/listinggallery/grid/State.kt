@@ -39,7 +39,7 @@ sealed class Action(val key: String) {
             override val navigationMutation: NavigationMutation = {
                 navState.push(
                     routeString(
-                        path = "listings/$listingId/gallery/pager",
+                        path = "/listings/$listingId/gallery/pager",
                         queryParams = mapOf(
                             "url" to listOf(url)
                         )

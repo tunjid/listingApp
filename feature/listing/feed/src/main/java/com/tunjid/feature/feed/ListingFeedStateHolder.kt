@@ -1,12 +1,14 @@
 package com.tunjid.feature.feed
 
-import com.tunjid.listing.data.model.MediaQuery
-import com.tunjid.listing.data.model.MediaRepository
+import com.tunjid.feature.feed.di.limit
+import com.tunjid.feature.feed.di.offset
+import com.tunjid.feature.feed.di.propertyType
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.data.model.ListingRepository
+import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.listing.data.withDeferred
 import com.tunjid.listing.sync.SyncManager
-import com.tunjid.feature.feed.di.ListingFeedRoute
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
@@ -24,11 +26,20 @@ import com.tunjid.tiler.distinctBy
 import com.tunjid.tiler.listTiler
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
+import com.tunjid.treenav.strings.Route
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.scan
 
 typealias ListingFeedStateHolder = ActionStateProducer<Action, StateFlow<State>>
 
@@ -37,7 +48,7 @@ interface ListingFeedStateHolderFactory {
     fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
-        route: ListingFeedRoute,
+        route: Route,
     ): ActualListingFeedStateHolder
 }
 
@@ -49,7 +60,7 @@ class ActualListingFeedStateHolder @AssistedInject constructor(
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
-    @Assisted route: ListingFeedRoute,
+    @Assisted route: Route,
 ) : ListingFeedStateHolder by scope.listingFeedStateHolder(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
@@ -67,13 +78,13 @@ fun CoroutineScope.listingFeedStateHolder(
     byteSerializer: ByteSerializer,
     navigationActions: (NavigationMutation) -> Unit,
     savedState: ByteArray?,
-    route: ListingFeedRoute,
+    route: Route,
 ): ListingFeedStateHolder = actionStateFlowProducer(
     initialState = byteSerializer.restoreState(savedState) ?: State(
         currentQuery = ListingQuery(
-            propertyType = route.propertyType,
-            limit = route.limit,
-            offset = route.offset,
+            propertyType = route.routeParams.propertyType,
+            limit = route.routeParams.limit,
+            offset = route.routeParams.offset,
         )
     ),
     started = SharingStarted.WhileSubscribed(3000),

@@ -20,11 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
 import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.scaffold.backPreviewModifier
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.strings.RouteParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
@@ -48,7 +48,7 @@ internal interface AdaptiveContentHost {
 
 @Composable
 internal fun SavedStateAdaptiveContentHost(
-    routeParser: RouteParser<AdaptiveRoute>,
+    adaptiveRouter: AdaptiveRouter,
     navState: StateFlow<MultiStackNav>,
     uiState: StateFlow<UiState>,
     content: @Composable AdaptiveContentHost.() -> Unit
@@ -60,7 +60,7 @@ internal fun SavedStateAdaptiveContentHost(
         val adaptiveContentHost = remember(saveableStateHolder) {
             SavedStateAdaptiveContentHost(
                 coroutineScope = coroutineScope,
-                routeParser = routeParser,
+                adaptiveRouter = adaptiveRouter,
                 navStateFlow = navState,
                 uiStateFlow = uiState,
                 saveableStateHolder = saveableStateHolder
@@ -77,7 +77,7 @@ internal fun SavedStateAdaptiveContentHost(
 
 @Stable
 private class SavedStateAdaptiveContentHost(
-    routeParser: RouteParser<AdaptiveRoute>,
+    val adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
     coroutineScope: CoroutineScope,
@@ -86,7 +86,7 @@ private class SavedStateAdaptiveContentHost(
     SaveableStateHolder by saveableStateHolder,
     ActionStateProducer<Action, StateFlow<Adaptive.NavigationState>>
     by coroutineScope.adaptiveNavigationStateMutator(
-        routeParser = routeParser,
+        adaptiveRouter = adaptiveRouter,
         navStateFlow = navStateFlow,
         uiStateFlow = uiStateFlow
     ) {
@@ -168,6 +168,7 @@ private fun SavedStateAdaptiveContentHost.Render(
             null -> Unit
             else -> Box(
                 modifier = modifierFor(
+                    adaptiveRouter = adaptiveRouter,
                     containerState = targetContainerState,
                     windowSizeClass = adaptedState.windowSizeClass
                 )
@@ -176,7 +177,7 @@ private fun SavedStateAdaptiveContentHost.Render(
                     LocalAdaptiveContentScope provides scope
                 ) {
                     SaveableStateProvider(route.id) {
-                        route.Content()
+                        adaptiveRouter.screenComposable(route).invoke()
                         DisposableEffect(Unit) {
                             onDispose {
                                 val backstackIds = adaptedState.backStackIds
@@ -207,6 +208,7 @@ private fun SavedStateAdaptiveContentHost.Render(
 
 @Composable
 private fun AnimatedVisibilityScope.modifierFor(
+    adaptiveRouter: AdaptiveRouter,
     containerState: Adaptive.ContainerState,
     windowSizeClass: WindowSizeClass,
 ) = when (containerState.container) {
@@ -222,7 +224,7 @@ private fun AnimatedVisibilityScope.modifierFor(
             }
         )
         .then(
-            when (val enterAndExit = containerState.currentRoute?.transitionsFor(containerState)) {
+            when (val enterAndExit = adaptiveRouter.transitionsFor(containerState)) {
                 null -> Modifier
                 else -> Modifier.animateEnterExit(
                     enter = enterAndExit.enter,

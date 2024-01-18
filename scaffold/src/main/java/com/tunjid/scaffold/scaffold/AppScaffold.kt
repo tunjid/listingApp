@@ -28,11 +28,17 @@ import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 import com.tunjid.scaffold.adaptive.SavedStateAdaptiveContentHost
-import com.tunjid.scaffold.globalui.*
+import com.tunjid.scaffold.di.AdaptiveRouter
+import com.tunjid.scaffold.globalui.GlobalUiStateHolder
+import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
+import com.tunjid.scaffold.globalui.PaneAnchor
+import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.globalui.isFromLeft
+import com.tunjid.scaffold.globalui.progress
+import com.tunjid.scaffold.globalui.touchX
+import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.scaffold.navigation.NavigationStateHolder
-import com.tunjid.treenav.strings.RouteParser
 import kotlin.math.roundToInt
 
 /**
@@ -41,7 +47,7 @@ import kotlin.math.roundToInt
 @Composable
 fun Scaffold(
     modifier: Modifier,
-    routeParser: RouteParser<AdaptiveRoute>,
+    adaptiveRouter: AdaptiveRouter,
     navStateHolder: NavigationStateHolder,
     globalUiStateHolder: GlobalUiStateHolder,
 ) {
@@ -57,7 +63,7 @@ fun Scaffold(
                     navStateHolder = navStateHolder,
                 )
                 SavedStateAdaptiveContentHost(
-                    routeParser = routeParser,
+                    adaptiveRouter = adaptiveRouter,
                     navState = navStateHolder.state,
                     uiState = globalUiStateHolder.state
                 ) {

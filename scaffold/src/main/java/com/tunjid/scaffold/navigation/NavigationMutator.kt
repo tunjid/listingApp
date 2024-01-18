@@ -5,16 +5,23 @@ import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowProducer
 import com.tunjid.mutator.mutation
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
-import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
 import com.tunjid.treenav.strings.UrlRouteMatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,9 +56,8 @@ private val EmptyNavigationState = MultiStackNav(
 class PersistedNavigationStateHolder @Inject constructor(
     appScope: CoroutineScope,
     savedStateRepository: SavedStateRepository,
-    routeParser: RouteParser<@JvmSuppressWildcards AdaptiveRoute>,
-    @UrlRouteMatcherBinding
-    routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<AdaptiveRoute>>
+    routeParser: RouteParser<@JvmSuppressWildcards Route>,
+    routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<Route>>
 ) : NavigationStateHolder by appScope.actionStateFlowProducer(
     initialState = EmptyNavigationState,
     started = SharingStarted.Eagerly,
@@ -90,7 +96,7 @@ fun <Action : NavigationAction, State> Flow<Action>.consumeNavigationActions(
     emptyFlow<Mutation<State>>()
 }
 
-private fun RouteParser<AdaptiveRoute>.parseMultiStackNav(savedState: SavedState) =
+private fun RouteParser<Route>.parseMultiStackNav(savedState: SavedState) =
     savedState.navigation
         .fold(
             initial = MultiStackNav(name = "AppNav"),

@@ -1,20 +1,20 @@
 package com.tunjid.feature.listinggallery.pager.di
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolder
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.State
 import com.tunjid.listing.data.model.MediaQuery
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
+import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.di.UrlRouteMatcherBinding
 import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
+import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.UrlRouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -28,35 +28,23 @@ import dagger.multibindings.StringKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.subclass
 
-private const val PagerGalleryPattern = "listings/{listingId}/gallery/pager"
+private const val RoutePattern = "/listings/{listingId}/gallery/pager"
 
 @Serializable
-data class PagerGalleryRoute(
+internal data class PagerGalleryRoute(
     override val routeParams: SerializedRouteParams
-) : AdaptiveRoute {
+) : Route()
 
-    val listingId get() = routeParams.pathArgs.getValue("listingId")
+internal val RouteParams.listingId get() = pathArgs.getValue("listingId")
 
-    val startingMediaUrls get() = routeParams.queryParams["url"] ?: emptyList()
+internal val RouteParams.startingMediaUrls get() = queryParams["url"] ?: emptyList()
 
-    val initialQuery = MediaQuery(
+internal val RouteParams.initialQuery
+    get() = MediaQuery(
         listingId = listingId,
-        offset = routeParams.queryParams["pageOffset"]?.first()?.toLongOrNull() ?: 0L,
-        limit = routeParams.queryParams["pageLimit"]?.first()?.toLongOrNull() ?: 12L,
+        offset = queryParams["pageOffset"]?.first()?.toLongOrNull() ?: 0L,
+        limit = queryParams["pageLimit"]?.first()?.toLongOrNull() ?: 12L,
     )
-
-    @Composable
-    override fun Content() {
-        val stateHolder = rememberRetainedStateHolder<PagerGalleryStateHolder>(
-            route = this@PagerGalleryRoute
-        )
-        FullscreenGalleryScreen(
-            modifier = Modifier,
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
-        )
-    }
-}
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -70,13 +58,26 @@ object PagerGalleryModule {
 
     @IntoMap
     @Provides
-    @StringKey(PagerGalleryPattern)
-    @UrlRouteMatcherBinding
-    fun fullscreenGalleryRouteParser(): UrlRouteMatcher<@JvmSuppressWildcards AdaptiveRoute> =
+    @StringKey(RoutePattern)
+    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
         urlRouteMatcher(
-            routePattern = PagerGalleryPattern,
+            routePattern = RoutePattern,
             routeMapper = ::PagerGalleryRoute
         )
+
+    @IntoMap
+    @Provides
+    @StringKey(RoutePattern)
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
+        val stateHolder = rememberRetainedStateHolder<PagerGalleryStateHolder>(
+            route = route
+        )
+        FullscreenGalleryScreen(
+            modifier = Modifier,
+            state = stateHolder.state.collectAsStateWithLifecycle().value,
+            actions = stateHolder.accept
+        )
+    }
 
     @IntoMap
     @Provides

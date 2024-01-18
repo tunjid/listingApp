@@ -31,11 +31,11 @@ data class SavedState(
 private val defaultSavedState = SavedState(
     isEmpty = true,
     navigation = listOf(
-        listOf("listings"),
-        listOf("favorites"),
-        listOf("trips"),
-        listOf("messages"),
-        listOf("profile"),
+        listOf("/listings"),
+        listOf("/favorites"),
+        listOf("/trips"),
+        listOf("/messages"),
+        listOf("/profile"),
     ),
     routeStates = emptyMap()
 )

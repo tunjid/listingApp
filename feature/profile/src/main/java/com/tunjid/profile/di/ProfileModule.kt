@@ -6,10 +6,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.scaffold.adaptive.StatelessRoute
-import com.tunjid.scaffold.di.UrlRouteMatcherBinding
+import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.navigation.SerializedRouteParams
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.UrlRouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -20,18 +20,12 @@ import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
 import kotlinx.serialization.Serializable
 
-private const val RoutePattern = "profile"
+private const val RoutePattern = "/profile"
 
 @Serializable
 data class ProfileRoute(
     override val routeParams: SerializedRouteParams
-) : AdaptiveRoute, StatelessRoute {
-
-    @Composable
-    override fun Content() {
-       ProfileRoute(route = this)
-    }
-}
+) : StatelessRoute()
 
 @Composable
 private fun ProfileRoute(route: ProfileRoute) {
@@ -51,11 +45,23 @@ object ProfileModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    @UrlRouteMatcherBinding
-    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards AdaptiveRoute> =
+    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
         urlRouteMatcher(
             routePattern = RoutePattern,
             routeMapper = ::ProfileRoute
         )
 
+    @IntoMap
+    @Provides
+    @StringKey(RoutePattern)
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                modifier = Modifier.align(Alignment.Center),
+                text = route.id
+            )
+        }
+    }
 }

@@ -4,23 +4,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
+import com.tunjid.treenav.strings.Route
 
 interface ScreenStateHolderCache {
-    fun <T> screenStateHolderFor(route: AdaptiveRoute): T
+    fun <T> screenStateHolderFor(route: Route): T
 }
 
 val LocalScreenStateHolderCache: ProvidableCompositionLocal<ScreenStateHolderCache> =
     staticCompositionLocalOf {
         object : ScreenStateHolderCache {
-            override fun <T> screenStateHolderFor(route: AdaptiveRoute): T {
+            override fun <T> screenStateHolderFor(route: Route): T {
                 TODO("Not yet implemented")
             }
         }
     }
 
 @Composable
-fun <T> rememberRetainedStateHolder(route: AdaptiveRoute): T {
+fun <T> rememberRetainedStateHolder(route: Route): T {
     val cache = LocalScreenStateHolderCache.current
     return remember(cache) {
         cache.screenStateHolderFor(route)

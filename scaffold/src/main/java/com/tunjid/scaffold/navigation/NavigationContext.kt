@@ -1,7 +1,7 @@
 package com.tunjid.scaffold.navigation
 
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
 
 /**
@@ -10,16 +10,16 @@ import com.tunjid.treenav.strings.RouteParser
  */
 interface NavigationContext {
     val navState: MultiStackNav
-    val String.toRoute: AdaptiveRoute
+    val String.toRoute: Route
 }
 
 internal class ImmutableNavigationContext(
     private val state: MultiStackNav,
-    private val routeParser: RouteParser<AdaptiveRoute>
+    private val routeParser: RouteParser<Route>
 ) : NavigationContext {
     override val navState: MultiStackNav get() = state
 
-    override val String.toRoute: AdaptiveRoute
+    override val String.toRoute: Route
         get() {
             return routeParser.parse(this) ?: UnknownRoute()
         }

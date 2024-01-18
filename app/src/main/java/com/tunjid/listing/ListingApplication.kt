@@ -6,8 +6,8 @@ import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.adaptive.AdaptiveRoute
 import com.tunjid.scaffold.adaptive.StatelessRoute
+import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.di.SavedStateCache
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
@@ -21,7 +21,7 @@ import com.tunjid.scaffold.toBytes
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.flatten
-import com.tunjid.treenav.strings.RouteParser
+import com.tunjid.treenav.strings.Route
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -31,7 +31,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,7 +55,7 @@ class ListingApplication : Application() {
 }
 
 interface ListingApp {
-    val routeParser: RouteParser<AdaptiveRoute>
+    val adaptiveRouter: AdaptiveRouter
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
@@ -61,14 +68,14 @@ class PersistedListingApp @Inject constructor(
     byteSerializer: ByteSerializer,
     navigationStateStream: StateFlow<MultiStackNav>,
     savedStateRepository: SavedStateRepository,
-    override val routeParser: RouteParser<@JvmSuppressWildcards AdaptiveRoute>,
+    override val adaptiveRouter: AdaptiveRouter,
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
     private val savedStateCache: SavedStateCache,
     private val allScreenStateHolders: Map<Class<*>, @JvmSuppressWildcards ScreenStateHolderCreator>,
 ) : ListingApp {
-    private val routeStateHolderCache = mutableMapOf<AdaptiveRoute, ScopeHolder>()
+    private val routeStateHolderCache = mutableMapOf<Route, ScopeHolder>()
 
     init {
         navigationStateStream
@@ -98,7 +105,7 @@ class PersistedListingApp @Inject constructor(
 
     override val screenStateHolderCache: ScreenStateHolderCache = object : ScreenStateHolderCache {
         @Suppress("UNCHECKED_CAST")
-        override fun <T> screenStateHolderFor(route: AdaptiveRoute): T =
+        override fun <T> screenStateHolderFor(route: Route): T =
             routeStateHolderCache.getOrPut(route) {
                 val routeScope = CoroutineScope(
                     SupervisorJob() + Dispatchers.Main.immediate
@@ -124,14 +131,14 @@ class PersistedListingApp @Inject constructor(
         navigation = stacks.fold(listOf()) { listOfLists, stackNav ->
             listOfLists.plus(
                 element = stackNav.children
-                    .filterIsInstance<AdaptiveRoute>()
+                    .filterIsInstance<Route>()
                     .fold(listOf()) { stackList, route ->
                         stackList + route.id
                     }
             )
         },
         routeStates = flatten(order = Order.BreadthFirst)
-            .filterIsInstance<AdaptiveRoute>()
+            .filterIsInstance<Route>()
             .fold(mutableMapOf()) { map, route ->
                 val stateHolder = screenStateHolderCache.screenStateHolderFor<Any>(route)
                 val state = (stateHolder as? ActionStateProducer<*, *>)?.state ?: return@fold map
