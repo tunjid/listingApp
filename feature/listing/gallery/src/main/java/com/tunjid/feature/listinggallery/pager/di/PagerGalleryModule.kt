@@ -80,7 +80,7 @@ object PagerGalleryModule {
 
     @IntoMap
     @Provides
-    @ClassKey(PagerGalleryRoute::class)
+    @StringKey(RoutePattern)
     fun fullscreenGalleryStateHolderCreator(
         factory: PagerGalleryStateHolderFactory
     ): ScreenStateHolderCreator = factory::create

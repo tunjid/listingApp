@@ -81,7 +81,7 @@ object GridGalleryModule {
 
     @IntoMap
     @Provides
-    @ClassKey(GridGalleryRoute::class)
+    @StringKey(RoutePattern)
     fun listingGalleryStateHolderCreator(
         factory: GridGalleryStateHolderFactory
     ): ScreenStateHolderCreator = factory::create

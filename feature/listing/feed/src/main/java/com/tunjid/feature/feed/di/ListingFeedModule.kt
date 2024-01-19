@@ -78,7 +78,7 @@ object ListingFeedModule {
 
     @IntoMap
     @Provides
-    @ClassKey(ListingFeedRoute::class)
+    @StringKey(RoutePattern)
     fun listingFeedStateHolderCreator(
         factory: ListingFeedStateHolderFactory
     ): ScreenStateHolderCreator = factory::create

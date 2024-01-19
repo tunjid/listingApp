@@ -7,7 +7,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.strings.Route
 
 interface ScreenStateHolderCache {
-    fun <T> screenStateHolderFor(route: Route): T
+    fun <T> screenStateHolderFor(route: Route): T?
 }
 
 val LocalScreenStateHolderCache: ProvidableCompositionLocal<ScreenStateHolderCache> =
@@ -23,6 +23,8 @@ val LocalScreenStateHolderCache: ProvidableCompositionLocal<ScreenStateHolderCac
 fun <T> rememberRetainedStateHolder(route: Route): T {
     val cache = LocalScreenStateHolderCache.current
     return remember(cache) {
-        cache.screenStateHolderFor(route)
+        cache.screenStateHolderFor(route) as? T ?: throw IllegalArgumentException(
+            "No state holder has been registered for route ${route.id}"
+        )
     }
 }

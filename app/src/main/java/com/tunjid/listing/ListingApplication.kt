@@ -6,7 +6,6 @@ import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.adaptive.StatelessRoute
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.di.SavedStateCache
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
@@ -21,7 +20,9 @@ import com.tunjid.scaffold.toBytes
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.flatten
+import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteTrie
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -73,9 +74,9 @@ class PersistedListingApp @Inject constructor(
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
     private val savedStateCache: SavedStateCache,
-    private val allScreenStateHolders: Map<Class<*>, @JvmSuppressWildcards ScreenStateHolderCreator>,
+    private val allScreenStateHolders: Map<String, @JvmSuppressWildcards ScreenStateHolderCreator>,
 ) : ListingApp {
-    private val routeStateHolderCache = mutableMapOf<Route, ScopeHolder>()
+    private val routeStateHolderCache = mutableMapOf<Route, ScopeHolder?>()
 
     init {
         navigationStateStream
@@ -104,23 +105,30 @@ class PersistedListingApp @Inject constructor(
     }
 
     override val screenStateHolderCache: ScreenStateHolderCache = object : ScreenStateHolderCache {
+        private val stateHolderTrie = RouteTrie<ScreenStateHolderCreator>().apply {
+            allScreenStateHolders
+                .mapKeys { (template) -> PathPattern(template) }
+                .forEach(::set)
+        }
+
         @Suppress("UNCHECKED_CAST")
-        override fun <T> screenStateHolderFor(route: Route): T =
+        override fun <T> screenStateHolderFor(route: Route): T? =
             routeStateHolderCache.getOrPut(route) {
+                val stateHolderCreator = stateHolderTrie[route] ?: return@getOrPut null
+
                 val routeScope = CoroutineScope(
                     SupervisorJob() + Dispatchers.Main.immediate
                 )
                 ScopeHolder(
                     scope = routeScope,
-                    stateHolder = when (route) {
-                        is StatelessRoute -> route
-                        else -> allScreenStateHolders
-                            .getValue(route::class.java)
-                            .invoke(routeScope, savedStateCache(route), route)
-                    }
+                    stateHolder = stateHolderCreator(
+                        routeScope,
+                        savedStateCache(route),
+                        route
+                    )
                 )
 
-            }.stateHolder as T
+            }?.stateHolder as? T
     }
 
     private fun MultiStackNav.toSavedState(

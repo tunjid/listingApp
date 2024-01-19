@@ -93,7 +93,7 @@ object ListingDetailModule {
 
     @IntoMap
     @Provides
-    @ClassKey(ListingDetailRoute::class)
+    @StringKey(RoutePattern)
     fun archiveListStateHolderCreator(
         factory: ListingStateHolderFactory
     ): ScreenStateHolderCreator = factory::create
