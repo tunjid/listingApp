@@ -8,7 +8,6 @@ import com.tunjid.feature.feed.State
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
@@ -82,5 +81,5 @@ object ListingFeedModule {
     @ClassKey(ListingFeedRoute::class)
     fun listingFeedStateHolderCreator(
         factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create.downcast()
+    ): ScreenStateHolderCreator = factory::create
 }

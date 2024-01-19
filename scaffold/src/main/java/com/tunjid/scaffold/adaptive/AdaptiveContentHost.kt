@@ -177,7 +177,7 @@ private fun SavedStateAdaptiveContentHost.Render(
                     LocalAdaptiveContentScope provides scope
                 ) {
                     SaveableStateProvider(route.id) {
-                        adaptiveRouter.screenComposable(route).invoke()
+                        adaptiveRouter.destination(route).invoke()
                         DisposableEffect(Unit) {
                             onDispose {
                                 val backstackIds = adaptedState.backStackIds

@@ -47,22 +47,7 @@ import okio.Path
 import okio.Path.Companion.toPath
 import javax.inject.Singleton
 
-interface ScreenStateHolderCreator :
-        (@JvmSuppressWildcards CoroutineScope, ByteArray?, Route) -> Any
-
-inline fun <reified T : Route> ((CoroutineScope, ByteArray?, T) -> Any).downcast(): ScreenStateHolderCreator =
-    object : ScreenStateHolderCreator {
-        override fun invoke(
-            scope: CoroutineScope,
-            savedState: ByteArray?,
-            route: Route
-        ): Any =
-            this@downcast(
-                scope,
-                savedState,
-                route as T
-            )
-    }
+typealias ScreenStateHolderCreator = (CoroutineScope, ByteArray?, Route) -> Any
 
 typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 
@@ -71,9 +56,10 @@ data class SavedStateType(
 )
 
 interface Router {
-    fun screenComposable(route: Route): @Composable () -> Unit
+    fun destination(route: Route): @Composable () -> Unit
 }
-interface AdaptiveRouter: Router {
+
+interface AdaptiveRouter : Router {
     fun secondary(route: Route): Route?
 
     fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions?
@@ -148,7 +134,7 @@ object ScaffoldModule {
                 state.currentRoute?.let(configurationTrie::get)?.transitionsFor(state)
 
 
-            override fun screenComposable(route: Route): @Composable () -> Unit = {
+            override fun destination(route: Route): @Composable () -> Unit = {
                 configurationTrie[route]?.Render(route) ?: RouteNotFound()
             }
         }

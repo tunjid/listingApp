@@ -10,7 +10,6 @@ import com.tunjid.scaffold.adaptive.ExternalRoute
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
@@ -39,7 +38,7 @@ internal data class ListingDetailRoute(
 ) : Route() {
     override val children: List<Node> = listOf(
         ExternalRoute(
-            path = "listings"
+            path = "/listings"
         )
     )
 }
@@ -77,21 +76,25 @@ object ListingDetailModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<ListingDetailStateHolder>(
-            route = route
-        )
-        ListingDetailScreen(
-            modifier = Modifier.backPreviewBackgroundModifier(),
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
-        )
-    }
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration(
+        secondaryRoute = { route ->
+            route.children.first() as? ExternalRoute
+        },
+        render = { route ->
+            val stateHolder = rememberRetainedStateHolder<ListingDetailStateHolder>(
+                route = route
+            )
+            ListingDetailScreen(
+                modifier = Modifier.backPreviewBackgroundModifier(),
+                state = stateHolder.state.collectAsStateWithLifecycle().value,
+                actions = stateHolder.accept
+            )
+        })
 
     @IntoMap
     @Provides
     @ClassKey(ListingDetailRoute::class)
     fun archiveListStateHolderCreator(
         factory: ListingStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create.downcast()
+    ): ScreenStateHolderCreator = factory::create
 }

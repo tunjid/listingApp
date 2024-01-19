@@ -9,7 +9,6 @@ import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.di.downcast
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
@@ -85,5 +84,5 @@ object GridGalleryModule {
     @ClassKey(GridGalleryRoute::class)
     fun listingGalleryStateHolderCreator(
         factory: GridGalleryStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create.downcast()
+    ): ScreenStateHolderCreator = factory::create
 }
