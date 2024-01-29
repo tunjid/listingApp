@@ -40,7 +40,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 @Stable
-internal interface AdaptiveContentHost {
+internal interface AdaptiveContentState {
 
     val adaptedState: Adaptive.NavigationState
 
@@ -53,14 +53,14 @@ internal fun AdaptiveContentHost(
     adaptiveRouter: AdaptiveRouter,
     navState: StateFlow<MultiStackNav>,
     uiState: StateFlow<UiState>,
-    content: @Composable AdaptiveContentHost.() -> Unit
+    content: @Composable AdaptiveContentState.() -> Unit
 ) {
     // Root LookaheadScope used to anchor all shared element transitions
     LookaheadScope {
         val coroutineScope = rememberCoroutineScope()
         val saveableStateHolder = rememberSaveableStateHolder()
         val adaptiveContentHost = remember(saveableStateHolder) {
-            SavedStateAdaptiveContentHost(
+            SavedStateAdaptiveContentState(
                 coroutineScope = coroutineScope,
                 adaptiveRouter = adaptiveRouter,
                 navStateFlow = navState,
@@ -78,13 +78,13 @@ internal fun AdaptiveContentHost(
 }
 
 @Stable
-internal class SavedStateAdaptiveContentHost(
+internal class SavedStateAdaptiveContentState(
     val adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
     coroutineScope: CoroutineScope,
     saveableStateHolder: SaveableStateHolder,
-) : AdaptiveContentHost,
+) : AdaptiveContentState,
     SaveableStateHolder by saveableStateHolder,
     ActionStateProducer<Action, StateFlow<Adaptive.NavigationState>>
     by coroutineScope.adaptiveNavigationStateMutator(
@@ -139,7 +139,7 @@ internal class SavedStateAdaptiveContentHost(
  * and shared elements.
  */
 @Composable
-private fun SavedStateAdaptiveContentHost.Render(
+private fun SavedStateAdaptiveContentState.Render(
     slot: Adaptive.Slot,
 ) {
     val containerTransition = updateTransition(

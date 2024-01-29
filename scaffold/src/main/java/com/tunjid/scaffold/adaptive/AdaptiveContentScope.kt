@@ -19,7 +19,7 @@ import com.tunjid.scaffold.adaptive.Adaptive.key
 @Stable
 internal class AnimatedAdaptiveContentScope(
     containerState: Adaptive.ContainerState,
-    val adaptiveContentHost: SavedStateAdaptiveContentHost,
+    val adaptiveContentHost: SavedStateAdaptiveContentState,
     val animatedContentScope: AnimatedContentScope
 ) : Adaptive.ContainerScope, AnimatedVisibilityScope by animatedContentScope {
 
