@@ -27,7 +27,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
-import com.tunjid.scaffold.adaptive.SavedStateAdaptiveContentHost
+import com.tunjid.scaffold.adaptive.AdaptiveContentHost
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
@@ -62,7 +62,7 @@ fun Scaffold(
                     globalUiStateHolder = globalUiStateHolder,
                     navStateHolder = navStateHolder,
                 )
-                SavedStateAdaptiveContentHost(
+                AdaptiveContentHost(
                     adaptiveRouter = adaptiveRouter,
                     navState = navStateHolder.state,
                     uiState = globalUiStateHolder.state

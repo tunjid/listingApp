@@ -24,7 +24,7 @@ object Adaptive {
      * Scope for adaptive content that can show up in an arbitrary [Container]
      */
     @Stable
-    interface ContainerScope : AnimatedVisibilityScope {
+    internal interface ContainerScope : AnimatedVisibilityScope {
 
         /**
          * Unique key to identify this scope

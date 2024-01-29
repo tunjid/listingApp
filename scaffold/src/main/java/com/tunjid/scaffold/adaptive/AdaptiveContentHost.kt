@@ -12,9 +12,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.LookaheadScope
@@ -33,21 +44,12 @@ internal interface AdaptiveContentHost {
 
     val adaptedState: Adaptive.NavigationState
 
-    val hasAnimatingSharedElements: Boolean
-
     @Composable
     fun RouteIn(container: Adaptive.Container?)
-
-    fun isCurrentlyShared(key: Any): Boolean
-
-    fun <T> createOrUpdateSharedElement(
-        key: Any,
-        sharedElement: @Composable (T, Modifier) -> Unit,
-    ): @Composable (T, Modifier) -> Unit
 }
 
 @Composable
-internal fun SavedStateAdaptiveContentHost(
+internal fun AdaptiveContentHost(
     adaptiveRouter: AdaptiveRouter,
     navState: StateFlow<MultiStackNav>,
     uiState: StateFlow<UiState>,
@@ -76,7 +78,7 @@ internal fun SavedStateAdaptiveContentHost(
 }
 
 @Stable
-private class SavedStateAdaptiveContentHost(
+internal class SavedStateAdaptiveContentHost(
     val adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
@@ -93,9 +95,6 @@ private class SavedStateAdaptiveContentHost(
 
     override var adaptedState by mutableStateOf(Adaptive.NavigationState.Initial)
         private set
-
-    override val hasAnimatingSharedElements: Boolean
-        get() = keysToSharedElements.values.any(SharedElementData<*>::isRunning)
 
     private val slotsToRoutes =
         mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
@@ -115,10 +114,10 @@ private class SavedStateAdaptiveContentHost(
         slotsToRoutes.getValue(slot).invoke()
     }
 
-    override fun isCurrentlyShared(key: Any): Boolean =
+    fun isCurrentlyShared(key: Any): Boolean =
         keysToSharedElements.contains(key)
 
-    override fun <T> createOrUpdateSharedElement(
+    fun <T> createOrUpdateSharedElement(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit {
