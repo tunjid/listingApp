@@ -111,7 +111,7 @@ private fun adaptiveNavigationState(
     } ?: multiStackNav.primaryRoute
 
     // Parse the secondary route from the primary route
-    val secondaryRoute = adaptiveRouter.secondary(primaryRoute)
+    val secondaryRoute = adaptiveRouter.secondaryRouteFor(primaryRoute)
 
     return Adaptive.NavigationState(
         containersToRoutes = mapOf(

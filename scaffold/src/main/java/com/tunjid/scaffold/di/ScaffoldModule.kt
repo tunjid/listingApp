@@ -55,12 +55,10 @@ data class SavedStateType(
     val apply: PolymorphicModuleBuilder<ByteSerializable>.() -> Unit
 )
 
-interface Router {
+interface AdaptiveRouter {
     fun destination(route: Route): @Composable () -> Unit
-}
 
-interface AdaptiveRouter : Router {
-    fun secondary(route: Route): Route?
+    fun secondaryRouteFor(route: Route): Route?
 
     fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions?
 }
@@ -127,7 +125,7 @@ object ScaffoldModule {
         }
 
         return object : AdaptiveRouter {
-            override fun secondary(route: Route): Route? =
+            override fun secondaryRouteFor(route: Route): Route? =
                 configurationTrie[route]?.secondaryRoute(route)
 
             override fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions? =

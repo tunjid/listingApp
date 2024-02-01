@@ -10,22 +10,22 @@ import androidx.compose.runtime.Composable
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
 
-interface RouteConfiguration {
-
-    @Composable
-    fun Render(route: Route)
-    fun transitionsFor(
-        state: Adaptive.ContainerState
-    ): Adaptive.Transitions = NoTransition
-}
 /**
  * Route implementation with adaptive semantics
  */
-interface AdaptiveRouteConfiguration: RouteConfiguration {
+interface AdaptiveRouteConfiguration {
+
+    @Composable
+    fun Render(route: Route)
+
+    fun transitionsFor(
+        state: Adaptive.ContainerState
+    ): Adaptive.Transitions = NoTransition
+
     /**
      * Defines what route to show in the secondary panel alongside this route
      */
-    fun secondaryRoute(route: Route): ExternalRoute?
+    fun secondaryRoute(route: Route): Route?
 }
 
 fun adaptiveRouteConfiguration(
@@ -60,7 +60,7 @@ fun adaptiveRouteConfiguration(
         render(route)
     }
 
-    override fun secondaryRoute(route: Route): ExternalRoute? =
+    override fun secondaryRoute(route: Route): Route? =
         secondaryRoute(route)
 
     override fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions =
