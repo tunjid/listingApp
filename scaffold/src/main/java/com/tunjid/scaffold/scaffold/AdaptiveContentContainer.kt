@@ -52,6 +52,7 @@ import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Change.contains
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.PrimaryToSecondary
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.SecondaryToPrimary
+import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.routeFor
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
@@ -70,18 +71,16 @@ import kotlinx.coroutines.launch
  * Motionally intelligent, adaptive container for the hosting the navigation routes
  */
 @Composable
-internal fun AppRouteContainer(
-    state: Adaptive.NavigationState,
+internal fun AdaptiveContentContainer(
+    state: AdaptiveContentState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
-    primaryContent: @Composable () -> Unit,
-    secondaryContent: @Composable () -> Unit,
-    transientPrimaryContent: @Composable () -> Unit,
 ) {
-    val paddingValues = routeContainerPadding(state.routeContainerPositionalState)
+    val navigationState = state.navigationState
+    val paddingValues = routeContainerPadding(navigationState.routeContainerPositionalState)
     val (startClearance, topClearance, _, bottomClearance) = paddingValues
 
-    val hasSecondaryContent = state.routeFor(Adaptive.Container.Secondary) != null
-    val windowSizeClass = state.windowSizeClass
+    val hasSecondaryContent = navigationState.routeFor(Adaptive.Container.Secondary) != null
+    val windowSizeClass = navigationState.windowSizeClass
 
     val density = LocalDensity.current
     val paneSplitState = remember(::PaneAnchorState)
@@ -103,21 +102,28 @@ internal fun AppRouteContainer(
             content = {
                 SecondaryContentContainer(
                     modifier = secondaryContentModifier(
-                        adaptation = state.swapAdaptations.firstOrNull { Adaptive.Container.Secondary in it },
+                        adaptation = navigationState.swapAdaptations.firstOrNull { Adaptive.Container.Secondary in it },
                         width = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() },
                     ),
-                    secondaryContent = secondaryContent
+                    secondaryContent = {
+                        state.RouteIn(container = Adaptive.Container.Secondary)
+                    }
                 )
                 PrimaryContentContainer(
                     modifier = primaryContentModifier(
                         windowSizeClass = windowSizeClass,
-                        adaptation = state.swapAdaptations.firstOrNull { Adaptive.Container.Primary in it },
+                        adaptation = navigationState.swapAdaptations.firstOrNull { Adaptive.Container.Primary in it },
                         secondaryContentWidth = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() }
                     ),
-                    primaryContent = primaryContent,
-                    transientPrimaryContent = transientPrimaryContent,
+                    primaryContent = {
+                        state.RouteIn(container = Adaptive.Container.Primary)
+
+                    },
+                    transientPrimaryContent = {
+                        state.RouteIn(container = Adaptive.Container.TransientPrimary)
+                    },
                 )
                 AnimatedVisibility(
                     modifier = Modifier.align(Alignment.CenterStart),

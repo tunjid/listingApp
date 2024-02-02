@@ -67,23 +67,14 @@ fun Scaffold(
                     navState = navStateHolder.state,
                     uiState = globalUiStateHolder.state
                 ) {
-                    AppRouteContainer(
-                        state = adaptedState,
+                    AdaptiveContentContainer(
+                        state = this,
                         onPaneAnchorChanged = remember {
                             { paneAnchor: PaneAnchor ->
                                 globalUiStateHolder.accept {
                                     copy(paneAnchor = paneAnchor)
                                 }
                             }
-                        },
-                        primaryContent = {
-                            RouteIn(Adaptive.Container.Primary)
-                        },
-                        secondaryContent = {
-                            RouteIn(Adaptive.Container.Secondary)
-                        },
-                        transientPrimaryContent = {
-                            RouteIn(Adaptive.Container.TransientPrimary)
                         },
                     )
                 }

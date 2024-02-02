@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.StateFlow
 @Stable
 internal interface AdaptiveContentState {
 
-    val adaptedState: Adaptive.NavigationState
+    val navigationState: Adaptive.NavigationState
 
     @Composable
     fun RouteIn(container: Adaptive.Container?)
@@ -93,7 +93,7 @@ internal class SavedStateAdaptiveContentState(
         uiStateFlow = uiStateFlow
     ) {
 
-    override var adaptedState by mutableStateOf(Adaptive.NavigationState.Initial)
+    override var navigationState by mutableStateOf(Adaptive.NavigationState.Initial)
         private set
 
     private val slotsToRoutes =
@@ -110,7 +110,7 @@ internal class SavedStateAdaptiveContentState(
 
     @Composable
     override fun RouteIn(container: Adaptive.Container?) {
-        val slot = container?.let(adaptedState::slotFor)
+        val slot = container?.let(navigationState::slotFor)
         slotsToRoutes.getValue(slot).invoke()
     }
 
@@ -131,7 +131,7 @@ internal class SavedStateAdaptiveContentState(
         return sharedElementData.moveableSharedElement
     }
 
-    suspend fun update(): Unit = state.collect(::adaptedState::set)
+    suspend fun update(): Unit = state.collect(::navigationState::set)
 }
 
 /**
@@ -143,7 +143,7 @@ private fun SavedStateAdaptiveContentState.Render(
     slot: Adaptive.Slot,
 ) {
     val containerTransition = updateTransition(
-        targetState = adaptedState.containerStateFor(slot),
+        targetState = navigationState.containerStateFor(slot),
         label = "$slot-ContainerTransition",
     )
     containerTransition.AnimatedContent(
@@ -169,7 +169,7 @@ private fun SavedStateAdaptiveContentState.Render(
                 modifier = modifierFor(
                     adaptiveRouter = adaptiveRouter,
                     containerState = targetContainerState,
-                    windowSizeClass = adaptedState.windowSizeClass
+                    windowSizeClass = navigationState.windowSizeClass
                 )
             ) {
                 CompositionLocalProvider(
@@ -179,7 +179,7 @@ private fun SavedStateAdaptiveContentState.Render(
                         adaptiveRouter.destination(route).invoke()
                         DisposableEffect(Unit) {
                             onDispose {
-                                val backstackIds = adaptedState.backStackIds
+                                val backstackIds = navigationState.backStackIds
                                 if (!backstackIds.contains(route.id)) removeState(route.id)
                             }
                         }
