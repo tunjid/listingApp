@@ -1,9 +1,10 @@
-package com.tunjid.scaffold.adaptive
+package com.tunjid.scaffold.scaffold
 
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowProducer
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
+import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Container.Primary
 import com.tunjid.scaffold.adaptive.Adaptive.Container.Secondary
 import com.tunjid.scaffold.adaptive.Adaptive.Container.TransientPrimary
@@ -27,9 +28,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.scan
 
-internal sealed class Action {
+sealed class Action {
     data class RouteExitStart(val routeId: String) : Action()
 
     data class RouteExitEnd(val routeId: String) : Action()
@@ -39,9 +41,10 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
     adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
-) = actionStateFlowProducer<Action, Adaptive.NavigationState>(
-    initialState = Adaptive.NavigationState.Initial,
-    started = SharingStarted.WhileSubscribed(3_000),
+    onChanged: (Adaptive.NavigationState) -> Unit
+) = actionStateFlowProducer<Action, AppAdaptiveNavigationState>(
+    initialState = AppAdaptiveNavigationState.Initial,
+    started = SharingStarted.Eagerly,
     mutationFlows = listOf(
         adaptiveNavigationStateMutations(
             adaptiveRouter= adaptiveRouter,
@@ -58,7 +61,9 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
         }
     },
     stateTransform = { adaptiveNavFlow ->
-        adaptiveNavFlow.filterNot(Adaptive.NavigationState::hasConflictingRoutes)
+        adaptiveNavFlow
+            .filterNot(AppAdaptiveNavigationState::hasConflictingRoutes)
+            .onEach(onChanged)
     }
 )
 
@@ -70,7 +75,7 @@ private fun adaptiveNavigationStateMutations(
     adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>
-): Flow<Mutation<Adaptive.NavigationState>> = combine(
+): Flow<Mutation<AppAdaptiveNavigationState>> = combine(
     flow = navStateFlow,
     flow2 = uiStateFlow.distinctUntilChangedBy {
         listOf(it.backStatus.isPreviewing, it.routeContainerState)
@@ -85,14 +90,14 @@ private fun adaptiveNavigationStateMutations(
 )
     .distinctUntilChanged()
     .scan(
-        initial = Adaptive.NavigationState.Initial.adaptTo(
+        initial = AppAdaptiveNavigationState.Initial.adaptTo(
             new = adaptiveNavigationState(
                 adaptiveRouter = adaptiveRouter,
                 multiStackNav = navStateFlow.value,
                 uiState = uiStateFlow.value,
             )
         ),
-        operation = Adaptive.NavigationState::adaptTo
+        operation = AppAdaptiveNavigationState::adaptTo
     )
     .mapToMutation { newState ->
         // Replace the entire state except the knowledge of routes animating in and out
@@ -103,7 +108,7 @@ private fun adaptiveNavigationState(
     adaptiveRouter: AdaptiveRouter,
     multiStackNav: MultiStackNav,
     uiState: UiState,
-): Adaptive.NavigationState {
+): AppAdaptiveNavigationState {
     // If there is a back preview in progress, show the back primary route in the
     // primary container
     val primaryRoute = multiStackNav.primaryRouteOnBackPress.takeIf {
@@ -113,7 +118,7 @@ private fun adaptiveNavigationState(
     // Parse the secondary route from the primary route
     val secondaryRoute = adaptiveRouter.secondaryRouteFor(primaryRoute)
 
-    return Adaptive.NavigationState(
+    return AppAdaptiveNavigationState(
         containersToRoutes = mapOf(
             Primary to primaryRoute,
             Secondary to secondaryRoute.takeIf { route ->
@@ -146,9 +151,9 @@ private fun adaptiveNavigationState(
  * A method that adapts changes in navigation to different containers while allowing for them
  * to be animated easily.
  */
-private fun Adaptive.NavigationState.adaptTo(
-    new: Adaptive.NavigationState,
-): Adaptive.NavigationState {
+private fun AppAdaptiveNavigationState.adaptTo(
+    new: AppAdaptiveNavigationState,
+): AppAdaptiveNavigationState {
     val old = this
 
     val availableSlots = Adaptive.Container.slots.toMutableSet()
@@ -198,12 +203,12 @@ private fun Adaptive.NavigationState.adaptTo(
     )
 }
 
-private fun Flow<Action.RouteExitStart>.routeExitStartMutations(): Flow<Mutation<Adaptive.NavigationState>> =
+private fun Flow<Action.RouteExitStart>.routeExitStartMutations(): Flow<Mutation<AppAdaptiveNavigationState>> =
     mapToMutation { exitStart ->
         copy(routeIdsAnimatingOut = routeIdsAnimatingOut + exitStart.routeId)
     }
 
-private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<Adaptive.NavigationState>> =
+private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<AppAdaptiveNavigationState>> =
     mapToMutation { exitEnd ->
         copy(routeIdsAnimatingOut = routeIdsAnimatingOut - exitEnd.routeId).prune()
     }
@@ -211,7 +216,7 @@ private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<Ada
 /**
  * Checks if any of the new routes coming in has any conflicts with those animating out.
  */
-private fun Adaptive.NavigationState.hasConflictingRoutes() =
+private fun AppAdaptiveNavigationState.hasConflictingRoutes() =
     routeIdsAnimatingOut.contains(routeFor(Primary)?.id)
             || routeFor(Secondary)?.id?.let(routeIdsAnimatingOut::contains) == true
             || routeFor(TransientPrimary)?.id?.let(routeIdsAnimatingOut::contains) == true
@@ -219,7 +224,7 @@ private fun Adaptive.NavigationState.hasConflictingRoutes() =
 /**
  * Trims unneeded metadata from the [Adaptive.NavigationState]
  */
-private fun Adaptive.NavigationState.prune(): Adaptive.NavigationState = copy(
+private fun AppAdaptiveNavigationState.prune(): AppAdaptiveNavigationState = copy(
     routeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots.filter { (routeId) ->
         if (routeId == null) return@filter false
         backStackIds.contains(routeId)

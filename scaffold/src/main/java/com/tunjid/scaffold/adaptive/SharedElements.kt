@@ -28,6 +28,16 @@ import androidx.compose.ui.unit.round
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+internal interface SharedElementScope {
+    fun isCurrentlyShared(key: Any): Boolean
+
+    @Composable
+    fun <T> sharedElementOf(
+        key: Any,
+        sharedElement: @Composable (T, Modifier) -> Unit
+    ): @Composable (T, Modifier) -> Unit
+}
+
 fun thumbnailSharedElementKey(
     property: Any?
 ) = "thumbnail-$property"

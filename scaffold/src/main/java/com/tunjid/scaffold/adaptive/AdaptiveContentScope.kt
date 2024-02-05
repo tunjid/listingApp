@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.adaptive.Adaptive.key
+import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
 
 /**
  * An implementation of [Adaptive.ContainerScope] that supports animations and shared elements

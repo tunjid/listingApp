@@ -2,11 +2,13 @@ package com.tunjid.scaffold.di
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.DelegatingByteSerializer
 import com.tunjid.scaffold.adaptive.Adaptive
+import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.AdaptiveRouteConfiguration
 import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
@@ -21,6 +23,7 @@ import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
 import com.tunjid.scaffold.navigation.RouteNotFound
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
+import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
@@ -170,6 +173,11 @@ object ScaffoldModule {
     fun lifecycleStateStream(
         lifecycleStateHolder: LifecycleStateHolder
     ): StateFlow<Lifecycle> = lifecycleStateHolder.state
+
+    @Provides
+    fun adaptiveContentStateCreator(
+        factory: AdaptiveContentStateFactory
+    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState = factory::create
 }
 
 @Module

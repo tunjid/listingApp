@@ -22,19 +22,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.Adaptive
+import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
-import com.tunjid.scaffold.adaptive.AdaptiveContentHost
-import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isFromLeft
 import com.tunjid.scaffold.globalui.progress
+import com.tunjid.scaffold.globalui.slices.routeContainerState
 import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
@@ -47,7 +48,7 @@ import kotlin.math.roundToInt
 @Composable
 fun Scaffold(
     modifier: Modifier,
-    adaptiveRouter: AdaptiveRouter,
+    adaptiveContentState: AdaptiveContentState,
     navStateHolder: NavigationStateHolder,
     globalUiStateHolder: GlobalUiStateHolder,
 ) {
@@ -62,13 +63,13 @@ fun Scaffold(
                     globalUiStateHolder = globalUiStateHolder,
                     navStateHolder = navStateHolder,
                 )
-                AdaptiveContentHost(
-                    adaptiveRouter = adaptiveRouter,
-                    navState = navStateHolder.state,
-                    uiState = globalUiStateHolder.state
-                ) {
+                // Root LookaheadScope used to anchor all shared element transitions
+                LookaheadScope {
                     AdaptiveContentContainer(
-                        state = this,
+                        contentState = adaptiveContentState,
+                        positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
+                            mapper = UiState::routeContainerState
+                        ).value,
                         onPaneAnchorChanged = remember {
                             { paneAnchor: PaneAnchor ->
                                 globalUiStateHolder.accept {

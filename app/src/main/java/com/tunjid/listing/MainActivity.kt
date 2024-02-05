@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalConfiguration
@@ -47,7 +49,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         modifier = Modifier,
-                        adaptiveRouter = listingApp.adaptiveRouter,
+                        adaptiveContentState = listingApp.adaptiveContentStateCreator(
+                            rememberCoroutineScope(),
+                            rememberSaveableStateHolder()
+                        ),
                         navStateHolder = listingApp.navigationStateHolder,
                         globalUiStateHolder = listingApp.globalUiStateHolder,
                     )

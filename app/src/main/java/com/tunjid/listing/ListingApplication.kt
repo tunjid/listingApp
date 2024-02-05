@@ -1,11 +1,13 @@
 package com.tunjid.listing
 
 import android.app.Application
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import com.tunjid.airbnb.BuildConfig
 import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.mutator.ActionStateProducer
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
+import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.di.SavedStateCache
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
@@ -57,6 +59,7 @@ class ListingApplication : Application() {
 
 interface ListingApp {
     val adaptiveRouter: AdaptiveRouter
+    val adaptiveContentStateCreator: (CoroutineScope, SaveableStateHolder) -> AdaptiveContentState
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
@@ -73,6 +76,7 @@ class PersistedListingApp @Inject constructor(
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
+    override val adaptiveContentStateCreator: (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState,
     private val savedStateCache: SavedStateCache,
     private val allScreenStateHolders: Map<String, @JvmSuppressWildcards ScreenStateHolderCreator>,
 ) : ListingApp {
