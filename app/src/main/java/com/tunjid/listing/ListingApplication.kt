@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import com.tunjid.airbnb.BuildConfig
 import com.tunjid.listing.workmanager.initializers.Sync
-import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
@@ -153,7 +153,7 @@ class PersistedListingApp @Inject constructor(
             .filterIsInstance<Route>()
             .fold(mutableMapOf()) { map, route ->
                 val stateHolder = screenStateHolderCache.screenStateHolderFor<Any>(route)
-                val state = (stateHolder as? ActionStateProducer<*, *>)?.state ?: return@fold map
+                val state = (stateHolder as? ActionStateMutator<*, *>)?.state ?: return@fold map
                 val serializable = (state as? StateFlow<*>)?.value ?: return@fold map
                 if (serializable is ByteSerializable) map[route.id] =
                     byteSerializer.toBytes(serializable)

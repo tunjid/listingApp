@@ -9,10 +9,10 @@ import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.listing.data.withDeferred
 import com.tunjid.listing.sync.SyncManager
-import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 
-typealias ListingFeedStateHolder = ActionStateProducer<Action, StateFlow<State>>
+typealias ListingFeedStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
 interface ListingFeedStateHolderFactory {
@@ -79,7 +79,7 @@ fun CoroutineScope.listingFeedStateHolder(
     navigationActions: (NavigationMutation) -> Unit,
     savedState: ByteArray?,
     route: Route,
-): ListingFeedStateHolder = actionStateFlowProducer(
+): ListingFeedStateHolder = actionStateFlowMutator(
     initialState = byteSerializer.restoreState(savedState) ?: State(
         currentQuery = ListingQuery(
             propertyType = route.routeParams.propertyType,
@@ -88,11 +88,11 @@ fun CoroutineScope.listingFeedStateHolder(
         )
     ),
     started = SharingStarted.WhileSubscribed(3000),
-    mutationFlows = listOf(
+    inputs = listOf(
         syncManager.refreshStatusMutations()
     ),
     actionTransform = stateHolder@{ actions ->
-        actions.toMutationStream(Action::key) {
+        actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.LoadFeed -> action.flow.fetchListingFeedMutations(
                     listingRepository = listingRepository,

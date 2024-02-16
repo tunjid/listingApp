@@ -1,7 +1,7 @@
 package com.tunjid.scaffold.scaffold
 
 import com.tunjid.mutator.Mutation
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.adaptive.Adaptive
@@ -42,10 +42,10 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
     onChanged: (Adaptive.NavigationState) -> Unit
-) = actionStateFlowProducer<Action, AppAdaptiveNavigationState>(
+) = actionStateFlowMutator<Action, AppAdaptiveNavigationState>(
     initialState = AppAdaptiveNavigationState.Initial,
     started = SharingStarted.Eagerly,
-    mutationFlows = listOf(
+    inputs = listOf(
         adaptiveNavigationStateMutations(
             adaptiveRouter= adaptiveRouter,
             navStateFlow = navStateFlow,

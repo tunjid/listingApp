@@ -5,10 +5,10 @@ import com.tunjid.feature.listinggallery.mediaPivotRequest
 import com.tunjid.feature.listinggallery.pager.di.initialQuery
 import com.tunjid.feature.listinggallery.pager.di.startingMediaUrls
 import com.tunjid.listing.data.model.MediaRepository
-import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.ByteSerializer
@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
-typealias PagerGalleryStateHolder = ActionStateProducer<Action, StateFlow<State>>
+typealias PagerGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
 interface PagerGalleryStateHolderFactory {
@@ -60,7 +60,7 @@ private fun CoroutineScope.pagerGalleryMutator(
     navigationActions: (NavigationMutation) -> Unit,
     savedState: ByteArray?,
     route: Route,
-) = actionStateFlowProducer<Action, State>(
+) = actionStateFlowMutator<Action, State>(
     initialState = byteSerializer.restoreState(savedState) ?: State(
         currentQuery = route.routeParams.initialQuery,
         items = buildTiledList {
@@ -71,7 +71,7 @@ private fun CoroutineScope.pagerGalleryMutator(
         }
     ),
     actionTransform = { actions ->
-        actions.toMutationStream(Action::key) {
+        actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.LoadImagesAround -> action.flow.paginationMutations(
                     mediaRepository

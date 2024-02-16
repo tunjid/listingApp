@@ -5,7 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import com.tunjid.mutator.mutation
+import com.tunjid.mutator.mutationOf
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 
@@ -24,7 +24,7 @@ fun ScreenUiState(state: UiState) {
 
     LaunchedEffect(updatedState, scope.containerState) {
         if (scope.containerState.container == Adaptive.Container.Primary) uiStateHolder.accept(
-            mutation {
+            mutationOf {
                 // Preserve things that should not be overwritten
                 updatedState.copy(
                     navMode = navMode,

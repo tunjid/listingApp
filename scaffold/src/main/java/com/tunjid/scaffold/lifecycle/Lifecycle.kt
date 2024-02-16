@@ -1,9 +1,9 @@
 package com.tunjid.scaffold.lifecycle
 
 import androidx.compose.runtime.*
-import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.asNoOpStateFlowMutator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
-typealias LifecycleStateHolder = ActionStateProducer<@JvmSuppressWildcards Mutation<Lifecycle>, @JvmSuppressWildcards StateFlow<Lifecycle>>
+typealias LifecycleStateHolder = ActionStateMutator<@JvmSuppressWildcards Mutation<Lifecycle>, @JvmSuppressWildcards StateFlow<Lifecycle>>
 
 data class Lifecycle(
     val isInForeground: Boolean = true,
@@ -77,17 +77,17 @@ fun <T> StateFlow<T>.collectAsStateWithLifecycle(
 @Singleton
 class ActualLifecycleStateHolder @Inject constructor(
     appScope: CoroutineScope,
-) : LifecycleStateHolder by appScope.actionStateFlowProducer(
+) : LifecycleStateHolder by appScope.actionStateFlowMutator(
     started = SharingStarted.Eagerly,
     initialState = Lifecycle(),
     actionTransform = { it }
 )
 
 @Composable
-operator fun <Action : Any, State : Any> ActionStateProducer<Action, StateFlow<State>>.component1()
+operator fun <Action : Any, State : Any> ActionStateMutator<Action, StateFlow<State>>.component1()
 : State = state.collectAsStateWithLifecycle().value
 
 @Composable
-operator fun <Action : Any, State : Any> ActionStateProducer<Action, StateFlow<State>>.component2()
+operator fun <Action : Any, State : Any> ActionStateMutator<Action, StateFlow<State>>.component2()
 : (Action) -> Unit = remember { accept }
 

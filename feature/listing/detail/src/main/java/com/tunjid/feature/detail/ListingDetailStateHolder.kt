@@ -7,10 +7,10 @@ import com.tunjid.listing.data.model.ListingRepository
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.listing.data.model.UserRepository
-import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.mapToMutation
@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
-typealias ListingDetailStateHolder = ActionStateProducer<Action, StateFlow<State>>
+typealias ListingDetailStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
 interface ListingStateHolderFactory {
@@ -86,7 +86,7 @@ private fun CoroutineScope.listingDetailMutator(
     navigationActions: (NavigationMutation) -> Unit,
     savedState: ByteArray?,
     route: Route,
-): ActionStateProducer<Action, StateFlow<State>> = actionStateFlowProducer(
+): ActionStateMutator<Action, StateFlow<State>> = actionStateFlowMutator(
     initialState = byteSerializer.restoreState(savedState) ?: State(
         currentQuery = route.routeParams.initialQuery,
         listingItems = buildTiledList {
@@ -96,7 +96,7 @@ private fun CoroutineScope.listingDetailMutator(
             )
         }
     ),
-    mutationFlows = listOf(
+    inputs = listOf(
         mediaRepository.countMutations(
             listingId = route.routeParams.listingId
         ),
@@ -112,7 +112,7 @@ private fun CoroutineScope.listingDetailMutator(
         uiStateFlow.paneMutations()
     ),
     actionTransform = { actions ->
-        actions.toMutationStream(Action::key) {
+        actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.Navigation -> action.flow.consumeNavigationActions(
                     navigationActions

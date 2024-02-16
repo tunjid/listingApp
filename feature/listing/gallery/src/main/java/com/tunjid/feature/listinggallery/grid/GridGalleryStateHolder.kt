@@ -6,10 +6,10 @@ import com.tunjid.feature.listinggallery.mediaListTiler
 import com.tunjid.feature.listinggallery.mediaPivotRequest
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.data.model.MediaRepository
-import com.tunjid.mutator.ActionStateProducer
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.ByteSerializer
@@ -36,7 +36,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 
-typealias GridGalleryStateHolder = ActionStateProducer<Action, StateFlow<State>>
+typealias GridGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
 interface GridGalleryStateHolderFactory {
@@ -68,7 +68,7 @@ private fun CoroutineScope.gridGalleryMutator(
     byteSerializer: ByteSerializer,
     savedState: ByteArray?,
     route: Route,
-) = actionStateFlowProducer<Action, State>(
+) = actionStateFlowMutator<Action, State>(
     initialState = byteSerializer.restoreState(savedState) ?: State(
         currentQuery = route.routeParams.initialQuery,
         items = buildTiledList {
@@ -79,7 +79,7 @@ private fun CoroutineScope.gridGalleryMutator(
         }
     ),
     actionTransform = { actions ->
-        actions.toMutationStream(Action::key) {
+        actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.LoadItems -> action.flow.loadMutations(
                     mediaRepository = mediaRepository

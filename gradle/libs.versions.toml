@@ -3,39 +3,39 @@ app-cash-sqldelight = "2.0.0"
 app-cash-turbine = "1.0.0"
 core-ktx = "1.12.0"
 junit = "4.13.2"
-androidx-compose-compiler = "1.5.4"
+androidx-compose-compiler = "1.5.8"
 androidx-test-ext-junit = "1.1.5"
-androidxDataStore = "1.1.0-alpha06"
-androidxMedia3 = "1.2.0"
-androidxRoom = "2.6.0"
+androidxDataStore = "1.1.0-beta01"
+androidxMedia3 = "1.2.1"
+androidxRoom = "2.6.1"
 androidxWindow = "1.2.0"
-androidxWork = "2.9.0-rc01"
+androidxWork = "2.9.0"
 coil = "2.4.0"
 espresso-core = "3.5.1"
 com-android-gradle-plugin = "8.1.4"
-com-android-application = "8.1.0"
+com-android-application = "8.1.4"
 com-android-desugar-JdkLibs = "2.0.4"
-org-jetbrains-kotlin-android = "1.9.20"
-lifecycle-runtime-ktx = "2.6.2"
-activity-compose = "1.8.1"
-compose-bom = "2023.12.00-alpha04"
+org-jetbrains-kotlin-android = "1.9.22"
+lifecycle-runtime-ktx = "2.7.0"
+activity-compose = "1.8.2"
+compose-bom = "2024.02.00"
 hilt = "2.48.1"
 hiltExt = "1.1.0"
 kotlinxCoroutines = "1.7.3"
-kotlinxDatetime = "0.4.0"
+kotlinxDatetime = "0.5.0"
 kotlinxSerialization = "1.5.1"
-ksp = "1.9.20-1.0.14"
+ksp = "1.9.22-1.0.17"
 ktor = "2.2.4"
 okio = "3.6.0"
 okhttp = "4.12.0"
 retrofit = "2.9.0"
 retrofitKotlinxSerializationJson = "1.0.0"
-tunjidStateHolder = "0.0.9"
-tunjidTiler = "1.1.0-beta02"
+tunjidStateHolder = "1.1.0"
+tunjidTiler = "1.1.0-rc02"
 tunjidTreeNav = "0.0.6"
 turbine = "0.12.1"
 appcompat = "1.6.1"
-material = "1.10.0"
+material = "1.11.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -43,8 +43,8 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
-#compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
-compose-bom = { group = "dev.chrisbanes.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+#compose-bom = { group = "dev.chrisbanes.compose", name = "compose-bom", version.ref = "compose-bom" }
 compose-compiler = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }

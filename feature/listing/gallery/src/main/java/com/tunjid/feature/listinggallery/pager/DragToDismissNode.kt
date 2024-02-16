@@ -21,9 +21,9 @@ import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
-import com.tunjid.mutator.coroutines.actionStateFlowProducer
+import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
-import com.tunjid.mutator.mutation
+import com.tunjid.mutator.mutationOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -131,13 +131,13 @@ private sealed class Gesture {
     data object Release : Gesture()
 }
 
-private fun CoroutineScope.offsetMutator() = actionStateFlowProducer<Gesture, Offset>(
+private fun CoroutineScope.offsetMutator() = actionStateFlowMutator<Gesture, Offset>(
     initialState = Offset.Zero,
     actionTransform = { actions ->
         actions.flatMapLatest { action ->
             when (action) {
                 is Gesture.Drag -> flowOf(
-                    mutation {
+                    mutationOf {
                         copy(x = x + action.offset.x, y = y + action.offset.y)
                     }
                 )
