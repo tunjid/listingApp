@@ -16,6 +16,7 @@ extensions.configure<RoomExtension> {
 }
 
 dependencies {
+    "implementation"(libs.findLibrary("androidx.room.ktx").get())
     "implementation"(libs.findLibrary("androidx.room.runtime").get())
     "annotationProcessor"(libs.findLibrary("androidx.room.compiler").get())
     "ksp"(libs.findLibrary("androidx.room.compiler").get())
