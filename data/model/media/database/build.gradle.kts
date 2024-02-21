@@ -1,6 +1,7 @@
 plugins {
     id("android-library-convention")
     id("kotlin-library-convention")
+    id("room-database-convention")
     id("hilt-convention")
     kotlin("plugin.serialization")
 }
@@ -11,10 +12,5 @@ android {
 
 dependencies {
     implementation(project(":data:model:listing:database"))
-
-    implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
-    ksp(libs.androidx.room.compiler)
-
     implementation(libs.kotlinx.serialization.protobuf)
 }

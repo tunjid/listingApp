@@ -67,6 +67,7 @@ androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.re
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidxRoom" }
+androidx-room-gradle-plugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "androidxRoom" }
 androidx-window-window = { group = "androidx.window", name = "window", version.ref = "androidxWindow" }
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
@@ -110,6 +111,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 app-cash-sqldelight = { id = "app.cash.sqldelight", version.ref = "app-cash-sqldelight" }
 com-android-application = { id = "com.android.application", version.ref = "com-android-application" }
 com-android-library = { id = "com.android.library", version.ref = "com-android-application" }
+com-androidx-room = { id = "androidx.room", version.ref = "androidxRoom" }
 com-google-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "org-jetbrains-kotlin-android" }

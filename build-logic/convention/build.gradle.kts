@@ -15,4 +15,6 @@ dependencies {
     implementation(libs.org.jetbrains.kotlin.serialization.plugin)
     implementation(libs.com.google.devtools.ksp.plugin)
     implementation(libs.hilt.gradle.plugin)
+    implementation(libs.com.android.gradle.plugin)
+    implementation(libs.androidx.room.gradle.plugin)
 }
