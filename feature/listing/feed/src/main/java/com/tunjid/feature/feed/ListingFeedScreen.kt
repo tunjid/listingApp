@@ -23,6 +23,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -173,9 +175,20 @@ private fun FeedItemCard(
                         actions = actions
                     )
                     if (feedItem.medias.isNotEmpty()) MaximizePager(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp),
                         listingId = feedItem.listing.id,
                         url = feedItem.medias[pagerState.currentPage].url,
-                        actions = actions
+                        actions = actions,
+                    )
+                    FavoriteButton(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp),
+                        listingId = feedItem.listing.id,
+                        isFavorite = feedItem.isFavorite,
+                        actions = actions,
                     )
                 }
             }
@@ -276,15 +289,14 @@ private fun FeedItemInfo(feedItem: FeedItem) {
 }
 
 @Composable
-private fun BoxScope.MaximizePager(
+private fun MaximizePager(
+    modifier: Modifier = Modifier,
     listingId: String,
     url: String,
     actions: (Action) -> Unit
 ) {
     FilledTonalIconButton(
-        modifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(16.dp),
+        modifier = modifier,
         onClick = {
             actions(
                 Action.Navigation.Gallery(
@@ -299,6 +311,34 @@ private fun BoxScope.MaximizePager(
                 .rotate(degrees = 45f),
             imageVector = Icons.Filled.UnfoldMore,
             contentDescription = "Expand",
+            colorFilter = ColorFilter.tint(
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        )
+    }
+}
+
+@Composable
+private fun FavoriteButton(
+    modifier: Modifier = Modifier,
+    listingId: String,
+    isFavorite: Boolean,
+    actions: (Action) -> Unit
+) {
+    FilledTonalIconButton(
+        modifier = modifier,
+        onClick = {
+            actions(
+                Action.SetFavorite(
+                    listingId = listingId,
+                    isFavorite = !isFavorite
+                )
+            )
+        }
+    ) {
+        Image(
+            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+            contentDescription = "Favorite",
             colorFilter = ColorFilter.tint(
                 color = MaterialTheme.colorScheme.onSurface
             )

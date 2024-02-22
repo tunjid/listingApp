@@ -1,7 +1,7 @@
 package com.tunjid.feature.feed
 
-import com.tunjid.data.media.Media
 import com.tunjid.data.listing.Listing
+import com.tunjid.data.media.Media
 import com.tunjid.feature.feed.di.ListingFeedRoute
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.sync.SyncStatus
@@ -22,6 +22,11 @@ import kotlinx.serialization.protobuf.ProtoNumber
 sealed class Action(val key: String) {
 
     data object Refresh : Action("Refresh")
+
+    data class SetFavorite(
+        val listingId: String,
+        val isFavorite: Boolean,
+    ) : Action("SetFavorite")
 
     sealed class LoadFeed : Action("List") {
         data class LoadAround(val query: ListingQuery) : LoadFeed()
@@ -83,6 +88,7 @@ val State.isRefreshing get() = syncStatus == SyncStatus.Running
 
 data class FeedItem(
     val listing: Listing,
+    val isFavorite: Boolean,
     val medias: List<Media>
 )
 

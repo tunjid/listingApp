@@ -13,6 +13,7 @@ android {
 dependencies {
     implementation(project(":data"))
 
+    implementation(project(":data:model:favorite"))
     implementation(project(":data:model:listing"))
     implementation(project(":data:model:media"))
     implementation(project(":data:model:user"))

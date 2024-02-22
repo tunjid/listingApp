@@ -3,6 +3,7 @@ package com.tunjid.feature.feed
 import com.tunjid.feature.feed.di.limit
 import com.tunjid.feature.feed.di.offset
 import com.tunjid.feature.feed.di.propertyType
+import com.tunjid.listing.data.model.FavoriteRepository
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.data.model.ListingRepository
 import com.tunjid.listing.data.model.MediaQuery
@@ -16,6 +17,7 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
+import com.tunjid.mutator.identity
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.di.restoreState
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -35,9 +37,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 
@@ -55,6 +59,7 @@ interface ListingFeedStateHolderFactory {
 class ActualListingFeedStateHolder @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
+    favoriteRepository: FavoriteRepository,
     syncManager: SyncManager,
     byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
@@ -64,6 +69,7 @@ class ActualListingFeedStateHolder @AssistedInject constructor(
 ) : ListingFeedStateHolder by scope.listingFeedStateHolder(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
+    favoriteRepository = favoriteRepository,
     syncManager = syncManager,
     byteSerializer = byteSerializer,
     navigationActions = navigationActions,
@@ -74,6 +80,7 @@ class ActualListingFeedStateHolder @AssistedInject constructor(
 fun CoroutineScope.listingFeedStateHolder(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
+    favoriteRepository: FavoriteRepository,
     syncManager: SyncManager,
     byteSerializer: ByteSerializer,
     navigationActions: (NavigationMutation) -> Unit,
@@ -96,10 +103,18 @@ fun CoroutineScope.listingFeedStateHolder(
             when (val action = type()) {
                 is Action.LoadFeed -> action.flow.fetchListingFeedMutations(
                     listingRepository = listingRepository,
-                    mediaRepository = mediaRepository
+                    mediaRepository = mediaRepository,
+                    favoriteRepository = favoriteRepository,
                 )
 
-                is Action.Refresh -> action.flow.refreshMutations(syncManager)
+                is Action.Refresh -> action.flow.refreshMutations(
+                    syncManager = syncManager
+                )
+
+                is Action.SetFavorite -> action.flow.favoriteMutations(
+                    favoriteRepository = favoriteRepository
+                )
+
                 is Action.Navigation -> action.flow.consumeNavigationActions(
                     navigationActions
                 )
@@ -128,6 +143,16 @@ private fun Flow<Action.Refresh>.refreshMutations(
     emit { this }
 }
 
+private fun Flow<Action.SetFavorite>.favoriteMutations(
+    favoriteRepository: FavoriteRepository
+): Flow<Mutation<State>> = mapLatest { action ->
+    favoriteRepository.setListingFavorited(
+        listingId = action.listingId,
+        isFavorite = action.isFavorite
+    )
+    identity()
+}
+
 /**
  * Feed mutations as a function of the user's scroll position
  */
@@ -135,6 +160,7 @@ context(SuspendingStateHolder<State>)
 private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
+    favoriteRepository: FavoriteRepository,
 ): Flow<Mutation<State>> {
     // Read the starting state at the time of subscription
     val startingState = state()
@@ -177,7 +203,8 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                     feedItemListTiler(
                         startingQuery = queries.value,
                         listingRepository = listingRepository,
-                        mediaRepository = mediaRepository
+                        mediaRepository = mediaRepository,
+                        favoriteRepository = favoriteRepository,
                     )
                 )
                     // The produced list can be debounced to keep the user's scroll
@@ -214,7 +241,8 @@ private fun listingPivotRequest(numColumns: Int) =
 private fun feedItemListTiler(
     startingQuery: ListingQuery,
     listingRepository: ListingRepository,
-    mediaRepository: MediaRepository
+    mediaRepository: MediaRepository,
+    favoriteRepository: FavoriteRepository,
 ) = listTiler(
     order = Tile.Order.PivotSorted(
         query = startingQuery,
@@ -223,17 +251,26 @@ private fun feedItemListTiler(
     fetcher = { query ->
         listingRepository.listings(query).withDeferred(
             deferredFetcher = { listing ->
-                // This can also be paginated for a fully immersive experience
-                mediaRepository.media(
-                    MediaQuery(
-                        listingId = listing.id,
-                        offset = 0L,
-                        limit = 10
-                    )
+                combine(
+                    favoriteRepository.isFavorite(listing.id),
+                    // This can also be paginated for a fully immersive experience
+                    mediaRepository.media(
+                        MediaQuery(
+                            listingId = listing.id,
+                            offset = 0L,
+                            limit = 10
+                        )
+                    ),
+                    ::Pair
                 )
-            },
-            combiner = ::FeedItem
-        )
+            }
+        ) { listing, (isFavorite, medias) ->
+            FeedItem(
+                listing = listing,
+                isFavorite = isFavorite,
+                medias = medias
+            )
+        }
     }
 )
 
