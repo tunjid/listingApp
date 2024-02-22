@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -137,6 +136,9 @@ fun ListingFeedScreen(
                 .padding(64.dp)
         )
         EmptyView(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(24.dp),
             status = state.syncStatus,
             isEmpty = state.listings.isEmpty()
         )
@@ -200,14 +202,13 @@ private fun FeedItemCard(
 }
 
 @Composable
-private fun BoxScope.EmptyView(
+private fun EmptyView(
+    modifier: Modifier = Modifier,
     status: SyncStatus,
     isEmpty: Boolean
 ) {
     Box(
-        modifier = Modifier
-            .align(Alignment.Center)
-            .padding(24.dp)
+        modifier = modifier,
     ) {
         when (status) {
             SyncStatus.Running -> Unit
