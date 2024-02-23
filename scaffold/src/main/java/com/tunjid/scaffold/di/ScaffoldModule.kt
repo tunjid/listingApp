@@ -29,7 +29,7 @@ import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
 import com.tunjid.treenav.strings.RouteTrie
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.routeParserFrom
 import dagger.Binds
 import dagger.Module
@@ -107,12 +107,12 @@ object ScaffoldModule {
     @Provides
     @Singleton
     fun routeParser(
-        routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<Route>>
-    ): RouteParser<@JvmSuppressWildcards Route> {
+        routeMatcherMap: Map<String, @JvmSuppressWildcards RouteMatcher>
+    ): RouteParser {
         val routeMatchers = routeMatcherMap
             .toList()
             .sortedWith(routeMatchingComparator())
-            .map(Pair<String, @kotlin.jvm.JvmSuppressWildcards UrlRouteMatcher<Route>>::second)
+            .map(Pair<String, @kotlin.jvm.JvmSuppressWildcards RouteMatcher>::second)
         return routeParserFrom(*(routeMatchers).toTypedArray())
     }
 
@@ -185,7 +185,7 @@ object ScaffoldModule {
 interface ScaffoldBindModule {
 
     @Multibinds
-    fun defaultRouteMatchers(): Map<String, @JvmSuppressWildcards UrlRouteMatcher<Route>>
+    fun defaultRouteMatchers(): Map<String, @JvmSuppressWildcards RouteMatcher>
 
     @Multibinds
     fun defaultSavedState(): Set<@JvmSuppressWildcards SavedStateType>
@@ -215,7 +215,7 @@ interface ScaffoldBindModule {
 }
 
 private fun routeMatchingComparator() =
-    compareBy<Pair<String, UrlRouteMatcher<Route>>>(
+    compareBy<Pair<String, RouteMatcher>>(
         // Order by number of path segments firs
         { (key) -> key.split("/").size },
         // Match more specific segments first, route params should be matched later

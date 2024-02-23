@@ -15,7 +15,7 @@ interface NavigationContext {
 
 internal class ImmutableNavigationContext(
     private val state: MultiStackNav,
-    private val routeParser: RouteParser<Route>
+    private val routeParser: RouteParser
 ) : NavigationContext {
     override val navState: MultiStackNav get() = state
 

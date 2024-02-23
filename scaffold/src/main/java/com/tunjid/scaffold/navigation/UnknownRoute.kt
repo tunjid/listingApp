@@ -32,7 +32,7 @@ private object RouteParamsSerializer : KSerializer<RouteParams> {
 
     override fun serialize(encoder: Encoder, value: RouteParams) {
         val surrogate = RouteParamsSurrogate(
-            route = value.route,
+            route = value.pathAndQueries,
             pathArgs = value.pathArgs,
             queryParams = value.queryParams
         )
@@ -42,7 +42,7 @@ private object RouteParamsSerializer : KSerializer<RouteParams> {
     override fun deserialize(decoder: Decoder): RouteParams {
         val surrogate = decoder.decodeSerializableValue(RouteParamsSurrogate.serializer())
         return RouteParams(
-            route = surrogate.route,
+            pathAndQueries = surrogate.route,
             pathArgs = surrogate.pathArgs,
             queryParams = surrogate.queryParams
         )
@@ -53,7 +53,7 @@ private object RouteParamsSerializer : KSerializer<RouteParams> {
 data class UnknownRoute(val path: String = "404") : StatelessRoute() {
     override val routeParams: RouteParams
         get() = RouteParams(
-            route = path,
+            pathAndQueries = path,
             pathArgs = emptyMap(),
             queryParams = emptyMap()
         )

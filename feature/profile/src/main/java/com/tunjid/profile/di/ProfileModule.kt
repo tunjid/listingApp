@@ -10,7 +10,7 @@ import com.tunjid.scaffold.adaptive.StatelessRoute
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.treenav.strings.Route
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
@@ -45,7 +45,7 @@ object ProfileModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
+    fun routeParser(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
             routeMapper = ::ProfileRoute

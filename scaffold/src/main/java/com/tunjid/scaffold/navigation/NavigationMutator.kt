@@ -11,7 +11,7 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -56,8 +56,8 @@ private val EmptyNavigationState = MultiStackNav(
 class PersistedNavigationStateHolder @Inject constructor(
     appScope: CoroutineScope,
     savedStateRepository: SavedStateRepository,
-    routeParser: RouteParser<@JvmSuppressWildcards Route>,
-    routeMatcherMap: Map<String, @JvmSuppressWildcards UrlRouteMatcher<Route>>
+    routeParser: RouteParser,
+    routeMatcherMap: Map<String, @JvmSuppressWildcards RouteMatcher>
 ) : NavigationStateHolder by appScope.actionStateFlowMutator(
     initialState = EmptyNavigationState,
     started = SharingStarted.Eagerly,
@@ -96,7 +96,7 @@ fun <Action : NavigationAction, State> Flow<Action>.consumeNavigationActions(
     emptyFlow<Mutation<State>>()
 }
 
-private fun RouteParser<Route>.parseMultiStackNav(savedState: SavedState) =
+private fun RouteParser.parseMultiStackNav(savedState: SavedState) =
     savedState.navigation
         .fold(
             initial = MultiStackNav(name = "AppNav"),
@@ -107,8 +107,10 @@ private fun RouteParser<Route>.parseMultiStackNav(savedState: SavedState) =
                                 initial = StackNav(
                                     name = routesForStack.firstOrNull() ?: "Unknown"
                                 ),
-                                operation = innerFold@{ stackNav, route ->
-                                    val resolvedRoute = parse(routeString = route) ?: UnknownRoute()
+                                operation = innerFold@{ stackNav, pathAndQueries ->
+                                    val resolvedRoute = parse(
+                                        pathAndQueries = pathAndQueries
+                                    ) ?: UnknownRoute()
                                     stackNav.copy(
                                         children = stackNav.children + resolvedRoute
                                     )

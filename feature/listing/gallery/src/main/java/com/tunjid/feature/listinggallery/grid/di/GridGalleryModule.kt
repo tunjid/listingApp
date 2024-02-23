@@ -15,7 +15,7 @@ import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
@@ -33,7 +33,7 @@ private const val RoutePattern = "/listings/{listingId}/gallery/grid"
 @Serializable
 data class GridGalleryRoute(
     override val routeParams: SerializedRouteParams
-) : Route()
+) : Route
 
 internal val RouteParams.listingId get() = pathArgs.getValue("listingId")
 
@@ -59,7 +59,7 @@ object GridGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
+    fun routeParser(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
             routeMapper = ::GridGalleryRoute

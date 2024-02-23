@@ -70,7 +70,7 @@ fun adaptiveRouteConfiguration(
 /**
  * [AdaptiveRouteConfiguration] instances with no state holder
  */
-abstract class StatelessRoute : Route()
+abstract class StatelessRoute : Route
 
 /**
  * A route that has a id for a [Route] defined in another module
@@ -80,7 +80,7 @@ class ExternalRoute(
 ) : StatelessRoute() {
     override val routeParams: RouteParams
         get() = RouteParams(
-            route = path,
+            pathAndQueries = path,
             pathArgs = emptyMap(),
             queryParams = emptyMap(),
         )

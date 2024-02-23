@@ -17,7 +17,7 @@ import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
@@ -35,7 +35,7 @@ private const val RoutePattern = "/listings/{listingId}"
 @Serializable
 internal data class ListingDetailRoute(
     override val routeParams: SerializedRouteParams
-) : Route() {
+) : Route {
     override val children: List<Node> = listOf(
         ExternalRoute(
             path = "/listings"
@@ -67,7 +67,7 @@ object ListingDetailModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeMatcher(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
+    fun routeMatcher(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
             routeMapper = ::ListingDetailRoute

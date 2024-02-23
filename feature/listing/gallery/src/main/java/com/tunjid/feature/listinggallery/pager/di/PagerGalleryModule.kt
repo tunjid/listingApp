@@ -14,7 +14,7 @@ import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
 import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
@@ -32,7 +32,7 @@ private const val RoutePattern = "/listings/{listingId}/gallery/pager"
 @Serializable
 internal data class PagerGalleryRoute(
     override val routeParams: SerializedRouteParams
-) : Route()
+) : Route
 
 internal val RouteParams.listingId get() = pathArgs.getValue("listingId")
 
@@ -58,7 +58,7 @@ object PagerGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
+    fun routeParser(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
             routeMapper = ::PagerGalleryRoute

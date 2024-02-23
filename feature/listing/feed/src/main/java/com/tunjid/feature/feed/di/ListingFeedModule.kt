@@ -14,7 +14,7 @@ import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
-import com.tunjid.treenav.strings.UrlRouteMatcher
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
@@ -33,7 +33,7 @@ private const val DefaultItemsPerQuery = 10L
 @Serializable
 internal data class ListingFeedRoute(
     override val routeParams: SerializedRouteParams
-) : Route()
+) : Route
 
 internal val RouteParams.limit
     get() = queryParams["limit"]?.firstOrNull()?.toLongOrNull()
@@ -56,7 +56,7 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeParser(): UrlRouteMatcher<@JvmSuppressWildcards Route> =
+    fun routeParser(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
             routeMapper = ::ListingFeedRoute
