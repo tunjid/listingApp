@@ -26,6 +26,7 @@ import com.tunjid.tiler.PivotRequest
 import com.tunjid.tiler.Tile
 import com.tunjid.tiler.distinctBy
 import com.tunjid.tiler.listTiler
+import com.tunjid.tiler.queries
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
 import com.tunjid.treenav.strings.Route
@@ -212,12 +213,13 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                     // It can also be introspected and filtered to guarantee the items
                     // produced are always consecutive.
                     // See the project readme for details: https://github.com/tunjid/Tiler
-                    .mapToMutation {
+                    .mapToMutation { fetchedList ->
                         // Queries update independently of each other, so duplicates may be emitted.
                         // The maximum amount of items returned is bound by the size of the
                         // view port. Typically << 100 items so the
                         // distinct operation is cheap and fixed.
-                        copy(listings = it.distinctBy(FeedItem::id))
+                        if (!fetchedList.queries().contains(currentQuery)) this
+                        else copy(listings = fetchedList.distinctBy(FeedItem::id))
                     }
             )
         }
