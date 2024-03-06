@@ -20,14 +20,14 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.subclass
 
-private const val RoutePattern = "/listings"
+private const val FeedPattern = "/listings"
+private const val FavoritesPattern = "/favorites"
 private const val DefaultItemsPerQuery = 10L
 
 @Serializable
@@ -43,6 +43,8 @@ internal val RouteParams.offset get() = queryParams["offset"]?.firstOrNull()?.to
 
 internal val RouteParams.propertyType get() = queryParams["propertyType"]?.firstOrNull()
 
+internal val RouteParams.isFavorites get() = pathAndQueries.contains("favorites")
+
 @Module
 @InstallIn(SingletonComponent::class)
 object ListingFeedModule {
@@ -55,17 +57,26 @@ object ListingFeedModule {
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
-    fun routeParser(): RouteMatcher =
+    @StringKey(FeedPattern)
+    fun feedParser(): RouteMatcher =
         urlRouteMatcher(
-            routePattern = RoutePattern,
+            routePattern = FeedPattern,
             routeMapper = ::ListingFeedRoute
         )
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
+    @StringKey(FavoritesPattern)
+    fun favoritesParser(): RouteMatcher =
+        urlRouteMatcher(
+            routePattern = FavoritesPattern,
+            routeMapper = ::ListingFeedRoute
+        )
+
+    @IntoMap
+    @Provides
+    @StringKey(FeedPattern)
+    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
         val stateHolder = rememberRetainedStateHolder<ListingFeedStateHolder>(
             route = route
         )
@@ -78,8 +89,20 @@ object ListingFeedModule {
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @StringKey(FavoritesPattern)
+    fun favoritesAdaptiveConfiguration() = feedAdaptiveConfiguration()
+
+    @IntoMap
+    @Provides
+    @StringKey(FeedPattern)
     fun listingFeedStateHolderCreator(
+        factory: ListingFeedStateHolderFactory
+    ): ScreenStateHolderCreator = factory::create
+
+    @IntoMap
+    @Provides
+    @StringKey(FavoritesPattern)
+    fun favoritesStateHolderCreator(
         factory: ListingFeedStateHolderFactory
     ): ScreenStateHolderCreator = factory::create
 }

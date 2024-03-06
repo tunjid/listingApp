@@ -1,5 +1,6 @@
 package com.tunjid.feature.feed
 
+import com.tunjid.feature.feed.di.isFavorites
 import com.tunjid.feature.feed.di.limit
 import com.tunjid.feature.feed.di.offset
 import com.tunjid.feature.feed.di.propertyType
@@ -103,6 +104,7 @@ fun CoroutineScope.listingFeedStateHolder(
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.LoadFeed -> action.flow.fetchListingFeedMutations(
+                    isFavorites = route.routeParams.isFavorites,
                     listingRepository = listingRepository,
                     mediaRepository = mediaRepository,
                     favoriteRepository = favoriteRepository,
@@ -159,6 +161,7 @@ private fun Flow<Action.SetFavorite>.favoriteMutations(
  */
 context(SuspendingStateHolder<State>)
 private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
+    isFavorites: Boolean,
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
@@ -202,6 +205,7 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                 numColumns.mapToMutation { copy(numColumns = it) },
                 tileInputs.toTiledList(
                     feedItemListTiler(
+                        isFavorites = isFavorites,
                         startingQuery = queries.value,
                         listingRepository = listingRepository,
                         mediaRepository = mediaRepository,
@@ -218,7 +222,7 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                         // The maximum amount of items returned is bound by the size of the
                         // view port. Typically << 100 items so the
                         // distinct operation is cheap and fixed.
-                        if (!fetchedList.queries().contains(currentQuery)) this
+                        if (fetchedList.isNotEmpty() && !fetchedList.queries().contains(currentQuery)) this
                         else copy(listings = fetchedList.distinctBy(FeedItem::id))
                     }
             )
@@ -241,6 +245,7 @@ private fun listingPivotRequest(numColumns: Int) =
 
 
 private fun feedItemListTiler(
+    isFavorites: Boolean,
     startingQuery: ListingQuery,
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
@@ -251,7 +256,10 @@ private fun feedItemListTiler(
         comparator = ListingQueryComparator,
     ),
     fetcher = { query ->
-        listingRepository.listings(query).withDeferred(
+        when (isFavorites) {
+            true -> favoriteRepository.favoriteListings(query)
+            false -> listingRepository.listings(query)
+        }.withDeferred(
             deferredFetcher = { listing ->
                 combine(
                     favoriteRepository.isFavorite(listing.id),
