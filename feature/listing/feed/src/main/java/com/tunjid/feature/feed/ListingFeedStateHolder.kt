@@ -40,11 +40,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.scan
 
 typealias ListingFeedStateHolder = ActionStateMutator<Action, StateFlow<State>>
@@ -188,6 +190,15 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
         .distinctUntilChanged()
         // Flatmap to the fields defined earlier
         .flatMapLatest { (queries, numColumns) ->
+            val listingsAvailable = queries
+                .map { it.propertyType }
+                .distinctUntilChanged()
+                .flatMapLatest { propertyType ->
+                    when (isFavorites) {
+                        true -> favoriteRepository.favoritesAvailable(propertyType = propertyType)
+                        false -> listingRepository.listingsAvailable(propertyType = propertyType)
+                    }
+                }
             val tileInputs = merge(
                 numColumns.map { columns ->
                     Tile.Limiter(
@@ -201,6 +212,7 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
             )
             // Merge all state changes that are a function of loading the list
             merge(
+                listingsAvailable.mapToMutation { copy(listingsAvailable = it) },
                 queries.mapToMutation { copy(currentQuery = it) },
                 numColumns.mapToMutation { copy(numColumns = it) },
                 tileInputs.toTiledList(
@@ -212,6 +224,15 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                         favoriteRepository = favoriteRepository,
                     )
                 )
+                    .debounce { fetchedList ->
+                        if (fetchedList.isEmpty()) return@debounce 500
+                        val isAllLoading = (0 until fetchedList.tileCount)
+                            .map { index -> fetchedList[fetchedList.tileAt(index).start] }
+                            .all { it is FeedItem.Loading }
+
+                        if (isAllLoading) 500
+                        else 0
+                    }
                     // The produced list can be debounced to keep the user's scroll
                     // position if the query changes for filtering or sorting reasons.
                     // It can also be introspected and filtered to guarantee the items
@@ -222,8 +243,8 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                         // The maximum amount of items returned is bound by the size of the
                         // view port. Typically << 100 items so the
                         // distinct operation is cheap and fixed.
-                        if (fetchedList.isNotEmpty() && !fetchedList.queries().contains(currentQuery)) this
-                        else copy(listings = fetchedList.distinctBy(FeedItem::id))
+                        if (!fetchedList.queries().contains(currentQuery)) this
+                        else copy(listings = fetchedList.distinctBy(FeedItem::key))
                     }
             )
         }
@@ -273,14 +294,29 @@ private fun feedItemListTiler(
                     ),
                     ::Pair
                 )
+            },
+            combiner = { index, listing, (isFavorite, medias) ->
+                val itemIndex = query.offset.toInt() + index
+                FeedItem.Loaded(
+                    key = "$query-$itemIndex",
+                    index = itemIndex,
+                    listing = listing,
+                    isFavorite = isFavorite,
+                    medias = medias
+                )
             }
-        ) { listing, (isFavorite, medias) ->
-            FeedItem(
-                listing = listing,
-                isFavorite = isFavorite,
-                medias = medias
-            )
-        }
+        )
+            .onStart<List<FeedItem>> {
+                emit(
+                    (0 until query.limit.toInt()).map { index ->
+                        val itemIndex = query.offset.toInt() + index
+                        FeedItem.Loading(
+                            key = "$query-$itemIndex",
+                            index = itemIndex,
+                        )
+                    }
+                )
+            }
     }
 )
 

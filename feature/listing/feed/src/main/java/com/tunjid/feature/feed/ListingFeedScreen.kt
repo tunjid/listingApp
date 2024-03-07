@@ -2,6 +2,7 @@ package com.tunjid.feature.feed
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -35,6 +38,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -46,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tunjid.composables.scrollbars.scrollbarState
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.adaptive.sharedElementOf
@@ -57,6 +68,8 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.Media
 import com.tunjid.scaffold.media.MediaArgs
 import com.tunjid.tiler.compose.PivotedTilingEffect
+import com.tunjid.ui.FastScrollbar
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun ListingFeedScreen(
@@ -72,6 +85,7 @@ fun ListingFeedScreen(
         )
     )
     val gridState = rememberLazyGridState()
+    val updatedItems by rememberUpdatedState(state.listings)
     val pullRefreshState = rememberPullRefreshState(
         refreshing = state.isRefreshing,
         onRefresh = {
@@ -110,7 +124,7 @@ fun ListingFeedScreen(
             ) {
                 items(
                     items = state.listings,
-                    key = FeedItem::id,
+                    key = FeedItem::key,
                     span = {
                         actions(Action.LoadFeed.GridSize(maxLineSpan))
                         GridItemSpan(currentLineSpan = 1)
@@ -127,6 +141,27 @@ fun ListingFeedScreen(
                 )
             }
         }
+        val scrollbarState = gridState.scrollbarState(
+            itemsAvailable = state.listingsAvailable.toInt(),
+            itemIndex = { itemInfo ->
+                updatedItems.getOrNull(itemInfo.index)?.index ?: -1
+            }
+        )
+
+        FastScrollbar(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(top = 56.dp)
+                .align(Alignment.BottomEnd)
+                .width(12.dp),
+            state = scrollbarState,
+            scrollInProgress = gridState.isScrollInProgress,
+            orientation = Orientation.Vertical,
+            onThumbMoved = gridState.scrollbarThumbPositionFunction(
+                state = state,
+                actions = actions
+            ),
+        )
         PullRefreshIndicator(
             refreshing = state.isRefreshing,
             state = pullRefreshState,
@@ -162,7 +197,7 @@ private fun FeedItemCard(
         modifier = modifier,
         verticalArrangement = Arrangement.SpaceBetween,
         content = {
-            val pagerState = rememberPagerState(pageCount = feedItem.medias::size)
+            val pagerState = rememberPagerState(pageCount = feedItem::pagerSize)
             Card(
                 modifier = Modifier,
             ) {
@@ -171,27 +206,29 @@ private fun FeedItemCard(
                         .fillMaxWidth()
                         .aspectRatio(1f),
                 ) {
-                    FeedMediaPager(
-                        pagerState = pagerState,
-                        feedItem = feedItem,
-                        actions = actions
-                    )
-                    if (feedItem.medias.isNotEmpty()) MaximizePager(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp),
-                        listingId = feedItem.listing.id,
-                        url = feedItem.medias[pagerState.currentPage].url,
-                        actions = actions,
-                    )
-                    FavoriteButton(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(16.dp),
-                        listingId = feedItem.listing.id,
-                        isFavorite = feedItem.isFavorite,
-                        actions = actions,
-                    )
+                    if (feedItem is FeedItem.Loaded) {
+                        FeedMediaPager(
+                            pagerState = pagerState,
+                            feedItem = feedItem,
+                            actions = actions
+                        )
+                        if (feedItem.medias.isNotEmpty()) MaximizePager(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp),
+                            listingId = feedItem.listing.id,
+                            url = feedItem.medias[pagerState.currentPage].url,
+                            actions = actions,
+                        )
+                        FavoriteButton(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(16.dp),
+                            listingId = feedItem.listing.id,
+                            isFavorite = feedItem.isFavorite,
+                            actions = actions,
+                        )
+                    }
                 }
             }
             FeedItemInfo(
@@ -228,7 +265,7 @@ private fun EmptyView(
 @Composable
 private fun FeedMediaPager(
     pagerState: PagerState,
-    feedItem: FeedItem,
+    feedItem: FeedItem.Loaded,
     actions: (Action) -> Unit
 ) {
     HorizontalPager(
@@ -272,16 +309,25 @@ private fun FeedItemInfo(feedItem: FeedItem) {
         )
     ) {
         Text(
-            text = feedItem.listing.title,
+            text = when (feedItem) {
+                is FeedItem.Loaded -> feedItem.listing.title
+                is FeedItem.Loading -> ""
+            },
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp
         )
         Text(
-            text = feedItem.listing.address,
+            text = when (feedItem) {
+                is FeedItem.Loaded -> feedItem.listing.address
+                is FeedItem.Loading -> ""
+            },
             fontSize = 12.sp
         )
         Text(
-            text = feedItem.listing.price,
+            text = when (feedItem) {
+                is FeedItem.Loaded -> feedItem.listing.price
+                is FeedItem.Loading -> ""
+            },
             fontWeight = FontWeight.Medium,
             fontSize = 15.sp,
             textDecoration = TextDecoration.Underline,
@@ -344,5 +390,43 @@ private fun FavoriteButton(
                 color = MaterialTheme.colorScheme.onSurface
             )
         )
+    }
+}
+
+@Composable
+private fun LazyGridState.scrollbarThumbPositionFunction(
+    state: State,
+    actions: (Action) -> Unit,
+): (Float) -> Unit {
+
+    var percentage by remember { mutableStateOf<Float?>(null) }
+    val updatedState by rememberUpdatedState(state)
+
+    // Trigger the load to fetch the data required
+    LaunchedEffect(percentage) {
+        val currentPercentage = percentage ?: return@LaunchedEffect
+        val indexToFind = (state.listingsAvailable * currentPercentage).toInt()
+        actions(
+            Action.LoadFeed.LoadAround(
+                state.currentQuery.copy(
+                    offset = indexToFind.toLong()
+                )
+            )
+        )
+
+        // Fast path
+        val fastIndex = updatedState.listings.indexOfFirst { it.index == indexToFind }
+            .takeIf { it > -1 }
+        if (fastIndex != null) return@LaunchedEffect scrollToItem(fastIndex)
+
+        // Slow path
+        scrollToItem(
+            snapshotFlow { updatedState.listings.indexOfFirst { it.index == indexToFind } }
+                .first { it > -1 }
+        )
+
+    }
+    return remember {
+        { percentage = it }
     }
 }

@@ -3,7 +3,6 @@ package com.tunjid.listing.data.model
 import com.tunjid.data.favorite.database.FavoriteDao
 import com.tunjid.data.favorite.database.model.FavoriteEntity
 import com.tunjid.data.listing.Listing
-import com.tunjid.data.listing.database.ListingDao
 import com.tunjid.data.listing.database.model.ListingEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,5 +46,9 @@ class OfflineFirstFavoriteRepository @Inject constructor(
             .map { listingEntities ->
                 listingEntities.map(ListingEntity::asExternalModel)
             }
+
+    override fun favoritesAvailable(propertyType: String?): Flow<Long> =
+        favoriteDao.favoritesAvailable(propertyType)
+            .distinctUntilChanged()
 }
 
