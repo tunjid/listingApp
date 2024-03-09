@@ -1,6 +1,7 @@
 package com.tunjid.scaffold.scaffold
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -11,6 +12,7 @@ import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Density
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.globalui.BackHandler
 import com.tunjid.scaffold.globalui.PaneAnchor
@@ -18,8 +20,8 @@ import com.tunjid.scaffold.globalui.progress
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-internal val LocalPaneAnchorState = staticCompositionLocalOf {
-    PaneAnchorState()
+internal val LocalPaneAnchorState = staticCompositionLocalOf<PaneAnchorState> {
+    TODO()
 }
 
 private val PaneSpring = adaptiveSpringSpec(
@@ -27,7 +29,7 @@ private val PaneSpring = adaptiveSpringSpec(
 )
 
 @Stable
-internal class PaneAnchorState {
+internal class PaneAnchorState(density: Density) {
     var maxWidth by mutableIntStateOf(1000)
         internal set
     val width
@@ -49,7 +51,8 @@ internal class PaneAnchorState {
         anchors = currentAnchors(),
         positionalThreshold = { distance: Float -> distance * 0.5f },
         velocityThreshold = { 100f },
-        animationSpec = PaneSpring,
+        snapAnimationSpec = PaneSpring,
+        decayAnimationSpec = splineBasedDecay(density)
     )
 
     val modifier = Modifier

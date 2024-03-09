@@ -82,7 +82,7 @@ internal fun AdaptiveContentContainer(
     val windowSizeClass = navigationState.windowSizeClass
 
     val density = LocalDensity.current
-    val paneSplitState = remember(::PaneAnchorState)
+    val paneSplitState = remember { PaneAnchorState(density) }
 
     CompositionLocalProvider(
         LocalPaneAnchorState provides paneSplitState,
