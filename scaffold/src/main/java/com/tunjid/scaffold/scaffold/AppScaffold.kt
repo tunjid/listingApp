@@ -22,11 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.Adaptive
+import com.tunjid.scaffold.adaptive.AdaptiveContentRoot
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
@@ -64,7 +64,7 @@ fun Scaffold(
                     navStateHolder = navStateHolder,
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
-                LookaheadScope {
+                AdaptiveContentRoot {
                     AdaptiveContentContainer(
                         contentState = adaptiveContentState,
                         positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(

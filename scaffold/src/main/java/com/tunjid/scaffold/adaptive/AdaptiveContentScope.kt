@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -11,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.LookaheadScope
 import com.tunjid.scaffold.adaptive.Adaptive.key
 import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
 
@@ -98,6 +100,21 @@ fun <T> sharedElementOf(
 
 internal val LocalAdaptiveContentScope = staticCompositionLocalOf<Adaptive.ContainerScope?> {
     null
+}
+
+internal val LocalLookaheadScope = staticCompositionLocalOf<LookaheadScope> {
+    TODO()
+}
+
+@Composable
+fun AdaptiveContentRoot(
+    content: @Composable () -> Unit
+) {
+    LookaheadScope {
+        CompositionLocalProvider(LocalLookaheadScope provides this) {
+            content()
+        }
+    }
 }
 
 internal val Adaptive.ContainerScope.isPreviewingBack: Boolean
