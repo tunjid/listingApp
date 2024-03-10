@@ -306,8 +306,8 @@ private fun feedItemListTiler(
                         )
                     }
                 )
-                // Add a delay so the shimmer effect is visible
-                delay(3000)
+                // Add a delay so the shimmer effect is visible to simulate async fetch
+                delay(1500)
             }
     }
 )
