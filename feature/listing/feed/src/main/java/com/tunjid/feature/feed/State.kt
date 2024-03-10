@@ -111,3 +111,7 @@ val FeedItem.pagerSize: Int
         is FeedItem.Loaded -> medias.size
         is FeedItem.Loading -> 0
     }
+
+fun ListingQuery.scrollTo(index: Int) = copy(
+    offset = index - (index % limit)
+)

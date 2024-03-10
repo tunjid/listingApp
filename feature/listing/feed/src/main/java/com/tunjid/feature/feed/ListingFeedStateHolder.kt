@@ -25,6 +25,8 @@ import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.PivotRequest
 import com.tunjid.tiler.Tile
+import com.tunjid.tiler.TiledList
+import com.tunjid.tiler.buildTiledList
 import com.tunjid.tiler.distinctBy
 import com.tunjid.tiler.listTiler
 import com.tunjid.tiler.queries
@@ -35,12 +37,12 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -224,27 +226,16 @@ private suspend fun Flow<Action.LoadFeed>.fetchListingFeedMutations(
                         favoriteRepository = favoriteRepository,
                     )
                 )
-                    .debounce { fetchedList ->
-                        if (fetchedList.isEmpty()) return@debounce 500
-                        val isAllLoading = (0 until fetchedList.tileCount)
-                            .map { index -> fetchedList[fetchedList.tileAt(index).start] }
-                            .all { it is FeedItem.Loading }
-
-                        if (isAllLoading) 500
-                        else 0
-                    }
-                    // The produced list can be debounced to keep the user's scroll
-                    // position if the query changes for filtering or sorting reasons.
-                    // It can also be introspected and filtered to guarantee the items
-                    // produced are always consecutive.
-                    // See the project readme for details: https://github.com/tunjid/Tiler
                     .mapToMutation { fetchedList ->
                         // Queries update independently of each other, so duplicates may be emitted.
                         // The maximum amount of items returned is bound by the size of the
                         // view port. Typically << 100 items so the
                         // distinct operation is cheap and fixed.
                         if (!fetchedList.queries().contains(currentQuery)) this
-                        else copy(listings = fetchedList.distinctBy(FeedItem::key))
+                        else copy(
+                            listings = filterPlaceholdersFrom(fetchedList)
+                                .distinctBy(FeedItem::key)
+                        )
                     }
             )
         }
@@ -263,7 +254,6 @@ private fun listingPivotRequest(numColumns: Int) =
             copy(offset = offset + limit)
         }
     )
-
 
 private fun feedItemListTiler(
     isFavorites: Boolean,
@@ -316,8 +306,69 @@ private fun feedItemListTiler(
                         )
                     }
                 )
+                // Add a delay so the shimmer effect is visible
+                delay(3000)
             }
     }
 )
+
+/**
+ * When returning from the backstack, the paging pipeline will be started
+ * again, causing placeholders to be emitted.
+ *
+ * To keep preserve the existing state from being overwritten by
+ * placeholders, the following algorithm iterates over each tile (chunk) of queries in the
+ * [TiledList] to see if placeholders are displacing loaded items.
+ *
+ * If a displacement were to occur, favor the existing items over the displacing placeholders.
+ *
+ * Algorithm is O(2 * (3*NumOfColumns)).
+ * See the project readme for details: https://github.com/tunjid/Tiler
+ */
+private fun State.filterPlaceholdersFrom(
+    fetchedList: TiledList<ListingQuery, FeedItem>
+) = buildTiledList {
+    val existingMap = 0.until(listings.tileCount).associateBy(
+        keySelector = listings::queryAtTile,
+        valueTransform = { tileIndex ->
+            val existingTile = listings.tileAt(tileIndex)
+            listings.subList(
+                fromIndex = existingTile.start,
+                toIndex = existingTile.end
+            )
+        }
+    )
+    for (tileIndex in 0 until fetchedList.tileCount) {
+        val fetchedTile = fetchedList.tileAt(tileIndex)
+        val fetchedQuery = fetchedList.queryAtTile(tileIndex)
+        when (fetchedList[fetchedTile.start]) {
+            // Items are already loaded, no swap necessary
+            is FeedItem.Loaded -> addAll(
+                query = fetchedQuery,
+                items = fetchedList.subList(
+                    fromIndex = fetchedTile.start,
+                    toIndex = fetchedTile.end,
+                )
+            )
+            // Placeholder chunk in fetched list, check if loaded items are in the previous list
+            is FeedItem.Loading -> when (val existingChunk = existingMap[fetchedQuery]) {
+                // No existing items, reuse placeholders
+                null -> addAll(
+                    query = fetchedQuery,
+                    items = fetchedList.subList(
+                        fromIndex = fetchedTile.start,
+                        toIndex = fetchedTile.end,
+                    )
+                )
+
+                // Reuse existing items
+                else -> addAll(
+                    query = fetchedQuery,
+                    items = existingChunk
+                )
+            }
+        }
+    }
+}
 
 private val ListingQueryComparator = compareBy(ListingQuery::offset)

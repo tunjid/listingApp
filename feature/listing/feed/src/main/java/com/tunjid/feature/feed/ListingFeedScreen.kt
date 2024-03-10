@@ -1,6 +1,12 @@
 package com.tunjid.feature.feed
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +54,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -204,7 +212,11 @@ private fun FeedItemCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1f),
+                        .aspectRatio(1f)
+                        .run {
+                            if (feedItem is FeedItem.Loading) background(shimmerBrush())
+                            else this
+                        },
                 ) {
                     if (feedItem is FeedItem.Loaded) {
                         FeedMediaPager(
@@ -408,9 +420,7 @@ private fun LazyGridState.scrollbarThumbPositionFunction(
         val indexToFind = (state.listingsAvailable * currentPercentage).toInt()
         actions(
             Action.LoadFeed.LoadAround(
-                state.currentQuery.copy(
-                    offset = indexToFind.toLong()
-                )
+                state.currentQuery.scrollTo(index = indexToFind)
             )
         )
 
@@ -429,4 +439,38 @@ private fun LazyGridState.scrollbarThumbPositionFunction(
     return remember {
         { percentage = it }
     }
+}
+
+@Composable
+fun shimmerBrush(
+    targetValue: Float = 1000f
+): Brush {
+    val shimmerColors = remember {
+        listOf(
+            Color.LightGray.copy(alpha = 0.6f),
+            Color.LightGray.copy(alpha = 0.2f),
+            Color.LightGray.copy(alpha = 0.6f),
+        )
+    }
+
+    val transition = rememberInfiniteTransition(
+        label = "Shimmer transition"
+    )
+    val translateAnimation = transition.animateFloat(
+        initialValue = 0f,
+        label = "Shimmer animation",
+        targetValue = targetValue,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800),
+            repeatMode = RepeatMode.Reverse,
+        )
+    )
+    return Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset.Zero,
+        end = Offset(
+            x = translateAnimation.value,
+            y = translateAnimation.value
+        )
+    )
 }
