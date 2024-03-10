@@ -47,6 +47,10 @@ class OfflineFirstListingRepository @Inject constructor(
                 listingEntities.map(ListingEntity::asExternalModel)
             }
 
+    override fun listingsAvailable(propertyType: String?): Flow<Long> =
+        listingDao.listingsAvailable(propertyType)
+            .distinctUntilChanged()
+
     override suspend fun syncWith(synchronizer: Synchronizer): Boolean {
         val networkListings = listingNetworkDataSource.popularListings()
         userDao.upsertUsers(

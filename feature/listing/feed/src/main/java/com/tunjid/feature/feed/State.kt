@@ -79,6 +79,8 @@ data class State(
     @Transient
     val numColumns: Int = 1,
     @Transient
+    val listingsAvailable: Long = 0L,
+    @Transient
     val syncStatus: SyncStatus = SyncStatus.Idle,
     @Transient
     val listings: TiledList<ListingQuery, FeedItem> = emptyTiledList()
@@ -86,11 +88,30 @@ data class State(
 
 val State.isRefreshing get() = syncStatus == SyncStatus.Running
 
-data class FeedItem(
-    val listing: Listing,
-    val isFavorite: Boolean,
-    val medias: List<Media>
+sealed class FeedItem {
+    abstract val key: String
+    abstract val index: Int
+
+    data class Loading(
+        override val key: String,
+        override val index: Int,
+    ) : FeedItem()
+
+    data class Loaded(
+        override val key: String,
+        override val index: Int,
+        val listing: Listing,
+        val isFavorite: Boolean,
+        val medias: List<Media>
+    ) : FeedItem()
+}
+
+val FeedItem.pagerSize: Int
+    get() = when (this) {
+        is FeedItem.Loaded -> medias.size
+        is FeedItem.Loading -> 0
+    }
+
+fun ListingQuery.scrollTo(index: Int) = copy(
+    offset = index - (index % limit)
 )
-
-val FeedItem.id get() = listing.id
-

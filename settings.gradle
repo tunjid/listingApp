@@ -51,3 +51,4 @@ include(":feature:trips")
 
 include(":data:sync")
 include(":data:test")
+include(":ui")

@@ -56,4 +56,27 @@ interface FavoriteDao {
         offset: Long,
         propertyType: String? = null,
     ): Flow<List<ListingEntity>>
+
+    /**
+     * Fetches listings matching the specified query
+     */
+    @Transaction
+    @Query(
+        value = """
+            SELECT COUNT(*) FROM listings
+            INNER JOIN favorite
+            ON id == listing_id
+            WHERE 
+                CASE WHEN :propertyType
+                    IS NULL THEN 1
+                    ELSE property_type = :propertyType
+                END
+            AND
+                isFavorite == true
+            ORDER BY title DESC
+    """,
+    )
+    fun favoritesAvailable(
+        propertyType: String? = null,
+    ): Flow<Long>
 }

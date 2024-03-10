@@ -9,4 +9,6 @@ interface FavoriteRepository {
     suspend fun setListingFavorited(listingId: String, isFavorite: Boolean)
 
     fun favoriteListings(query: ListingQuery): Flow<List<Listing>>
+
+    fun favoritesAvailable(propertyType: String? = null): Flow<Long>
 }

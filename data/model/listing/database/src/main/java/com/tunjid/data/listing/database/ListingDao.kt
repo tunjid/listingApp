@@ -43,6 +43,21 @@ interface ListingDao {
         propertyType: String? = null,
     ): Flow<List<ListingEntity>>
 
+    @Transaction
+    @Query(
+        value = """
+            SELECT COUNT(*) FROM listings
+            WHERE 
+                CASE WHEN :propertyType
+                    IS NULL THEN 1
+                    ELSE property_type = :propertyType
+                END
+    """,
+    )
+    fun listingsAvailable(
+        propertyType: String? = null,
+    ): Flow<Long>
+
     /**
      * Inserts or updates [listings] in the db under the specified primary keys
      */

@@ -20,9 +20,12 @@ dependencies {
 
     implementation(project(":data:sync"))
 
+    implementation(project(":ui"))
+
     implementation(libs.coil.kt.compose)
     implementation(libs.tunjid.tiler.compose)
     implementation(libs.tunjid.tiler.tiler)
+    implementation(libs.tunjid.composables)
 
     testImplementation(project(":data:test"))
 }

@@ -16,4 +16,6 @@ interface ListingRepository : Syncable {
     fun listing(id: String): Flow<Listing>
 
     fun listings(query: ListingQuery): Flow<List<Listing>>
+
+    fun listingsAvailable(propertyType: String? = null): Flow<Long>
 }
