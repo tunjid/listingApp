@@ -12,6 +12,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,6 +50,8 @@ internal class SharedElementData<T>(
     onRemoved: () -> Unit
 ) {
     private var inCount by mutableIntStateOf(0)
+    private var adaptiveContentScopesSeen by mutableIntStateOf(0)
+    private var currentAdaptiveContentScopeKey by mutableStateOf<String?>(null)
 
     val offsetAnimation = DeferredTargetAnimation(
         vectorConverter = IntOffset.VectorConverter,
@@ -77,6 +80,18 @@ internal class SharedElementData<T>(
                 }
             }
         }
+
+    internal fun canDeferToAnimationForCompletion(
+        adaptiveContentScopeKey: String?
+    ): Boolean {
+        if (adaptiveContentScopeKey == null
+            || adaptiveContentScopeKey == currentAdaptiveContentScopeKey
+        ) return adaptiveContentScopesSeen > 1
+
+        currentAdaptiveContentScopeKey = adaptiveContentScopeKey
+        ++adaptiveContentScopesSeen
+        return false
+    }
 }
 
 /**
@@ -164,14 +179,8 @@ private fun SharedElementData<*>.isComplete(
     animationMapper: (SharedElementData<*>) -> DeferredTargetAnimation<*, *>
 ): Boolean {
     val animation = remember { animationMapper(this) }
-    val adaptiveContentScope = LocalAdaptiveContentScope.current
-    val scopeKey = adaptiveContentScope?.key
-    var seenKeyCount by remember { mutableIntStateOf(0) }
+    val scopeKey = LocalAdaptiveContentScope.current?.key
 
-    DisposableEffect(scopeKey) {
-        seenKeyCount++
-        onDispose { }
-    }
     val animationCompleteAtLeastOnce by produceState(
         initialValue = false,
         key1 = scopeKey
@@ -181,7 +190,8 @@ private fun SharedElementData<*>.isComplete(
             .filter(true::equals)
             .first()
     }
-    return seenKeyCount < 1 || animationCompleteAtLeastOnce
+
+    return canDeferToAnimationForCompletion(scopeKey) && animationCompleteAtLeastOnce
 }
 
 private val sizeSpec = spring(
