@@ -77,7 +77,7 @@ private fun ContentScale.interpolate(): ContentScale {
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = spring(
-                stiffness = Spring.StiffnessMediumLow
+                stiffness = Spring.StiffnessMedium
             ),
             block = { progress, _ ->
                 interpolation = progress
