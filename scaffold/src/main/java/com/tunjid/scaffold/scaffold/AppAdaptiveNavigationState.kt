@@ -7,7 +7,7 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.slices.RouteContainerPositionalState
 import com.tunjid.scaffold.globalui.slices.routeContainerState
-import com.tunjid.scaffold.navigation.UnknownRoute
+import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.strings.Route
 
 /**
@@ -53,7 +53,7 @@ internal data class AppAdaptiveNavigationState(
             swapAdaptations = emptySet(),
             windowSizeClass = WindowSizeClass.COMPACT,
             containersToRoutes = mapOf(
-                Adaptive.Container.Primary to UnknownRoute(
+                Adaptive.Container.Primary to unknownRoute(
                     Adaptive.Container.slots.first().toString()
                 )
             ),

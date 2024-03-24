@@ -13,7 +13,7 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.isPreviewing
 import com.tunjid.scaffold.globalui.slices.routeContainerState
-import com.tunjid.scaffold.navigation.UnknownRoute
+import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.current
@@ -240,6 +240,6 @@ private fun AppAdaptiveNavigationState.prune(): AppAdaptiveNavigationState = cop
 )
 
 private val MultiStackNav.primaryRoute: Route
-    get() = current as? Route ?: UnknownRoute(path = "404")
+    get() = current as? Route ?: unknownRoute(path = "404")
 
 private val MultiStackNav.primaryRouteOnBackPress: Route? get() = pop().current as? Route

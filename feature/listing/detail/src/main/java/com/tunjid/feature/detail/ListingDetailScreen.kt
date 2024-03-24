@@ -179,7 +179,7 @@ private fun ListingMediaPager(
                     },
             )
         }
-        if (listingItems.isNotEmpty() && totalItemCount != null) pageIndicator(
+        if (listingItems.isNotEmpty() && totalItemCount != null) PageIndicator(
             pagerIndex = listingItems[pagerState.currentPage].index,
             totalItemCount = totalItemCount
         )
@@ -187,7 +187,7 @@ private fun ListingMediaPager(
 }
 
 @Composable
-private fun BoxScope.pageIndicator(
+private fun BoxScope.PageIndicator(
     pagerIndex: Int,
     totalItemCount: Long
 ) {
@@ -222,7 +222,7 @@ private fun ListingInfo(
 ) {
     Column {
         ListingInfoHeader(listing)
-        hostInfo(host)
+        HostInfo(host)
     }
 }
 
@@ -249,7 +249,7 @@ private fun ListingInfoHeader(listing: Listing?) {
 }
 
 @Composable
-private fun hostInfo(host: User?) {
+private fun HostInfo(host: User?) {
     Surface(
         modifier = Modifier
             .padding(vertical = 16.dp),
@@ -276,11 +276,11 @@ private fun hostInfo(host: User?) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    hostImage(
+                    HostImage(
                         hostImageUrl = host?.pictureUrl,
                         isSuperHost = host?.isSuperHost == true
                     )
-                    hostSummary(
+                    HostSummary(
                         firstName = host?.firstName,
                         memberSince = host?.memberSince
                     )
@@ -292,7 +292,7 @@ private fun hostInfo(host: User?) {
 }
 
 @Composable
-private fun RowScope.hostImage(
+private fun RowScope.HostImage(
     hostImageUrl: String?,
     isSuperHost: Boolean
 ) {
@@ -322,7 +322,7 @@ private fun RowScope.hostImage(
 }
 
 @Composable
-private fun RowScope.hostSummary(
+private fun RowScope.HostSummary(
     firstName: String?,
     memberSince: String?,
 ) {

@@ -7,32 +7,24 @@ import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
+import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
-import com.tunjid.scaffold.navigation.SerializedRouteParams
-import com.tunjid.treenav.strings.Route
-import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.RouteMatcher
+import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.subclass
 
 private const val RoutePattern = "/listings/{listingId}/gallery/pager"
-
-@Serializable
-internal data class PagerGalleryRoute(
-    override val routeParams: SerializedRouteParams
-) : Route
 
 internal val RouteParams.listingId get() = pathArgs.getValue("listingId")
 
@@ -61,7 +53,7 @@ object PagerGalleryModule {
     fun routeParser(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
-            routeMapper = ::PagerGalleryRoute
+            routeMapper = ::routeOf
         )
 
     @IntoMap

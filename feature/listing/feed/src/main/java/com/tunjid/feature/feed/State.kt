@@ -2,7 +2,8 @@ package com.tunjid.feature.feed
 
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.media.Media
-import com.tunjid.feature.feed.di.ListingFeedRoute
+import com.tunjid.feature.feed.di.FavoritesPattern
+import com.tunjid.feature.feed.di.FeedPattern
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.ByteSerializable
@@ -47,8 +48,8 @@ sealed class Action(val key: String) {
                 ).toRoute
 
                 // Swap the top route if we're in the secondary panel
-                when (navState.current) {
-                    is ListingFeedRoute -> navState.push(route)
+                when (navState.current?.id) {
+                    FeedPattern, FavoritesPattern -> navState.push(route)
                     else -> navState.swap(route)
                 }
             }

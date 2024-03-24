@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.adaptive.StatelessRoute
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
-import com.tunjid.scaffold.navigation.SerializedRouteParams
-import com.tunjid.treenav.strings.Route
+import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -17,14 +15,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
-import kotlinx.serialization.Serializable
 
 private const val RoutePattern = "/messages"
-
-@Serializable
-data class MessagesRoute(
-    override val routeParams: SerializedRouteParams
-) : StatelessRoute()
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,7 +27,7 @@ object MessagesModule {
     fun routeParser(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
-            routeMapper = ::MessagesRoute
+            routeMapper = ::routeOf
         )
 
     @IntoMap

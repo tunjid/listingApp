@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
-import com.tunjid.scaffold.adaptive.StatelessRoute
+import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.treenav.strings.RouteParams
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -49,15 +49,7 @@ private object RouteParamsSerializer : KSerializer<RouteParams> {
     }
 }
 
-@Serializable
-data class UnknownRoute(val path: String = "404") : StatelessRoute() {
-    override val routeParams: RouteParams
-        get() = RouteParams(
-            pathAndQueries = path,
-            pathArgs = emptyMap(),
-            queryParams = emptyMap()
-        )
-}
+fun unknownRoute(path: String = "404") = routeOf(path = path)
 
 @Composable
 internal fun RouteNotFound() {

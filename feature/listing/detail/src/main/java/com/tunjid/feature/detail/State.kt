@@ -1,8 +1,8 @@
 package com.tunjid.feature.detail
 
-import com.tunjid.data.media.Media
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
+import com.tunjid.data.media.Media
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.globalui.PaneAnchor
@@ -69,10 +69,12 @@ data class State(
 sealed class ListingItem {
 
     abstract val index: Int
+
     data class Preview(
         override val index: Int,
         val url: String
     ) : ListingItem()
+
     data class Loaded(
         override val index: Int,
         val media: Media

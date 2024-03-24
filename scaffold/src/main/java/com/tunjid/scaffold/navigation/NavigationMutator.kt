@@ -9,7 +9,6 @@ import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
-import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
 import com.tunjid.treenav.strings.RouteMatcher
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +46,7 @@ private val EmptyNavigationState = MultiStackNav(
     stacks = listOf(
         StackNav(
             name = "emptyStack",
-            children = listOf(UnknownRoute())
+            children = listOf(unknownRoute())
         )
     )
 )
@@ -110,7 +109,7 @@ private fun RouteParser.parseMultiStackNav(savedState: SavedState) =
                                 operation = innerFold@{ stackNav, pathAndQueries ->
                                     val resolvedRoute = parse(
                                         pathAndQueries = pathAndQueries
-                                    ) ?: UnknownRoute()
+                                    ) ?: unknownRoute()
                                     stackNav.copy(
                                         children = stackNav.children + resolvedRoute
                                     )
