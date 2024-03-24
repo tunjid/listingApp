@@ -6,42 +6,36 @@ import com.tunjid.feature.detail.ListingDetailStateHolder
 import com.tunjid.feature.detail.ListingStateHolderFactory
 import com.tunjid.feature.detail.State
 import com.tunjid.listing.data.model.MediaQuery
-import com.tunjid.scaffold.adaptive.ExternalRoute
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
+import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
-import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
-import com.tunjid.treenav.Node
 import com.tunjid.treenav.strings.Route
-import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.RouteMatcher
+import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.subclass
 
 private const val RoutePattern = "/listings/{listingId}"
 
-@Serializable
-internal data class ListingDetailRoute(
-    override val routeParams: SerializedRouteParams
-) : Route {
-    override val children: List<Node> = listOf(
-        ExternalRoute(
-            path = "/listings"
-        )
+private fun listingDetailRoute(
+    routeParams: RouteParams
+) = routeOf(
+    params = routeParams,
+    children = listOf(
+        routeOf("/listings")
     )
-}
+)
 
 internal val RouteParams.listingId get() = pathArgs.getValue("listingId")
 
@@ -70,7 +64,7 @@ object ListingDetailModule {
     fun routeMatcher(): RouteMatcher =
         urlRouteMatcher(
             routePattern = RoutePattern,
-            routeMapper = ::ListingDetailRoute
+            routeMapper = ::listingDetailRoute
         )
 
     @IntoMap
@@ -78,7 +72,7 @@ object ListingDetailModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration(
         secondaryRoute = { route ->
-            route.children.first() as? ExternalRoute
+            route.children.first() as? Route
         },
         render = { route ->
             val stateHolder = rememberRetainedStateHolder<ListingDetailStateHolder>(

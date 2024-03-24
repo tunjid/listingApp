@@ -21,6 +21,6 @@ internal class ImmutableNavigationContext(
 
     override val String.toRoute: Route
         get() {
-            return routeParser.parse(this) ?: UnknownRoute()
+            return routeParser.parse(this) ?: unknownRoute()
         }
 }

@@ -80,15 +80,15 @@ class PersistedListingApp @Inject constructor(
     private val savedStateCache: SavedStateCache,
     private val allScreenStateHolders: Map<String, @JvmSuppressWildcards ScreenStateHolderCreator>,
 ) : ListingApp {
-    private val routeStateHolderCache = mutableMapOf<Route, ScopeHolder?>()
+    private val routeStateHolderCache = mutableMapOf<String, ScopeHolder?>()
 
     init {
         navigationStateStream
             .removedRoutes()
             .onEach { removedRoutes ->
                 removedRoutes.forEach { route ->
-                    if (BuildConfig.DEBUG) println("Cleared ${route::class.simpleName}")
-                    val holder = routeStateHolderCache.remove(route)
+                    if (BuildConfig.DEBUG) println("Cleared ${route.id}")
+                    val holder = routeStateHolderCache.remove(route.id)
                     holder?.scope?.cancel()
                 }
             }
@@ -117,7 +117,7 @@ class PersistedListingApp @Inject constructor(
 
         @Suppress("UNCHECKED_CAST")
         override fun <T> screenStateHolderFor(route: Route): T? =
-            routeStateHolderCache.getOrPut(route) {
+            routeStateHolderCache.getOrPut(route.id) {
                 val stateHolderCreator = stateHolderTrie[route] ?: return@getOrPut null
 
                 val routeScope = CoroutineScope(
