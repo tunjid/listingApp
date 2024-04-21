@@ -1,9 +1,8 @@
 package com.tunjid.feature.feed
 
+import com.tunjid.feature.feed.di.initialQuery
 import com.tunjid.feature.feed.di.isFavorites
-import com.tunjid.feature.feed.di.limit
-import com.tunjid.feature.feed.di.offset
-import com.tunjid.feature.feed.di.propertyType
+import com.tunjid.feature.feed.di.startingMediaUrls
 import com.tunjid.listing.data.model.FavoriteRepository
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.data.model.ListingRepository
@@ -93,13 +92,12 @@ fun CoroutineScope.listingFeedStateHolder(
     savedState: ByteArray?,
     route: Route,
 ): ListingFeedStateHolder = actionStateFlowMutator(
-    initialState = byteSerializer.restoreState(savedState) ?: State(
-        currentQuery = ListingQuery(
-            propertyType = route.routeParams.propertyType,
-            limit = route.routeParams.limit,
-            offset = route.routeParams.offset,
-        )
-    ),
+    initialState = byteSerializer.restoreState<State>(savedState)
+        ?.copy(listings = route.preSeededNavigationItems())
+        ?: State(
+            currentQuery = route.routeParams.initialQuery,
+            listings = route.preSeededNavigationItems(),
+        ),
     started = SharingStarted.WhileSubscribed(3000),
     inputs = listOf(
         syncManager.refreshStatusMutations()
@@ -129,6 +127,19 @@ fun CoroutineScope.listingFeedStateHolder(
         }
     }
 )
+
+private fun Route.preSeededNavigationItems() = buildTiledList<ListingQuery, FeedItem> {
+    this.addAll(
+        query = routeParams.initialQuery,
+        items = listOf(
+            FeedItem.Preview(
+                index = 0,
+                key = "${routeParams.initialQuery}-0",
+                media = routeParams.startingMediaUrls.map(::FeedMedia)
+            )
+        )
+    )
+}
 
 /**
  * Mutations caused by sync updates
@@ -285,14 +296,14 @@ private fun feedItemListTiler(
                     ::Pair
                 )
             },
-            combiner = { index, listing, (isFavorite, medias) ->
+            combiner = { index, listing, (isFavorite, media) ->
                 val itemIndex = query.offset.toInt() + index
                 FeedItem.Loaded(
                     key = "$query-$itemIndex",
                     index = itemIndex,
                     listing = listing,
                     isFavorite = isFavorite,
-                    medias = medias
+                    media = media.map { FeedMedia(it.url) }
                 )
             }
         )
@@ -351,6 +362,7 @@ private fun State.filterPlaceholdersFrom(
                 )
             )
             // Placeholder chunk in fetched list, check if loaded items are in the previous list
+            is FeedItem.Preview,
             is FeedItem.Loading -> when (val existingChunk = existingMap[fetchedQuery]) {
                 // No existing items, reuse placeholders
                 null -> addAll(

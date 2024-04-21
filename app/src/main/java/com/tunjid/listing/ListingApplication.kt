@@ -116,22 +116,26 @@ class PersistedListingApp @Inject constructor(
         }
 
         @Suppress("UNCHECKED_CAST")
-        override fun <T> screenStateHolderFor(route: Route): T? =
-            routeStateHolderCache.getOrPut(route.id) {
-                val stateHolderCreator = stateHolderTrie[route] ?: return@getOrPut null
+        override fun <T> screenStateHolderFor(route: Route, lazyCreate: Boolean): T? =
+            when {
+                lazyCreate -> routeStateHolderCache.getOrPut(route.id) {
+                    val stateHolderCreator = stateHolderTrie[route] ?: return@getOrPut null
 
-                val routeScope = CoroutineScope(
-                    SupervisorJob() + Dispatchers.Main.immediate
-                )
-                ScopeHolder(
-                    scope = routeScope,
-                    stateHolder = stateHolderCreator(
-                        routeScope,
-                        savedStateCache(route),
-                        route
+                    val routeScope = CoroutineScope(
+                        SupervisorJob() + Dispatchers.Main.immediate
                     )
-                )
+                    ScopeHolder(
+                        scope = routeScope,
+                        stateHolder = stateHolderCreator(
+                            routeScope,
+                            savedStateCache(route),
+                            route
+                        )
+                    )
 
+                }
+
+                else -> routeStateHolderCache[route.id]
             }?.stateHolder as? T
     }
 
@@ -152,7 +156,10 @@ class PersistedListingApp @Inject constructor(
         routeStates = flatten(order = Order.BreadthFirst)
             .filterIsInstance<Route>()
             .fold(mutableMapOf()) { map, route ->
-                val stateHolder = screenStateHolderCache.screenStateHolderFor<Any>(route)
+                val stateHolder = screenStateHolderCache.screenStateHolderFor<Any>(
+                    route = route,
+                    lazyCreate = false
+                )
                 val state = (stateHolder as? ActionStateMutator<*, *>)?.state ?: return@fold map
                 val serializable = (state as? StateFlow<*>)?.value ?: return@fold map
                 if (serializable is ByteSerializable) map[route.id] =

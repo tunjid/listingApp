@@ -87,15 +87,12 @@ private fun CoroutineScope.listingDetailMutator(
     savedState: ByteArray?,
     route: Route,
 ): ActionStateMutator<Action, StateFlow<State>> = actionStateFlowMutator(
-    initialState = byteSerializer.restoreState(savedState) ?: State(
-        currentQuery = route.routeParams.initialQuery,
-        listingItems = buildTiledList {
-            addAll(
-                query = route.routeParams.initialQuery,
-                items = route.routeParams.startingMediaUrls.mapIndexed(ListingItem::Preview)
-            )
-        }
-    ),
+    initialState = byteSerializer.restoreState<State>(savedState)
+        ?.copy(listingItems = route.preSeededNavigationItems())
+        ?: State(
+            currentQuery = route.routeParams.initialQuery,
+            listingItems = route.preSeededNavigationItems()
+        ),
     inputs = listOf(
         mediaRepository.countMutations(
             listingId = route.routeParams.listingId
@@ -114,9 +111,11 @@ private fun CoroutineScope.listingDetailMutator(
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
-                is Action.Navigation -> action.flow.consumeNavigationActions(
-                    navigationActions
-                )
+                is Action.Navigation -> action.flow
+                    .map(::navigationEdits)
+                    .consumeNavigationActions(
+                        navigationActions
+                    )
 
                 is Action.LoadImagesAround -> action.flow.paginationMutations(
                     mediaRepository = mediaRepository
@@ -125,6 +124,13 @@ private fun CoroutineScope.listingDetailMutator(
         }
     }
 )
+
+private fun Route.preSeededNavigationItems() = buildTiledList {
+    addAll(
+        query = routeParams.initialQuery,
+        items = routeParams.startingMediaUrls.mapIndexed(ListingItem::Preview)
+    )
+}
 
 private fun fetchListingMutations(
     listingId: String,

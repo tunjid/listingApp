@@ -98,7 +98,7 @@ fun ListingDetailScreen(
                         vertical = 16.dp,
                         horizontal = 16.dp
                     ),
-                onClick = { actions(Action.Navigation.Pop) }
+                onClick = { actions(Action.Navigation.Pop()) }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -128,7 +128,7 @@ fun ListingDetailScreen(
     // If the user fully expands the secondary pane, pop this destination back to the feed
     LaunchedEffect(state.hasSecondaryPanel, state.paneAnchor) {
         if (state.hasSecondaryPanel && state.paneAnchor == PaneAnchor.Full) {
-            actions(Action.Navigation.Pop)
+            actions(Action.Navigation.Pop())
         }
     }
 }

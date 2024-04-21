@@ -5,6 +5,7 @@ import com.tunjid.feature.feed.ListingFeedScreen
 import com.tunjid.feature.feed.ListingFeedStateHolder
 import com.tunjid.feature.feed.ListingFeedStateHolderFactory
 import com.tunjid.feature.feed.State
+import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
@@ -37,6 +38,15 @@ internal val RouteParams.offset get() = queryParams["offset"]?.firstOrNull()?.to
 internal val RouteParams.propertyType get() = queryParams["propertyType"]?.firstOrNull()
 
 internal val RouteParams.isFavorites get() = pathAndQueries.contains("favorites")
+
+internal val RouteParams.startingMediaUrls get() = queryParams["url"]?.take(3) ?: emptyList()
+
+internal val RouteParams.initialQuery
+    get() = ListingQuery(
+        propertyType = propertyType,
+        limit = limit,
+        offset = offset,
+    )
 
 @Module
 @InstallIn(SingletonComponent::class)

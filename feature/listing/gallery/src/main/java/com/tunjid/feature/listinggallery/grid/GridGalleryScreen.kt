@@ -67,7 +67,7 @@ fun GridGalleryScreen(
                 IconButton(
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.statusBars),
-                    onClick = { actions(Action.Navigation.Pop) }
+                    onClick = { actions(Action.Navigation.Pop()) }
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,

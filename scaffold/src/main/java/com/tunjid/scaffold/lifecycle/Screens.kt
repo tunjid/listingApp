@@ -7,13 +7,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.strings.Route
 
 interface ScreenStateHolderCache {
-    fun <T> screenStateHolderFor(route: Route): T?
+    fun <T> screenStateHolderFor(route: Route, lazyCreate: Boolean = true): T?
 }
 
 val LocalScreenStateHolderCache: ProvidableCompositionLocal<ScreenStateHolderCache> =
     staticCompositionLocalOf {
         object : ScreenStateHolderCache {
-            override fun <T> screenStateHolderFor(route: Route): T {
+            override fun <T> screenStateHolderFor(route: Route, lazyCreate: Boolean): T {
                 TODO("Not yet implemented")
             }
         }

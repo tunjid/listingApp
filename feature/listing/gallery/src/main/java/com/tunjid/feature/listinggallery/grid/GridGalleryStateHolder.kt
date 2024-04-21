@@ -69,28 +69,33 @@ private fun CoroutineScope.gridGalleryMutator(
     savedState: ByteArray?,
     route: Route,
 ) = actionStateFlowMutator<Action, State>(
-    initialState = byteSerializer.restoreState(savedState) ?: State(
-        currentQuery = route.routeParams.initialQuery,
-        items = buildTiledList {
-            addAll(
-                query = route.routeParams.initialQuery,
-                items = route.routeParams.startingMediaUrls.mapIndexed(GalleryItem::Preview)
-            )
-        }
-    ),
+    initialState = byteSerializer.restoreState<State>(savedState)
+        ?.copy(items = route.preSeededNavigationItems())
+        ?: State(
+            currentQuery = route.routeParams.initialQuery,
+            items = route.preSeededNavigationItems()
+        ),
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.LoadItems -> action.flow.loadMutations(
                     mediaRepository = mediaRepository
                 )
-                is Action.Navigation -> action.flow.consumeNavigationActions(
-                    navigationActions
-                )
+
+                is Action.Navigation -> action.flow
+                    .map(::navigationEdits)
+                    .consumeNavigationActions(navigationActions)
             }
         }
     }
 )
+
+private fun Route.preSeededNavigationItems() = buildTiledList {
+    this.addAll(
+        query = routeParams.initialQuery,
+        items = routeParams.startingMediaUrls.mapIndexed(GalleryItem::Preview)
+    )
+}
 
 context(SuspendingStateHolder<State>)
 private suspend fun Flow<Action.LoadItems>.loadMutations(
