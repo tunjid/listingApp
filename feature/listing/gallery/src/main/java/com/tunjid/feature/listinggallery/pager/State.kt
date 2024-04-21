@@ -2,9 +2,12 @@ package com.tunjid.feature.listinggallery.pager
 
 import com.tunjid.data.media.Media
 import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
+import com.tunjid.scaffold.navigation.editCurrentIfRoute
+import com.tunjid.scaffold.navigation.plus
 import com.tunjid.tiler.TiledList
 import com.tunjid.tiler.emptyTiledList
 import com.tunjid.treenav.pop
@@ -17,11 +20,24 @@ sealed class Action(val key: String) {
     ) : Action("LoadImagesAround")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
-        data object Pop : Navigation() {
+        data class Pop(
             override val navigationMutation: NavigationMutation = {
                 navState.pop()
             }
-        }
+        ) : Navigation()
+    }
+}
+
+internal suspend fun SuspendingStateHolder<State>.navigationEdits(
+    navigationAction: Action.Navigation
+) = when (navigationAction) {
+    is Action.Navigation.Pop -> {
+        val urls = state().items.map { it.url }
+        navigationAction.copy(
+            navigationMutation = navigationAction.navigationMutation + {
+                editCurrentIfRoute("url" to urls)
+            }
+        )
     }
 }
 

@@ -1,7 +1,7 @@
 package com.tunjid.feature.feed
 
+import androidx.compose.runtime.Immutable
 import com.tunjid.data.listing.Listing
-import com.tunjid.data.media.Media
 import com.tunjid.feature.feed.di.FavoritesPattern
 import com.tunjid.feature.feed.di.FeedPattern
 import com.tunjid.listing.data.model.ListingQuery
@@ -89,29 +89,41 @@ data class State(
 
 val State.isRefreshing get() = syncStatus == SyncStatus.Running
 
+@Immutable
+@JvmInline
+value class FeedMedia(
+    val url: String
+)
+
 sealed class FeedItem {
     abstract val key: String
     abstract val index: Int
+    abstract val media: List<FeedMedia>
+
 
     data class Loading(
         override val key: String,
         override val index: Int,
+        override val media: List<FeedMedia> = emptyList(),
+    ) : FeedItem()
+
+    data class Preview(
+        override val key: String,
+        override val index: Int,
+        override val media: List<FeedMedia>,
     ) : FeedItem()
 
     data class Loaded(
         override val key: String,
         override val index: Int,
+        override val media: List<FeedMedia>,
         val listing: Listing,
         val isFavorite: Boolean,
-        val medias: List<Media>
     ) : FeedItem()
 }
 
 val FeedItem.pagerSize: Int
-    get() = when (this) {
-        is FeedItem.Loaded -> medias.size
-        is FeedItem.Loading -> 0
-    }
+    get() = media.size
 
 fun ListingQuery.scrollTo(index: Int) = copy(
     offset = index - (index % limit)

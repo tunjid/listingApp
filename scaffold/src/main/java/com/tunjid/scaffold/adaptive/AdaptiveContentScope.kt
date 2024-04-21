@@ -2,6 +2,9 @@ package com.tunjid.scaffold.adaptive
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -102,16 +105,18 @@ internal val LocalAdaptiveContentScope = staticCompositionLocalOf<Adaptive.Conta
     null
 }
 
-internal val LocalLookaheadScope = staticCompositionLocalOf<LookaheadScope> {
+@OptIn(ExperimentalSharedTransitionApi::class)
+internal val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {
     TODO()
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AdaptiveContentRoot(
     content: @Composable () -> Unit
 ) {
-    LookaheadScope {
-        CompositionLocalProvider(LocalLookaheadScope provides this) {
+    SharedTransitionLayout {
+        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
             content()
         }
     }

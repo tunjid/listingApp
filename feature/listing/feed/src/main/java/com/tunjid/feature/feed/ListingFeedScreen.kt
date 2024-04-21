@@ -141,7 +141,7 @@ fun ListingFeedScreen(
                         FeedItemCard(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItemPlacement(),
+                                .animateItem(),
                             feedItem = feedItem,
                             actions = actions,
                         )
@@ -218,29 +218,28 @@ private fun FeedItemCard(
                             else this
                         },
                 ) {
-                    if (feedItem is FeedItem.Loaded) {
-                        FeedMediaPager(
-                            pagerState = pagerState,
-                            feedItem = feedItem,
-                            actions = actions
-                        )
-                        if (feedItem.medias.isNotEmpty()) MaximizePager(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(16.dp),
-                            listingId = feedItem.listing.id,
-                            url = feedItem.medias[pagerState.currentPage].url,
-                            actions = actions,
-                        )
-                        FavoriteButton(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(16.dp),
-                            listingId = feedItem.listing.id,
-                            isFavorite = feedItem.isFavorite,
-                            actions = actions,
-                        )
-                    }
+                    FeedMediaPager(
+                        pagerState = pagerState,
+                        feedItem = feedItem,
+                        actions = actions
+                    )
+                    if (feedItem is FeedItem.Loaded && feedItem.media.isNotEmpty()) MaximizePager(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp),
+                        listingId = feedItem.listing.id,
+                        url = feedItem.media[pagerState.currentPage].url,
+                        actions = actions,
+                    )
+                    if (feedItem is FeedItem.Loaded) FavoriteButton(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp),
+                        listingId = feedItem.listing.id,
+                        isFavorite = feedItem.isFavorite,
+                        actions = actions,
+                    )
+
                 }
             }
             FeedItemInfo(
@@ -277,14 +276,14 @@ private fun EmptyView(
 @Composable
 private fun FeedMediaPager(
     pagerState: PagerState,
-    feedItem: FeedItem.Loaded,
+    feedItem: FeedItem,
     actions: (Action) -> Unit
 ) {
-    HorizontalPager(
+    if (feedItem is FeedItem.Loaded || feedItem is FeedItem.Preview) HorizontalPager(
         state = pagerState,
-        key = { index -> feedItem.medias[index].url }
+        key = { index -> feedItem.media[index].url }
     ) { index ->
-        val media = feedItem.medias[index]
+        val media = feedItem.media[index]
         val thumbnail = sharedElementOf<MediaArgs>(
             thumbnailSharedElementKey(media.url)
         ) { args, innerModifier ->
@@ -301,7 +300,7 @@ private fun FeedMediaPager(
             Modifier
                 .fillMaxSize()
                 .clickable {
-                    actions(
+                    if (feedItem is FeedItem.Loaded) actions(
                         Action.Navigation.Detail(
                             listingId = feedItem.listing.id,
                             url = media.url
@@ -324,6 +323,7 @@ private fun FeedItemInfo(feedItem: FeedItem) {
             text = when (feedItem) {
                 is FeedItem.Loaded -> feedItem.listing.title
                 is FeedItem.Loading -> ""
+                is FeedItem.Preview -> ""
             },
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp
@@ -332,6 +332,7 @@ private fun FeedItemInfo(feedItem: FeedItem) {
             text = when (feedItem) {
                 is FeedItem.Loaded -> feedItem.listing.address
                 is FeedItem.Loading -> ""
+                is FeedItem.Preview -> ""
             },
             fontSize = 12.sp
         )
@@ -339,6 +340,7 @@ private fun FeedItemInfo(feedItem: FeedItem) {
             text = when (feedItem) {
                 is FeedItem.Loaded -> feedItem.listing.price
                 is FeedItem.Loading -> ""
+                is FeedItem.Preview -> ""
             },
             fontWeight = FontWeight.Medium,
             fontSize = 15.sp,
