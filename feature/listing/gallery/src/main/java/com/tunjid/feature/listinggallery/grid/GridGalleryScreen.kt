@@ -97,8 +97,10 @@ fun GridGalleryScreen(
                     GridItemSpan(currentLineSpan = 1)
                 },
                 itemContent = { item ->
+                    // This box constraints the height of the container so the shared element does
+                    // not push other items out of the way when animating in.
                     Box(
-                        modifier = Modifier.heightIn(max = GridItemSize)
+                        modifier = Modifier.aspectRatio(1f)
                     ) {
                         val thumbnail = sharedElementOf<MediaArgs>(
                             thumbnailSharedElementKey(item.url)
