@@ -27,12 +27,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.AnimatedAdaptiveContentScope
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 import com.tunjid.scaffold.adaptive.SharedElementData
+import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
@@ -83,6 +83,9 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
                 }
             }
         }
+
+    override val overlays: Collection<SharedElementOverlay>
+        get() = keysToSharedElements.values
 
     private val keysToSharedElements = mutableStateMapOf<Any, SharedElementData<*>>()
 

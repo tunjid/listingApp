@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.layout.LookaheadScope
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
@@ -17,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 interface AdaptiveContentState {
 
     val navigationState: Adaptive.NavigationState
+
+    val overlays: Collection<SharedElementOverlay>
 
     @Composable
     fun RouteIn(container: Adaptive.Container?)
