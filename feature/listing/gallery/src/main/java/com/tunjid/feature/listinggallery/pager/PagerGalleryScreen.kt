@@ -6,7 +6,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import com.tunjid.scaffold.adaptive.sharedElementOf
+import com.tunjid.scaffold.adaptive.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
@@ -42,7 +42,7 @@ fun FullscreenGalleryScreen(
         key = { index -> state.items[index].url }
     ) { index ->
         val item = state.items[index]
-        val thumbnail = sharedElementOf<MediaArgs>(
+        val thumbnail = movableSharedElementOf<MediaArgs>(
             thumbnailSharedElementKey(item.url)
         ) { args, innerModifier ->
             Media(

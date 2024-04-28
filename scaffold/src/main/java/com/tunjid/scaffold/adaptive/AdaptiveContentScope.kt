@@ -37,7 +37,7 @@ internal class AnimatedAdaptiveContentScope(
         adaptiveContentHost.isCurrentlyShared(key)
 
     @Composable
-    override fun <T> sharedElementOf(
+    override fun <T> movableSharedElementOf(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
@@ -59,12 +59,13 @@ internal class AnimatedAdaptiveContentScope(
 }
 
 /**
- * Creates a shared element between composables
+ * Creates a shared element composable that can be moved across compositions
+ *
  * @param key the key for the shared element
- * @param sharedElement the element to be shared
+ * @param sharedElement the element to be shared and moved
  */
 @Composable
-fun <T> sharedElementOf(
+fun <T> movableSharedElementOf(
     key: Any,
     sharedElement: @Composable (T, Modifier) -> Unit
 ): @Composable (T, Modifier) -> Unit =
@@ -86,13 +87,13 @@ fun <T> sharedElementOf(
                 // If previewing and it won't be shared, show the item as is
                 scope.isPreviewingBack -> sharedElement
                 // Share the element
-                else -> scope.sharedElementOf(
+                else -> scope.movableSharedElementOf(
                     key = key,
                     sharedElement = sharedElement
                 )
             }
             // Share the element when in the transient container
-            Adaptive.Container.TransientPrimary -> scope.sharedElementOf(
+            Adaptive.Container.TransientPrimary -> scope.movableSharedElementOf(
                 key = key,
                 sharedElement = sharedElement
             )
