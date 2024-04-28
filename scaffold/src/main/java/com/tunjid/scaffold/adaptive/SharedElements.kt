@@ -13,6 +13,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -70,6 +71,7 @@ internal class SharedElementData<T>(
     private var offsetAnimInProgress by mutableStateOf(false)
 
     private val canDrawInOverlay get() = sizeAnimInProgress || offsetAnimInProgress
+    private val containersKeysToSeenCount = mutableStateMapOf<String, Unit>()
 
     val offsetAnimation = DeferredTargetAnimation(
         vectorConverter = IntOffset.VectorConverter,
@@ -107,6 +109,14 @@ internal class SharedElementData<T>(
             drawLayer(overlayLayer)
         }
     }
+
+    private fun updateContainerStateSeen(
+        containerState: Adaptive.ContainerState
+    ) {
+        containersKeysToSeenCount[containerState.key] = Unit
+    }
+
+    private fun hasBeenShared() = containersKeysToSeenCount.size > 1
 
     companion object {
         /**
@@ -214,7 +224,9 @@ internal class SharedElementData<T>(
             animationMapper: (SharedElementData<*>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val containerState = LocalAdaptiveContentScope.current?.containerState
+            val containerState = LocalAdaptiveContentScope.current
+                ?.containerState
+                ?.also(::updateContainerStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
                 initialValue = Pair(
@@ -233,9 +245,9 @@ internal class SharedElementData<T>(
                     .let { value.first to false }
             }.value
 
-            return when {
-                laggingScopeKey == containerState?.key -> animationInProgressTillFirstIdle
-                else -> containerState.canAnimateOnStartingFrames()
+            return when(laggingScopeKey == containerState?.key) {
+                true -> animationInProgressTillFirstIdle && hasBeenShared()
+                false -> containerState.canAnimateOnStartingFrames()
             }
         }
 
