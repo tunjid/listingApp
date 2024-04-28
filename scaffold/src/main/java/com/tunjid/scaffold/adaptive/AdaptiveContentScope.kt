@@ -15,7 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.draw.drawWithContent
 import com.tunjid.scaffold.adaptive.Adaptive.key
 import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
 
@@ -113,9 +113,19 @@ internal val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransit
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AdaptiveContentRoot(
+    adaptiveContentState: AdaptiveContentState,
     content: @Composable () -> Unit
 ) {
-    SharedTransitionLayout {
+    SharedTransitionLayout(
+        modifier = Modifier.drawWithContent {
+            drawContent()
+            adaptiveContentState.overlays.forEach { overlay ->
+                with(overlay) {
+                    drawInOverlay()
+                }
+            }
+        }
+    ) {
         CompositionLocalProvider(LocalSharedTransitionScope provides this) {
             content()
         }

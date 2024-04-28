@@ -64,7 +64,7 @@ fun Scaffold(
                     navStateHolder = navStateHolder,
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
-                AdaptiveContentRoot {
+                AdaptiveContentRoot(adaptiveContentState) {
                     AdaptiveContentContainer(
                         contentState = adaptiveContentState,
                         positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
