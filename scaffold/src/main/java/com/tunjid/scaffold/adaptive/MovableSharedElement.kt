@@ -47,7 +47,7 @@ internal interface SharedElementScope {
     fun isCurrentlyShared(key: Any): Boolean
 
     @Composable
-    fun <T> sharedElementOf(
+    fun <T> movableSharedElementOf(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit
@@ -88,7 +88,7 @@ internal class SharedElementData<T>(
                 // subsequent screens. This updates the state from other screens so changes are seen.
                 state as T,
                 Modifier
-                    .sharedElement(
+                    .movableSharedElement(
                         sharedElementData = this,
                     ) then modifier,
             )
@@ -127,7 +127,7 @@ internal class SharedElementData<T>(
             ExperimentalAnimatableApi::class,
             ExperimentalSharedTransitionApi::class
         )
-        internal fun Modifier.sharedElement(
+        internal fun Modifier.movableSharedElement(
             sharedElementData: SharedElementData<*>,
         ): Modifier = composed {
             val sharedTransitionScope = LocalSharedTransitionScope.current
