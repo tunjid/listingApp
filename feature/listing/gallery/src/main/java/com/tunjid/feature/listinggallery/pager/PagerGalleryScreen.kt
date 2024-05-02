@@ -35,8 +35,7 @@ fun FullscreenGalleryScreen(
         modifier = modifier
             .fillMaxSize()
             .dragToDismiss(
-                onEnded = { actions(Action.Navigation.Pop()) },
-                onCancelled = { actions(Action.Navigation.Pop()) }
+                onDismissed = { actions(Action.Navigation.Pop()) }
             ),
         state = pagerState,
         key = { index -> state.items[index].url }
