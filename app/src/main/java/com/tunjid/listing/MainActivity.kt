@@ -49,10 +49,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         modifier = Modifier,
-                        adaptiveContentState = listingApp.adaptiveContentStateCreator(
-                            rememberCoroutineScope(),
-                            rememberSaveableStateHolder()
-                        ),
+                        adaptiveContentState = listingApp.adaptiveContentState(),
                         navStateHolder = listingApp.navigationStateHolder,
                         globalUiStateHolder = listingApp.globalUiStateHolder,
                     )
