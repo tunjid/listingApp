@@ -1,7 +1,11 @@
 package com.tunjid.listing
 
 import android.app.Application
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import com.tunjid.airbnb.BuildConfig
 import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.mutator.ActionStateMutator
@@ -64,6 +68,18 @@ interface ListingApp {
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
     val screenStateHolderCache: ScreenStateHolderCache
+}
+
+@Composable
+fun ListingApp.adaptiveContentState(): AdaptiveContentState {
+    val scope = rememberCoroutineScope()
+    val saveableStateHolder = rememberSaveableStateHolder()
+    return remember {
+        adaptiveContentStateCreator(
+            scope,
+            saveableStateHolder
+        )
+    }
 }
 
 @Singleton
