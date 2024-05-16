@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.map
 infix fun Dp.countIf(condition: Boolean) = if (condition) this else 0.dp
 
 /**
- * Updates [State] with whether it is the primary navigation container
+ * Updates [State] with whether it is the primary navigation pane
  */
 fun <State> StateFlow<MultiStackNav>.isInPrimaryNavMutations(
     route: Route,

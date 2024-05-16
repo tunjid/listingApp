@@ -77,7 +77,7 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
     private val slotsToRoutes =
         mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
             map[null] = {}
-            Adaptive.Container.slots.forEach { slot ->
+            Adaptive.Pane.slots.forEach { slot ->
                 map[slot] = movableContentOf {
                     Render(slot)
                 }
@@ -90,8 +90,8 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
     private val keysToSharedElements = mutableStateMapOf<Any, SharedElementData<*>>()
 
     @Composable
-    override fun RouteIn(container: Adaptive.Container?) {
-        val slot = container?.let(navigationState::slotFor)
+    override fun RouteIn(pane: Adaptive.Pane?) {
+        val slot = pane?.let(navigationState::slotFor)
         slotsToRoutes.getValue(slot).invoke()
     }
 
@@ -114,40 +114,40 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
 }
 
 /**
- * Renders [slot] into is [Adaptive.Container] with scopes that allow for animations
+ * Renders [slot] into is [Adaptive.Pane] with scopes that allow for animations
  * and shared elements.
  */
 @Composable
 private fun SavedStateAdaptiveContentState.Render(
     slot: Adaptive.Slot,
 ) {
-    val containerTransition = updateTransition(
-        targetState = navigationState.containerStateFor(slot),
-        label = "$slot-ContainerTransition",
+    val paneTransition = updateTransition(
+        targetState = navigationState.paneStateFor(slot),
+        label = "$slot-PaneTransition",
     )
-    containerTransition.AnimatedContent(
+    paneTransition.AnimatedContent(
         contentKey = { it.currentRoute?.id },
         transitionSpec = {
             EnterTransition.None togetherWith ExitTransition.None
         }
-    ) { targetContainerState ->
+    ) { targetPaneState ->
         val scope = remember {
             AnimatedAdaptiveContentScope(
-                containerState = targetContainerState,
+                paneState = targetPaneState,
                 adaptiveContentHost = this@Render,
                 animatedContentScope = this
             )
         }
         // While technically a backwards write, it stabilizes and ensures the values are
         // correct at first composition
-        scope.containerState = targetContainerState
+        scope.paneState = targetPaneState
 
-        when (val route = targetContainerState.currentRoute) {
+        when (val route = targetPaneState.currentRoute) {
             null -> Unit
             else -> Box(
                 modifier = modifierFor(
                     adaptiveRouter = adaptiveRouter,
-                    containerState = targetContainerState,
+                    paneState = targetPaneState,
                     windowSizeClass = navigationState.windowSizeClass
                 )
             ) {
@@ -170,14 +170,14 @@ private fun SavedStateAdaptiveContentState.Render(
         // Add routes ids that are animating out
         LaunchedEffect(transition.isRunning) {
             if (transition.targetState == EnterExitState.PostExit) {
-                val routeId = targetContainerState.currentRoute?.id ?: return@LaunchedEffect
+                val routeId = targetPaneState.currentRoute?.id ?: return@LaunchedEffect
                 onAction(Action.RouteExitStart(routeId))
             }
         }
         // Remove route ids that have animated out
         DisposableEffect(Unit) {
             onDispose {
-                val routeId = targetContainerState.currentRoute?.id ?: return@onDispose
+                val routeId = targetPaneState.currentRoute?.id ?: return@onDispose
                 onAction(Action.RouteExitEnd(routeId))
             }
         }
@@ -187,10 +187,10 @@ private fun SavedStateAdaptiveContentState.Render(
 @Composable
 private fun AnimatedVisibilityScope.modifierFor(
     adaptiveRouter: AdaptiveRouter,
-    containerState: Adaptive.ContainerState,
+    paneState: Adaptive.PaneState,
     windowSizeClass: WindowSizeClass,
-) = when (containerState.container) {
-    Adaptive.Container.Primary, Adaptive.Container.Secondary -> FillSizeModifier
+) = when (paneState.pane) {
+    Adaptive.Pane.Primary, Adaptive.Pane.Secondary -> FillSizeModifier
         .background(color = MaterialTheme.colorScheme.surface)
         .then(
             when {
@@ -202,7 +202,7 @@ private fun AnimatedVisibilityScope.modifierFor(
             }
         )
         .then(
-            when (val enterAndExit = adaptiveRouter.transitionsFor(containerState)) {
+            when (val enterAndExit = adaptiveRouter.transitionsFor(paneState)) {
                 null -> Modifier
                 else -> Modifier.animateEnterExit(
                     enter = enterAndExit.enter,
@@ -211,7 +211,7 @@ private fun AnimatedVisibilityScope.modifierFor(
             }
         )
 
-    Adaptive.Container.TransientPrimary -> FillSizeModifier
+    Adaptive.Pane.TransientPrimary -> FillSizeModifier
         .backPreviewModifier()
 
     null -> FillSizeModifier

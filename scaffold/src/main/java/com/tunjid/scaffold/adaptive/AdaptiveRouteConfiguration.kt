@@ -22,7 +22,7 @@ interface AdaptiveRouteConfiguration {
     fun Render(route: Route)
 
     fun transitionsFor(
-        state: Adaptive.ContainerState
+        state: Adaptive.PaneState
     ): Adaptive.Transitions = NoTransition
 
     /**
@@ -33,19 +33,19 @@ interface AdaptiveRouteConfiguration {
 
 fun adaptiveRouteConfiguration(
     secondaryRoute: (Route) -> Route? = { null },
-    transitions: (Adaptive.ContainerState) -> Adaptive.Transitions = { state ->
-        when (state.container) {
-            Adaptive.Container.Primary,
-            Adaptive.Container.Secondary -> when (state.adaptation) {
+    transitions: (Adaptive.PaneState) -> Adaptive.Transitions = { state ->
+        when (state.pane) {
+            Adaptive.Pane.Primary,
+            Adaptive.Pane.Secondary -> when (state.adaptation) {
                 Adaptive.Adaptation.PrimaryToSecondary,
                 Adaptive.Adaptation.SecondaryToPrimary -> NoTransition
 
                 else -> DefaultTransition
             }
 
-            Adaptive.Container.TransientPrimary -> when (state.adaptation) {
-                Adaptive.Adaptation.PrimaryToTransient -> when (state.container) {
-                    Adaptive.Container.Secondary -> DefaultTransition
+            Adaptive.Pane.TransientPrimary -> when (state.adaptation) {
+                Adaptive.Adaptation.PrimaryToTransient -> when (state.pane) {
+                    Adaptive.Pane.Secondary -> DefaultTransition
                     else -> NoTransition
                 }
 
@@ -66,7 +66,7 @@ fun adaptiveRouteConfiguration(
     override fun secondaryRoute(route: Route): Route? =
         secondaryRoute(route)
 
-    override fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions =
+    override fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions =
         transitions(state)
 }
 

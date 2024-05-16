@@ -35,7 +35,7 @@ import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isFromLeft
 import com.tunjid.scaffold.globalui.progress
-import com.tunjid.scaffold.globalui.slices.routeContainerState
+import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
@@ -65,10 +65,10 @@ fun Scaffold(
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
                 AdaptiveContentRoot(adaptiveContentState) {
-                    AdaptiveContentContainer(
+                    AdaptiveContentScaffold(
                         contentState = adaptiveContentState,
                         positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-                            mapper = UiState::routeContainerState
+                            mapper = UiState::routePaneState
                         ).value,
                         onPaneAnchorChanged = remember {
                             { paneAnchor: PaneAnchor ->
@@ -108,7 +108,7 @@ internal fun Modifier.backPreviewModifier(): Modifier =
             mapper = UiState::backStatus
         )
         val scale by animateFloatAsState(
-            // Deviates from the spec here. The spec says 90% of the container, I'm doing 85%
+            // Deviates from the spec here. The spec says 90% of the pane, I'm doing 85%
             targetValue = 1f - (backStatus.progress * 0.15F),
             label = "back preview modifier scale"
         )
@@ -122,11 +122,11 @@ internal fun Modifier.backPreviewModifier(): Modifier =
                         minHeight = (constraints.minHeight * scale).roundToInt(),
                     )
                 )
-                val containerWidth = placeable.width
-                val containerHeight = placeable.height
+                val paneWidth = placeable.width
+                val paneHeight = placeable.height
 
-                val scaledWidth = containerWidth * scale
-                val spaceOnEachSide = (containerWidth - scaledWidth) / 2
+                val scaledWidth = paneWidth * scale
+                val spaceOnEachSide = (paneWidth - scaledWidth) / 2
                 val margin = (BACK_PREVIEW_PADDING * backStatus.progress).dp.roundToPx()
 
                 val xOffset = ((spaceOnEachSide - margin) * when {
@@ -134,8 +134,8 @@ internal fun Modifier.backPreviewModifier(): Modifier =
                     else -> -1
                 }).toInt()
 
-                val maxYShift = ((containerHeight / 20) - BACK_PREVIEW_PADDING)
-                val isOrientedHorizontally = containerWidth > containerHeight
+                val maxYShift = ((paneHeight / 20) - BACK_PREVIEW_PADDING)
+                val isOrientedHorizontally = paneWidth > paneHeight
                 val screenSize = when {
                     isOrientedHorizontally -> configuration.screenWidthDp
                     else -> configuration.screenHeightDp
@@ -151,13 +151,13 @@ internal fun Modifier.backPreviewModifier(): Modifier =
                     placeable.placeRelative(x = xOffset, y = yOffset)
                 }
             }
-            // Disable interactions in the preview container
+            // Disable interactions in the preview pane
             .pointerInput(Unit) {}
     }
 
 fun Modifier.backPreviewBackgroundModifier(): Modifier = this then composed {
     val scope = LocalAdaptiveContentScope.current
-    if (scope?.containerState?.container != Adaptive.Container.TransientPrimary)
+    if (scope?.paneState?.pane != Adaptive.Pane.TransientPrimary)
         return@composed this
 
     var elevation by remember { mutableStateOf(0.dp) }

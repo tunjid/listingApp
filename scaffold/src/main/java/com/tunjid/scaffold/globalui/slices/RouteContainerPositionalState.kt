@@ -8,7 +8,7 @@ import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.bottomNavVisible
 import com.tunjid.scaffold.globalui.navRailVisible
 
-internal data class RouteContainerPositionalState(
+internal data class RoutePanePositionalState(
     val statusBarSize: Int,
     val navRailVisible: Boolean,
     val bottomNavVisible: Boolean,
@@ -18,8 +18,8 @@ internal data class RouteContainerPositionalState(
     override val insetDescriptor: InsetDescriptor
 ) : KeyboardAware
 
-internal val UiState.routeContainerState
-    get() = RouteContainerPositionalState(
+internal val UiState.routePaneState
+    get() = RoutePanePositionalState(
         statusBarSize = systemUI.static.statusBarSize,
         insetDescriptor = insetFlags,
         bottomNavVisible = bottomNavVisible,

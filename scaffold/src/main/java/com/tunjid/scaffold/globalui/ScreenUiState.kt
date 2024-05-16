@@ -22,8 +22,8 @@ fun ScreenUiState(state: UiState) {
     val fabClickListener = MutableFunction(state.fabClickListener)
     val snackbarMessageConsumer = MutableFunction(state.snackbarMessageConsumer)
 
-    LaunchedEffect(updatedState, scope.containerState) {
-        if (scope.containerState.container == Adaptive.Container.Primary) uiStateHolder.accept(
+    LaunchedEffect(updatedState, scope.paneState) {
+        if (scope.paneState.pane == Adaptive.Pane.Primary) uiStateHolder.accept(
             mutationOf {
                 // Preserve things that should not be overwritten
                 updatedState.copy(
