@@ -20,18 +20,18 @@ import com.tunjid.scaffold.adaptive.Adaptive.key
 import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
 
 /**
- * An implementation of [Adaptive.ContainerScope] that supports animations and shared elements
+ * An implementation of [Adaptive.PaneScope] that supports animations and shared elements
  */
 @Stable
 internal class AnimatedAdaptiveContentScope(
-    containerState: Adaptive.ContainerState,
+    paneState: Adaptive.PaneState,
     val adaptiveContentHost: SavedStateAdaptiveContentState,
     val animatedContentScope: AnimatedContentScope
-) : Adaptive.ContainerScope, AnimatedVisibilityScope by animatedContentScope {
+) : Adaptive.PaneScope, AnimatedVisibilityScope by animatedContentScope {
 
-    override val key: String by derivedStateOf { containerState.key }
+    override val key: String by derivedStateOf { paneState.key }
 
-    override var containerState by mutableStateOf(containerState)
+    override var paneState by mutableStateOf(paneState)
 
     override fun isCurrentlyShared(key: Any): Boolean =
         adaptiveContentHost.isCurrentlyShared(key)
@@ -42,11 +42,11 @@ internal class AnimatedAdaptiveContentScope(
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
         val currentNavigationState = adaptiveContentHost.navigationState
-        // This container state may be animating out. Look up the actual current route
-        val currentRouteInContainer = containerState.container?.let(
+        // This pane state may be animating out. Look up the actual current route
+        val currentRouteInPane = paneState.pane?.let(
             currentNavigationState::routeFor
         )
-        val isCurrentlyAnimatingIn = currentRouteInContainer?.id == containerState.currentRoute?.id
+        val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentRoute?.id
 
         // Do not use the shared element if this content is being animated out
         if (!isCurrentlyAnimatingIn) return sharedElement
@@ -74,12 +74,12 @@ fun <T> movableSharedElementOf(
             "This may only be called from an adaptive content scope"
         )
 
-        else -> when (scope.containerState.container) {
+        else -> when (scope.paneState.pane) {
             null -> throw IllegalArgumentException(
-                "Shared elements may only be used in non null containers"
+                "Shared elements may only be used in non null panes"
             )
             // Allow shared elements in the primary or transient primary content only
-            Adaptive.Container.Primary -> when {
+            Adaptive.Pane.Primary -> when {
                 // Show a blank space for shared elements between the destinations
                 scope.isPreviewingBack && scope.isCurrentlyShared(key) -> { _, modifier ->
                     Box(modifier)
@@ -92,17 +92,17 @@ fun <T> movableSharedElementOf(
                     sharedElement = sharedElement
                 )
             }
-            // Share the element when in the transient container
-            Adaptive.Container.TransientPrimary -> scope.movableSharedElementOf(
+            // Share the element when in the transient pane
+            Adaptive.Pane.TransientPrimary -> scope.movableSharedElementOf(
                 key = key,
                 sharedElement = sharedElement
             )
-            // In the secondary container use the element as is
-            Adaptive.Container.Secondary -> sharedElement
+            // In the secondary pane use the element as is
+            Adaptive.Pane.Secondary -> sharedElement
         }
     }
 
-internal val LocalAdaptiveContentScope = staticCompositionLocalOf<Adaptive.ContainerScope?> {
+internal val LocalAdaptiveContentScope = staticCompositionLocalOf<Adaptive.PaneScope?> {
     null
 }
 
@@ -133,6 +133,6 @@ fun AdaptiveContentRoot(
     }
 }
 
-internal val Adaptive.ContainerScope.isPreviewingBack: Boolean
-    get() = containerState.container == Adaptive.Container.Primary
-            && containerState.adaptation == Adaptive.Adaptation.PrimaryToTransient
+internal val Adaptive.PaneScope.isPreviewingBack: Boolean
+    get() = paneState.pane == Adaptive.Pane.Primary
+            && paneState.adaptation == Adaptive.Adaptation.PrimaryToTransient

@@ -5,14 +5,14 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.adaptive.Adaptive
-import com.tunjid.scaffold.adaptive.Adaptive.Container.Primary
-import com.tunjid.scaffold.adaptive.Adaptive.Container.Secondary
-import com.tunjid.scaffold.adaptive.Adaptive.Container.TransientPrimary
+import com.tunjid.scaffold.adaptive.Adaptive.Pane.Primary
+import com.tunjid.scaffold.adaptive.Adaptive.Pane.Secondary
+import com.tunjid.scaffold.adaptive.Adaptive.Pane.TransientPrimary
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.isPreviewing
-import com.tunjid.scaffold.globalui.slices.routeContainerState
+import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
@@ -78,7 +78,7 @@ private fun adaptiveNavigationStateMutations(
 ): Flow<Mutation<AppAdaptiveNavigationState>> = combine(
     flow = navStateFlow,
     flow2 = uiStateFlow.distinctUntilChangedBy {
-        listOf(it.backStatus.isPreviewing, it.routeContainerState)
+        listOf(it.backStatus.isPreviewing, it.routePaneState)
     },
     transform = { navState, uiState ->
         adaptiveNavigationState(
@@ -110,7 +110,7 @@ private fun adaptiveNavigationState(
     uiState: UiState,
 ): AppAdaptiveNavigationState {
     // If there is a back preview in progress, show the back primary route in the
-    // primary container
+    // primary pane
     val primaryRoute = multiStackNav.primaryRouteOnBackPress.takeIf {
         uiState.backStatus.isPreviewing
     } ?: multiStackNav.primaryRoute
@@ -119,7 +119,7 @@ private fun adaptiveNavigationState(
     val secondaryRoute = adaptiveRouter.secondaryRouteFor(primaryRoute)
 
     return AppAdaptiveNavigationState(
-        containersToRoutes = mapOf(
+        panesToRoutes = mapOf(
             Primary to primaryRoute,
             Secondary to secondaryRoute.takeIf { route ->
                 route?.id != primaryRoute.id
@@ -142,13 +142,13 @@ private fun adaptiveNavigationState(
         // Tentative, decide downstream
         routeIdsToAdaptiveSlots = emptyMap(),
         // Tentative, decide downstream
-        previousContainersToRoutes = emptyMap(),
-        routeContainerPositionalState = uiState.routeContainerState,
+        previousPanesToRoutes = emptyMap(),
+        routePanePositionalState = uiState.routePaneState,
     )
 }
 
 /**
- * A method that adapts changes in navigation to different containers while allowing for them
+ * A method that adapts changes in navigation to different panes while allowing for them
  * to be animated easily.
  */
 private fun AppAdaptiveNavigationState.adaptTo(
@@ -156,21 +156,21 @@ private fun AppAdaptiveNavigationState.adaptTo(
 ): AppAdaptiveNavigationState {
     val old = this
 
-    val availableSlots = Adaptive.Container.slots.toMutableSet()
-    val unplacedRouteIds = new.containersToRoutes.values.mapNotNull { it?.id }.toMutableSet()
+    val availableSlots = Adaptive.Pane.slots.toMutableSet()
+    val unplacedRouteIds = new.panesToRoutes.values.mapNotNull { it?.id }.toMutableSet()
 
     val routeIdsToAdaptiveSlots = mutableMapOf<String?, Adaptive.Slot>()
     val swapAdaptations = mutableSetOf<Adaptive.Adaptation.Swap>()
 
-    for ((toContainer, toRoute) in new.containersToRoutes.entries) {
+    for ((toPane, toRoute) in new.panesToRoutes.entries) {
         if (toRoute == null) continue
-        for ((fromContainer, fromRoute) in old.containersToRoutes.entries) {
+        for ((fromPane, fromRoute) in old.panesToRoutes.entries) {
             if (toRoute.id != fromRoute?.id) continue
             val swap = Adaptive.Adaptation.Swap(
-                from = fromContainer,
-                to = toContainer
+                from = fromPane,
+                to = toPane
             )
-            if (toContainer != fromContainer) {
+            if (toPane != fromPane) {
                 swapAdaptations.add(swap)
             }
 
@@ -192,11 +192,11 @@ private fun AppAdaptiveNavigationState.adaptTo(
     }
 
     return new.copy(
-        swapAdaptations = when (old.containersToRoutes.mapValues { it.value?.id }) {
-            new.containersToRoutes.mapValues { it.value?.id } -> old.swapAdaptations
+        swapAdaptations = when (old.panesToRoutes.mapValues { it.value?.id }) {
+            new.panesToRoutes.mapValues { it.value?.id } -> old.swapAdaptations
             else -> swapAdaptations
         },
-        previousContainersToRoutes = Adaptive.Container.entries.associateWith(
+        previousPanesToRoutes = Adaptive.Pane.entries.associateWith(
             valueSelector = old::routeFor
         ),
         routeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots,
@@ -229,13 +229,13 @@ private fun AppAdaptiveNavigationState.prune(): AppAdaptiveNavigationState = cop
         if (routeId == null) return@filter false
         backStackIds.contains(routeId)
                 || routeIdsAnimatingOut.contains(routeId)
-                || previousContainersToRoutes.values.map { it?.id }.toSet().contains(routeId)
+                || previousPanesToRoutes.values.map { it?.id }.toSet().contains(routeId)
     },
-    previousContainersToRoutes = previousContainersToRoutes.filter { (_, route) ->
+    previousPanesToRoutes = previousPanesToRoutes.filter { (_, route) ->
         if (route == null) return@filter false
         backStackIds.contains(route.id)
                 || routeIdsAnimatingOut.contains(route.id)
-                || previousContainersToRoutes.values.map { it?.id }.toSet().contains(route.id)
+                || previousPanesToRoutes.values.map { it?.id }.toSet().contains(route.id)
     }
 )
 

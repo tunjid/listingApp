@@ -13,48 +13,48 @@ import com.tunjid.treenav.strings.Route
 object Adaptive {
 
     /**
-     * Scope for adaptive content that can show up in an arbitrary [Container]
+     * Scope for adaptive content that can show up in an arbitrary [Pane]
      */
     @Stable
-    internal interface ContainerScope : AnimatedVisibilityScope, SharedElementScope {
+    internal interface PaneScope : AnimatedVisibilityScope, SharedElementScope {
 
         /**
          * Unique key to identify this scope
          */
         val key: String
 
-        val containerState: ContainerState
+        val paneState: PaneState
     }
 
     /**
      * A layout in the hierarchy that hosts an [AdaptiveRouteConfiguration]
      */
-    enum class Container {
+    enum class Pane {
         Primary, Secondary, TransientPrimary;
 
         companion object {
-            internal val slots = Container.entries.indices.map(Adaptive::Slot)
+            internal val slots = Pane.entries.indices.map(Adaptive::Slot)
         }
     }
 
     /**
-     * A spot taken by an [AdaptiveRouteConfiguration] that may be moved in from [Container] to [Container]
+     * A spot taken by an [AdaptiveRouteConfiguration] that may be moved in from [Pane] to [Pane]
      */
     @JvmInline
     value class Slot internal constructor(val index: Int)
 
     /**
-     * Information about content in an [Adaptive.Container]
+     * Information about content in an [Adaptive.Pane]
      */
     @Stable
-    sealed interface ContainerState {
+    sealed interface PaneState {
         val currentRoute: Route?
         val previousRoute: Route?
-        val container: Container?
+        val pane: Pane?
         val adaptation: Adaptation
     }
 
-    internal val ContainerState.key get() = "${currentRoute?.id}-$container"
+    internal val PaneState.key get() = "${currentRoute?.id}-$pane"
 
     /**
      * Describes how a route transitions after an adaptive change
@@ -65,49 +65,49 @@ object Adaptive {
     )
 
     /**
-     * [Slot] based implementation of [ContainerState]
+     * [Slot] based implementation of [PaneState]
      */
-    internal data class SlotContainerState(
+    internal data class SlotPaneState(
         val slot: Slot?,
         override val currentRoute: Route?,
         override val previousRoute: Route?,
-        override val container: Container?,
+        override val pane: Pane?,
         override val adaptation: Adaptation,
-    ) : ContainerState
+    ) : PaneState
 
     /**
      * A description of the process that the layout undertook to adapt to its new configuration
      */
     sealed class Adaptation {
         /**
-         * Routes were changed in containers
+         * Routes were changed in panes
          */
         data object Change : Adaptation()
 
         /**
-         * Routes were swapped in between containers
+         * Routes were swapped in between panes
          */
         data class Swap(
-            val from: Container,
-            val to: Container?,
+            val from: Pane,
+            val to: Pane?,
         ) : Adaptation()
 
-        operator fun Swap.contains(container: Container?) = container == from || container == to
+        operator fun Swap.contains(pane: Pane?) = pane == from || pane == to
 
         companion object {
             val PrimaryToSecondary = Swap(
-                from = Container.Primary,
-                to = Container.Secondary
+                from = Pane.Primary,
+                to = Pane.Secondary
             )
 
             val SecondaryToPrimary = Swap(
-                from = Container.Secondary,
-                to = Container.Primary
+                from = Pane.Secondary,
+                to = Pane.Primary
             )
 
             val PrimaryToTransient = Swap(
-                from = Container.Primary,
-                to = Container.TransientPrimary
+                from = Pane.Primary,
+                to = Pane.TransientPrimary
             )
         }
     }
@@ -117,28 +117,28 @@ object Adaptive {
         val routeIds: Collection<String>
 
         val windowSizeClass: WindowSizeClass
-        fun containerStateFor(
+        fun paneStateFor(
             slot: Slot
-        ): ContainerState
+        ): PaneState
 
         fun slotFor(
-            container: Container?
+            pane: Pane?
         ): Slot?
 
-        fun containerFor(
+        fun paneFor(
             route: Route
-        ): Container?
+        ): Pane?
 
         fun routeFor(
             slot: Slot
         ): Route?
 
         fun routeFor(
-            container: Container
+            pane: Pane
         ): Route?
 
         fun adaptationIn(
-            container: Container
+            pane: Pane
         ): Adaptation?
     }
 

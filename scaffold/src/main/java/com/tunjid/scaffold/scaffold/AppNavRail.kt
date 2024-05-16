@@ -21,7 +21,7 @@ import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.navRailWidth
-import com.tunjid.scaffold.globalui.slices.routeContainerState
+import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.globalui.toolbarSize
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.NavItem
@@ -38,8 +38,8 @@ internal fun AppNavRail(
     globalUiStateHolder: GlobalUiStateHolder,
     navStateHolder: NavigationStateHolder,
 ) {
-    val containerState by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::routeContainerState
+    val paneState by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
+        mapper = UiState::routePaneState
     )
     val windowSizeClass by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
         mapper = UiState::windowSizeClass
@@ -50,12 +50,12 @@ internal fun AppNavRail(
     )
 
     val statusBarSize = with(LocalDensity.current) {
-        containerState.statusBarSize.toDp()
-    } countIf containerState.insetDescriptor.hasTopInset
+        paneState.statusBarSize.toDp()
+    } countIf paneState.insetDescriptor.hasTopInset
 
     val topClearance by animateDpAsState(targetValue = statusBarSize)
     val navRailWidth by animateDpAsState(
-        targetValue = windowSizeClass.navRailWidth() countIf containerState.navRailVisible
+        targetValue = windowSizeClass.navRailWidth() countIf paneState.navRailVisible
     )
 
     NavigationRail(

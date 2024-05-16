@@ -37,6 +37,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
@@ -60,25 +61,25 @@ import com.tunjid.scaffold.globalui.WindowSizeClass.COMPACT
 import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
-import com.tunjid.scaffold.globalui.slices.RouteContainerPositionalState
+import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- * Motionally intelligent, adaptive container for the hosting the navigation routes
+ * Motionally intelligent, adaptive pane for the hosting the navigation routes
  */
 @Composable
-internal fun AdaptiveContentContainer(
+internal fun AdaptiveContentScaffold(
     contentState: AdaptiveContentState,
-    positionalState: RouteContainerPositionalState,
+    positionalState: RoutePanePositionalState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
 ) {
     val navigationState = contentState.navigationState
-    val paddingValues = routeContainerPadding(positionalState)
+    val paddingValues = routePanePadding(positionalState)
     val (startClearance, topClearance, _, bottomClearance) = paddingValues
 
-    val hasSecondaryContent = navigationState.routeFor(Adaptive.Container.Secondary) != null
+    val hasSecondaryContent = navigationState.routeFor(Adaptive.Pane.Secondary) != null
     val windowSizeClass = navigationState.windowSizeClass
 
     val density = LocalDensity.current
@@ -99,31 +100,31 @@ internal fun AdaptiveContentContainer(
                     bottom = bottomClearance
                 ),
             content = {
-                SecondaryContentContainer(
-                    modifier = secondaryContentModifier(
-                        adaptation = navigationState.adaptationIn(Adaptive.Container.Secondary ),
+                // Secondary pane content
+                Box(
+                    modifier = Modifier.secondaryPaneModifier(
+                        adaptation = navigationState.adaptationIn(Adaptive.Pane.Secondary),
                         width = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() },
                     ),
-                    secondaryContent = {
-                        contentState.RouteIn(container = Adaptive.Container.Secondary)
+                    content = {
+                        contentState.RouteIn(pane = Adaptive.Pane.Secondary)
                     }
                 )
-                PrimaryContentContainer(
-                    modifier = primaryContentModifier(
+                // Primary pane content
+                Box(
+                    modifier = Modifier.primaryPaneModifier(
                         windowSizeClass = windowSizeClass,
-                        adaptation = navigationState.adaptationIn(Adaptive.Container.Primary),
+                        adaptation = navigationState.adaptationIn(Adaptive.Pane.Primary),
                         secondaryContentWidth = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() }
                     ),
-                    primaryContent = {
-                        contentState.RouteIn(container = Adaptive.Container.Primary)
-
-                    },
-                    transientPrimaryContent = {
-                        contentState.RouteIn(container = Adaptive.Container.TransientPrimary)
-                    },
+                    content = {
+                        contentState.RouteIn(pane = Adaptive.Pane.Primary)
+                        contentState.RouteIn(pane = Adaptive.Pane.TransientPrimary)
+                    }
                 )
+                // Pane separator
                 AnimatedVisibility(
                     modifier = Modifier.align(Alignment.CenterStart),
                     visible = hasSecondaryContent && windowSizeClass > COMPACT
@@ -151,32 +152,6 @@ internal fun AdaptiveContentContainer(
     LaunchedEffect(paneSplitState.currentPaneAnchor) {
         onPaneAnchorChanged(paneSplitState.currentPaneAnchor)
     }
-}
-
-@Composable
-private fun PrimaryContentContainer(
-    modifier: Modifier,
-    primaryContent: @Composable () -> Unit,
-    transientPrimaryContent: @Composable () -> Unit
-) {
-    Box(
-        modifier = modifier,
-        content = {
-            primaryContent()
-            transientPrimaryContent()
-        }
-    )
-}
-
-@Composable
-private fun SecondaryContentContainer(
-    modifier: Modifier,
-    secondaryContent: @Composable () -> Unit
-) {
-    Box(
-        modifier = modifier,
-        content = { secondaryContent() }
-    )
 }
 
 @Composable
@@ -235,13 +210,12 @@ private fun BoxScope.DraggableThumb(
     }
 }
 
-@Composable
-private fun primaryContentModifier(
+private fun Modifier.primaryPaneModifier(
     windowSizeClass: WindowSizeClass,
     adaptation: Adaptive.Adaptation?,
     secondaryContentWidth: Dp,
     maxWidth: Dp,
-): Modifier {
+) = composed {
     val updatedSecondaryContentWidth by rememberUpdatedState(secondaryContentWidth)
     val widthAnimatable = remember {
         Animatable(
@@ -261,7 +235,7 @@ private fun primaryContentModifier(
                 return@LaunchedEffect
             }
             complete = false
-            // Snap to this width to give the impression of the container sliding
+            // Snap to this width to give the impression of the pane sliding
             widthAnimatable.snapTo(targetValue = updatedSecondaryContentWidth)
             widthAnimatable.animateTo(
                 targetValue = maxWidth,
@@ -272,8 +246,8 @@ private fun primaryContentModifier(
         }
     }
 
-    return Modifier
-        .zIndex(PrimaryContainerZIndex)
+    Modifier
+        .zIndex(PrimaryPaneZIndex)
         .width(if (complete) maxWidth else widthAnimatable.value)
         .padding(
             start = updatedSecondaryContentWidth.countIf(
@@ -285,12 +259,11 @@ private fun primaryContentModifier(
         )
 }
 
-@Composable
-private fun secondaryContentModifier(
+private fun Modifier.secondaryPaneModifier(
     adaptation: Adaptive.Adaptation?,
     width: Dp,
     maxWidth: Dp,
-): Modifier {
+) = composed {
     val updatedWidth = rememberUpdatedState(width)
     val updatedMaxWidth = rememberUpdatedState(maxWidth)
     val widthAnimatable = remember {
@@ -324,9 +297,9 @@ private fun secondaryContentModifier(
             }
     }
 
-    return Modifier
+    Modifier
         // Display the secondary content over the primary content to maintain the sliding illusion
-        .zIndex(if (complete) SecondaryContainerZIndex else SecondaryContainerAnimationZIndex)
+        .zIndex(if (complete) SecondaryPaneZIndex else SecondaryPaneAnimationZIndex)
         .width(if (complete) updatedWidth.value else widthAnimatable.value)
         .restrictedSizePlacement(
             atStart = adaptation == PrimaryToSecondary
@@ -334,8 +307,8 @@ private fun secondaryContentModifier(
 }
 
 @Composable
-private fun routeContainerPadding(
-    state: RouteContainerPositionalState,
+private fun routePanePadding(
+    state: RoutePanePositionalState,
 ): SnapshotStateList<Dp> {
     val paddingValues = remember {
         mutableStateListOf(0.dp, 0.dp, 0.dp, 0.dp)
@@ -353,14 +326,14 @@ private fun routeContainerPadding(
 
     val bottomClearance by animateDpAsState(
         targetValue = insetClearance + navBarClearance,
-        animationSpec = ContainerSizeSpring
+        animationSpec = PaneSizeSpring
     )
 
     val navRailSize = state.windowSizeClass.navRailWidth() countIf state.navRailVisible
 
     val startClearance by animateDpAsState(
         targetValue = navRailSize,
-        animationSpec = ContainerSizeSpring
+        animationSpec = PaneSizeSpring
     )
 
     paddingValues[0] = startClearance
@@ -403,12 +376,12 @@ private val ContentSizeSpring = adaptiveSpringSpec(
     visibilityThreshold = Dp.VisibilityThreshold
 )
 
-private val ContainerSizeSpring = spring(
+private val PaneSizeSpring = spring(
     stiffness = Spring.StiffnessMediumLow,
     visibilityThreshold = Dp.VisibilityThreshold
 )
 
 private const val PaneDragHandleZIndex = -1f
-private const val PrimaryContainerZIndex = -2f
-private const val SecondaryContainerZIndex = -3f
-private const val SecondaryContainerAnimationZIndex = -1.5f
+private const val PrimaryPaneZIndex = -2f
+private const val SecondaryPaneZIndex = -3f
+private const val SecondaryPaneAnimationZIndex = -1.5f

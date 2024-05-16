@@ -5,8 +5,8 @@ import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Change.contains
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
-import com.tunjid.scaffold.globalui.slices.RouteContainerPositionalState
-import com.tunjid.scaffold.globalui.slices.routeContainerState
+import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
+import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.strings.Route
 
@@ -16,21 +16,21 @@ import com.tunjid.treenav.strings.Route
 @Immutable
 internal data class AppAdaptiveNavigationState(
     /**
-     * Moves between containers within a navigation sequence.
+     * Moves between panes within a navigation sequence.
      */
     val swapAdaptations: Set<Adaptive.Adaptation.Swap>,
     /**
-     * A mapping of [Container] to the routes in them
+     * A mapping of [Pane] to the routes in them
      */
-    val containersToRoutes: Map<Adaptive.Container, Route?>,
+    val panesToRoutes: Map<Adaptive.Pane, Route?>,
     /**
      * A mapping of route ids to the adaptive slots they are currently in.
      */
     val routeIdsToAdaptiveSlots: Map<String?, Adaptive.Slot>,
     /**
-     * A mapping of adaptive container to the routes that were last in them.
+     * A mapping of adaptive pane to the routes that were last in them.
      */
-    val previousContainersToRoutes: Map<Adaptive.Container, Route?>,
+    val previousPanesToRoutes: Map<Adaptive.Pane, Route?>,
     /**
      * A set of route ids that may be returned to.
      */
@@ -44,63 +44,63 @@ internal data class AppAdaptiveNavigationState(
      */
     override val windowSizeClass: WindowSizeClass,
     /**
-     * The positionalState of route containers
+     * The positionalState of route panes
      */
-    val routeContainerPositionalState: RouteContainerPositionalState,
+    val routePanePositionalState: RoutePanePositionalState,
 ) : Adaptive.NavigationState {
     companion object {
         internal val Initial = AppAdaptiveNavigationState(
             swapAdaptations = emptySet(),
             windowSizeClass = WindowSizeClass.COMPACT,
-            containersToRoutes = mapOf(
-                Adaptive.Container.Primary to unknownRoute(
-                    Adaptive.Container.slots.first().toString()
+            panesToRoutes = mapOf(
+                Adaptive.Pane.Primary to unknownRoute(
+                    Adaptive.Pane.slots.first().toString()
                 )
             ),
-            routeIdsToAdaptiveSlots = Adaptive.Container.slots.associateBy(Adaptive.Slot::toString),
+            routeIdsToAdaptiveSlots = Adaptive.Pane.slots.associateBy(Adaptive.Slot::toString),
             backStackIds = emptySet(),
             routeIdsAnimatingOut = emptySet(),
-            previousContainersToRoutes = emptyMap(),
-            routeContainerPositionalState = UiState().routeContainerState,
+            previousPanesToRoutes = emptyMap(),
+            routePanePositionalState = UiState().routePaneState,
         )
     }
 
     override val routeIds: Collection<String>
         get() = backStackIds
 
-    override fun containerStateFor(
+    override fun paneStateFor(
         slot: Adaptive.Slot
-    ): Adaptive.ContainerState {
+    ): Adaptive.PaneState {
         val route = routeFor(slot)
-        val container = route?.let(::containerFor)
-        return Adaptive.SlotContainerState(
+        val pane = route?.let(::paneFor)
+        return Adaptive.SlotPaneState(
             slot = slot,
             currentRoute = route,
-            previousRoute = previousContainersToRoutes[container],
-            container = container,
-            adaptation = swapAdaptations.firstOrNull { container in it }
+            previousRoute = previousPanesToRoutes[pane],
+            pane = pane,
+            adaptation = swapAdaptations.firstOrNull { pane in it }
                 ?: Adaptive.Adaptation.Change,
         )
     }
 
     override fun slotFor(
-        container: Adaptive.Container?
-    ): Adaptive.Slot? = when (container) {
+        pane: Adaptive.Pane?
+    ): Adaptive.Slot? = when (pane) {
         null -> null
-        else -> routeIdsToAdaptiveSlots[containersToRoutes[container]?.id]
+        else -> routeIdsToAdaptiveSlots[panesToRoutes[pane]?.id]
     }
 
-    override fun containerFor(
+    override fun paneFor(
         route: Route
-    ): Adaptive.Container? =
-        containersToRoutes.firstNotNullOfOrNull { (container, containerRoute) ->
-            if (containerRoute?.id == route.id) container else null
+    ): Adaptive.Pane? =
+        panesToRoutes.firstNotNullOfOrNull { (pane, paneRoute) ->
+            if (paneRoute?.id == route.id) pane else null
         }
 
     override fun routeFor(
         slot: Adaptive.Slot
     ): Route? = routeIdsToAdaptiveSlots.firstNotNullOfOrNull { (routeId, routeSlot) ->
-        if (routeSlot == slot) containersToRoutes.firstNotNullOfOrNull { (_, route) ->
+        if (routeSlot == slot) panesToRoutes.firstNotNullOfOrNull { (_, route) ->
             if (route?.id == routeId) route
             else null
         }
@@ -108,10 +108,10 @@ internal data class AppAdaptiveNavigationState(
     }
 
     override fun routeFor(
-        container: Adaptive.Container
-    ): Route? = containersToRoutes[container]
+        pane: Adaptive.Pane
+    ): Route? = panesToRoutes[pane]
 
     override fun adaptationIn(
-        container: Adaptive.Container
-    ): Adaptive.Adaptation? = swapAdaptations.firstOrNull { container in it }
+        pane: Adaptive.Pane
+    ): Adaptive.Adaptation? = swapAdaptations.firstOrNull { pane in it }
 }

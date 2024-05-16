@@ -63,7 +63,7 @@ interface AdaptiveRouter {
 
     fun secondaryRouteFor(route: Route): Route?
 
-    fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions?
+    fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions?
 }
 
 inline fun <reified T : ByteSerializable> ByteSerializer.restoreState(savedState: ByteArray?): T? {
@@ -131,7 +131,7 @@ object ScaffoldModule {
             override fun secondaryRouteFor(route: Route): Route? =
                 configurationTrie[route]?.secondaryRoute(route)
 
-            override fun transitionsFor(state: Adaptive.ContainerState): Adaptive.Transitions? =
+            override fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions? =
                 state.currentRoute?.let(configurationTrie::get)?.transitionsFor(state)
 
 

@@ -71,7 +71,7 @@ internal class SharedElementData<T>(
     private var offsetAnimInProgress by mutableStateOf(false)
 
     private val canDrawInOverlay get() = sizeAnimInProgress || offsetAnimInProgress
-    private val containersKeysToSeenCount = mutableStateMapOf<String, Unit>()
+    private val panesKeysToSeenCount = mutableStateMapOf<String, Unit>()
 
     val offsetAnimation = DeferredTargetAnimation(
         vectorConverter = IntOffset.VectorConverter,
@@ -110,13 +110,13 @@ internal class SharedElementData<T>(
         }
     }
 
-    private fun updateContainerStateSeen(
-        containerState: Adaptive.ContainerState
+    private fun updatePaneStateSeen(
+        paneState: Adaptive.PaneState
     ) {
-        containersKeysToSeenCount[containerState.key] = Unit
+        panesKeysToSeenCount[paneState.key] = Unit
     }
 
-    private fun hasBeenShared() = containersKeysToSeenCount.size > 1
+    private fun hasBeenShared() = panesKeysToSeenCount.size > 1
 
     companion object {
         /**
@@ -224,20 +224,20 @@ internal class SharedElementData<T>(
             animationMapper: (SharedElementData<*>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val containerState = LocalAdaptiveContentScope.current
-                ?.containerState
-                ?.also(::updateContainerStateSeen)
+            val paneState = LocalAdaptiveContentScope.current
+                ?.paneState
+                ?.also(::updatePaneStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
                 initialValue = Pair(
-                    containerState?.key,
-                    containerState.canAnimateOnStartingFrames()
+                    paneState?.key,
+                    paneState.canAnimateOnStartingFrames()
                 ),
-                key1 = containerState
+                key1 = paneState
             ) {
                 value = Pair(
-                    containerState?.key,
-                    containerState.canAnimateOnStartingFrames()
+                    paneState?.key,
+                    paneState.canAnimateOnStartingFrames()
                 )
                 value = snapshotFlow { animation.isIdle }
                     .filter(true::equals)
@@ -245,14 +245,14 @@ internal class SharedElementData<T>(
                     .let { value.first to false }
             }.value
 
-            return when(laggingScopeKey == containerState?.key) {
+            return when(laggingScopeKey == paneState?.key) {
                 true -> animationInProgressTillFirstIdle && hasBeenShared()
-                false -> containerState.canAnimateOnStartingFrames()
+                false -> paneState.canAnimateOnStartingFrames()
             }
         }
 
-        private fun Adaptive.ContainerState?.canAnimateOnStartingFrames() =
-            this?.container != Adaptive.Container.TransientPrimary
+        private fun Adaptive.PaneState?.canAnimateOnStartingFrames() =
+            this?.pane != Adaptive.Pane.TransientPrimary
 
         private val sizeSpec = spring(
             stiffness = Spring.StiffnessMediumLow,
