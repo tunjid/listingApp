@@ -20,8 +20,14 @@ sealed class NavVisibility {
     data object GoneIfBottomNav : NavVisibility()
 }
 
-enum class PaneAnchor {
-    Zero, OneThirds, Half, TwoThirds, Full
+enum class PaneAnchor(
+    val fraction: Float
+) {
+    Zero(fraction = 0f),
+    OneThirds(fraction = 1/3f),
+    Half(fraction = 1/2f),
+    TwoThirds(fraction = 2/3f),
+    Full(fraction = 1f),
 }
 
 /**

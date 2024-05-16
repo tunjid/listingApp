@@ -10,14 +10,25 @@ import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.globalui.BackHandler
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.progress
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 internal val LocalPaneAnchorState = staticCompositionLocalOf<PaneAnchorState> {
@@ -40,7 +51,23 @@ internal class PaneAnchorState(density: Density) {
 
     val targetPaneAnchor get() = anchoredDraggableState.targetValue
 
-    val currentPaneAnchor get() = anchoredDraggableState.currentValue
+    val currentPaneAnchor: PaneAnchor
+        get() {
+            val cappedFraction = max(
+                a = min(
+                    a = anchoredDraggableState.requireOffset() / maxWidth,
+                    b = 1f
+                ),
+                b = 0f
+            )
+            return when (cappedFraction) {
+                in 0f..0.01f -> PaneAnchor.Zero
+                in Float.MIN_VALUE..PaneAnchor.OneThirds.fraction -> PaneAnchor.OneThirds
+                in PaneAnchor.OneThirds.fraction..PaneAnchor.TwoThirds.fraction -> PaneAnchor.Half
+                in PaneAnchor.TwoThirds.fraction..0.99f -> PaneAnchor.TwoThirds
+                else -> PaneAnchor.Full
+            }
+        }
 
     private val thumbMutableInteractionSource = MutableInteractionSource()
 
@@ -79,11 +106,7 @@ internal class PaneAnchorState(density: Density) {
     )
 
     private fun currentAnchors() = DraggableAnchors {
-        PaneAnchor.Zero at 0f
-        PaneAnchor.OneThirds at (maxWidth * (1f / 3))
-        PaneAnchor.Half at (maxWidth * (1f / 2))
-        PaneAnchor.TwoThirds at (maxWidth * (2f / 3))
-        PaneAnchor.Full at maxWidth.toFloat()
+        PaneAnchor.entries.forEach { it at maxWidth * it.fraction }
     }
 }
 
