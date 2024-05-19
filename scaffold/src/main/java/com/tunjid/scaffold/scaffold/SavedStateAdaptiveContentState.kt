@@ -90,8 +90,8 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
     private val keysToSharedElements = mutableStateMapOf<Any, SharedElementData<*>>()
 
     @Composable
-    override fun RouteIn(pane: Adaptive.Pane?) {
-        val slot = pane?.let(navigationState::slotFor)
+    override fun RouteIn(pane: Adaptive.Pane) {
+        val slot = navigationState.slotFor(pane)
         slotsToRoutes.getValue(slot).invoke()
     }
 

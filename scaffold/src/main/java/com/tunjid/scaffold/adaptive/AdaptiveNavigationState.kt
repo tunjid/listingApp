@@ -122,7 +122,7 @@ object Adaptive {
         ): PaneState
 
         fun slotFor(
-            pane: Pane?
+            pane: Pane
         ): Slot?
 
         fun paneFor(
