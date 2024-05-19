@@ -114,24 +114,7 @@ object Adaptive {
 
     interface NavigationState {
 
-        val routeIds: Collection<String>
-
         val windowSizeClass: WindowSizeClass
-        fun paneStateFor(
-            slot: Slot
-        ): PaneState
-
-        fun slotFor(
-            pane: Pane
-        ): Slot?
-
-        fun paneFor(
-            route: Route
-        ): Pane?
-
-        fun routeFor(
-            slot: Slot
-        ): Route?
 
         fun routeFor(
             pane: Pane

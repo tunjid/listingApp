@@ -33,14 +33,6 @@ fun org.gradle.api.Project.composeConfiguration(
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        val composeCompilerVersion = versionCatalog
-            .findVersion("androidx-compose-compiler")
-            .get()
-            .requiredVersion
-        println("USING VERSION $composeCompilerVersion")
-        kotlinCompilerExtensionVersion = composeCompilerVersion
-    }
 }
 
 fun org.gradle.api.Project.addDesugarDependencies() {

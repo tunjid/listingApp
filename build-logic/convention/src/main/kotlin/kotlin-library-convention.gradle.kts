@@ -5,4 +5,7 @@ plugins {
 
 kotlin {
     configureKotlinAndroid(this)
+    sourceSets.all {
+        languageSettings.enableLanguageFeature("ExplicitBackingFields")
+    }
 }
