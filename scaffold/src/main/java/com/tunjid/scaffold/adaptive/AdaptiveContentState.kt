@@ -11,5 +11,5 @@ interface AdaptiveContentState {
     val overlays: Collection<SharedElementOverlay>
 
     @Composable
-    fun RouteIn(pane: Adaptive.Pane?)
+    fun RouteIn(pane: Adaptive.Pane)
 }

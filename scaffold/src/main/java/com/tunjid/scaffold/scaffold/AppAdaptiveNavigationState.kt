@@ -84,11 +84,10 @@ internal data class AppAdaptiveNavigationState(
     }
 
     override fun slotFor(
-        pane: Adaptive.Pane?
-    ): Adaptive.Slot? = when (pane) {
-        null -> null
-        else -> routeIdsToAdaptiveSlots[panesToRoutes[pane]?.id]
-    }
+        pane: Adaptive.Pane
+    ): Adaptive.Slot? = routeIdsToAdaptiveSlots[
+        panesToRoutes[pane]?.id
+    ]
 
     override fun paneFor(
         route: Route
