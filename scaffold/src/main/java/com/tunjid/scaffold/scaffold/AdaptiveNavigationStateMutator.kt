@@ -41,9 +41,9 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
     adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
-    onChanged: (Adaptive.NavigationState) -> Unit
-) = actionStateFlowMutator<Action, AppAdaptiveNavigationState>(
-    initialState = AppAdaptiveNavigationState.Initial,
+    onChanged: (SlotBasedAdaptiveNavigationState) -> Unit
+) = actionStateFlowMutator<Action, SlotBasedAdaptiveNavigationState>(
+    initialState = SlotBasedAdaptiveNavigationState.Initial,
     started = SharingStarted.Eagerly,
     inputs = listOf(
         adaptiveNavigationStateMutations(
@@ -62,7 +62,7 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
     },
     stateTransform = { adaptiveNavFlow ->
         adaptiveNavFlow
-            .filterNot(AppAdaptiveNavigationState::hasConflictingRoutes)
+            .filterNot(SlotBasedAdaptiveNavigationState::hasConflictingRoutes)
             .onEach(onChanged)
     }
 )
@@ -75,7 +75,7 @@ private fun adaptiveNavigationStateMutations(
     adaptiveRouter: AdaptiveRouter,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>
-): Flow<Mutation<AppAdaptiveNavigationState>> = combine(
+): Flow<Mutation<SlotBasedAdaptiveNavigationState>> = combine(
     flow = navStateFlow,
     flow2 = uiStateFlow.distinctUntilChangedBy {
         listOf(it.backStatus.isPreviewing, it.routePaneState)
@@ -90,14 +90,14 @@ private fun adaptiveNavigationStateMutations(
 )
     .distinctUntilChanged()
     .scan(
-        initial = AppAdaptiveNavigationState.Initial.adaptTo(
+        initial = SlotBasedAdaptiveNavigationState.Initial.adaptTo(
             new = adaptiveNavigationState(
                 adaptiveRouter = adaptiveRouter,
                 multiStackNav = navStateFlow.value,
                 uiState = uiStateFlow.value,
             )
         ),
-        operation = AppAdaptiveNavigationState::adaptTo
+        operation = SlotBasedAdaptiveNavigationState::adaptTo
     )
     .mapToMutation { newState ->
         // Replace the entire state except the knowledge of routes animating in and out
@@ -108,7 +108,7 @@ private fun adaptiveNavigationState(
     adaptiveRouter: AdaptiveRouter,
     multiStackNav: MultiStackNav,
     uiState: UiState,
-): AppAdaptiveNavigationState {
+): SlotBasedAdaptiveNavigationState {
     // If there is a back preview in progress, show the back primary route in the
     // primary pane
     val primaryRoute = multiStackNav.primaryRouteOnBackPress.takeIf {
@@ -118,7 +118,7 @@ private fun adaptiveNavigationState(
     // Parse the secondary route from the primary route
     val secondaryRoute = adaptiveRouter.secondaryRouteFor(primaryRoute)
 
-    return AppAdaptiveNavigationState(
+    return SlotBasedAdaptiveNavigationState(
         panesToRoutes = mapOf(
             Primary to primaryRoute,
             Secondary to secondaryRoute.takeIf { route ->
@@ -151,9 +151,9 @@ private fun adaptiveNavigationState(
  * A method that adapts changes in navigation to different panes while allowing for them
  * to be animated easily.
  */
-private fun AppAdaptiveNavigationState.adaptTo(
-    new: AppAdaptiveNavigationState,
-): AppAdaptiveNavigationState {
+private fun SlotBasedAdaptiveNavigationState.adaptTo(
+    new: SlotBasedAdaptiveNavigationState,
+): SlotBasedAdaptiveNavigationState {
     val old = this
 
     val availableSlots = Adaptive.Pane.slots.toMutableSet()
@@ -203,12 +203,12 @@ private fun AppAdaptiveNavigationState.adaptTo(
     )
 }
 
-private fun Flow<Action.RouteExitStart>.routeExitStartMutations(): Flow<Mutation<AppAdaptiveNavigationState>> =
+private fun Flow<Action.RouteExitStart>.routeExitStartMutations(): Flow<Mutation<SlotBasedAdaptiveNavigationState>> =
     mapToMutation { exitStart ->
         copy(routeIdsAnimatingOut = routeIdsAnimatingOut + exitStart.routeId)
     }
 
-private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<AppAdaptiveNavigationState>> =
+private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<SlotBasedAdaptiveNavigationState>> =
     mapToMutation { exitEnd ->
         copy(routeIdsAnimatingOut = routeIdsAnimatingOut - exitEnd.routeId).prune()
     }
@@ -216,7 +216,7 @@ private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<App
 /**
  * Checks if any of the new routes coming in has any conflicts with those animating out.
  */
-private fun AppAdaptiveNavigationState.hasConflictingRoutes() =
+private fun SlotBasedAdaptiveNavigationState.hasConflictingRoutes() =
     routeIdsAnimatingOut.contains(routeFor(Primary)?.id)
             || routeFor(Secondary)?.id?.let(routeIdsAnimatingOut::contains) == true
             || routeFor(TransientPrimary)?.id?.let(routeIdsAnimatingOut::contains) == true
@@ -224,7 +224,7 @@ private fun AppAdaptiveNavigationState.hasConflictingRoutes() =
 /**
  * Trims unneeded metadata from the [Adaptive.NavigationState]
  */
-private fun AppAdaptiveNavigationState.prune(): AppAdaptiveNavigationState = copy(
+private fun SlotBasedAdaptiveNavigationState.prune(): SlotBasedAdaptiveNavigationState = copy(
     routeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots.filter { (routeId) ->
         if (routeId == null) return@filter false
         backStackIds.contains(routeId)

@@ -51,5 +51,6 @@ private val compilerArgs = listOf(
     "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
     "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
     "-opt-in=kotlinx.coroutines.FlowPreview",
-    "-Xcontext-receivers"
+    "-Xskip-prerelease-check",
+    "-Xcontext-receivers",
 )

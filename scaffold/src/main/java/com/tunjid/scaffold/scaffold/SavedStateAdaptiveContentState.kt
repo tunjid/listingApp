@@ -65,14 +65,16 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
         adaptiveRouter = adaptiveRouter,
         navStateFlow = navStateFlow,
         uiStateFlow = uiStateFlow,
-        onChanged = ::navigationState::set
+        onChanged = ::slotBasedAdaptiveNavigationState::set
     )
 
     internal fun onAction(action: Action) = mutator.accept(action)
-    override var navigationState: Adaptive.NavigationState by mutableStateOf(
+
+    internal var slotBasedAdaptiveNavigationState: SlotBasedAdaptiveNavigationState by mutableStateOf(
         value = mutator.state.value
     )
-        private set
+    override val navigationState: Adaptive.NavigationState
+        get() = slotBasedAdaptiveNavigationState
 
     private val slotsToRoutes =
         mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
@@ -91,7 +93,7 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
 
     @Composable
     override fun RouteIn(pane: Adaptive.Pane) {
-        val slot = navigationState.slotFor(pane)
+        val slot = slotBasedAdaptiveNavigationState.slotFor(pane)
         slotsToRoutes.getValue(slot).invoke()
     }
 
@@ -122,7 +124,7 @@ private fun SavedStateAdaptiveContentState.Render(
     slot: Adaptive.Slot,
 ) {
     val paneTransition = updateTransition(
-        targetState = navigationState.paneStateFor(slot),
+        targetState = slotBasedAdaptiveNavigationState.paneStateFor(slot),
         label = "$slot-PaneTransition",
     )
     paneTransition.AnimatedContent(
@@ -158,7 +160,7 @@ private fun SavedStateAdaptiveContentState.Render(
                         adaptiveRouter.destination(route).invoke()
                         DisposableEffect(Unit) {
                             onDispose {
-                                val routeIds = navigationState.routeIds
+                                val routeIds = slotBasedAdaptiveNavigationState.routeIds
                                 if (!routeIds.contains(route.id)) removeState(route.id)
                             }
                         }

@@ -14,7 +14,7 @@ import com.tunjid.treenav.strings.Route
  * Data structure for managing navigation as it adapts to various layout configurations
  */
 @Immutable
-internal data class AppAdaptiveNavigationState(
+internal data class SlotBasedAdaptiveNavigationState(
     /**
      * Moves between panes within a navigation sequence.
      */
@@ -49,7 +49,7 @@ internal data class AppAdaptiveNavigationState(
     val routePanePositionalState: RoutePanePositionalState,
 ) : Adaptive.NavigationState {
     companion object {
-        internal val Initial = AppAdaptiveNavigationState(
+        internal val Initial = SlotBasedAdaptiveNavigationState(
             swapAdaptations = emptySet(),
             windowSizeClass = WindowSizeClass.COMPACT,
             panesToRoutes = mapOf(
@@ -65,10 +65,10 @@ internal data class AppAdaptiveNavigationState(
         )
     }
 
-    override val routeIds: Collection<String>
+    internal val routeIds: Collection<String>
         get() = backStackIds
 
-    override fun paneStateFor(
+    internal fun paneStateFor(
         slot: Adaptive.Slot
     ): Adaptive.PaneState {
         val route = routeFor(slot)
@@ -83,20 +83,20 @@ internal data class AppAdaptiveNavigationState(
         )
     }
 
-    override fun slotFor(
+    internal fun slotFor(
         pane: Adaptive.Pane
     ): Adaptive.Slot? = routeIdsToAdaptiveSlots[
         panesToRoutes[pane]?.id
     ]
 
-    override fun paneFor(
+    private fun paneFor(
         route: Route
     ): Adaptive.Pane? =
         panesToRoutes.firstNotNullOfOrNull { (pane, paneRoute) ->
             if (paneRoute?.id == route.id) pane else null
         }
 
-    override fun routeFor(
+    private fun routeFor(
         slot: Adaptive.Slot
     ): Route? = routeIdsToAdaptiveSlots.firstNotNullOfOrNull { (routeId, routeSlot) ->
         if (routeSlot == slot) panesToRoutes.firstNotNullOfOrNull { (_, route) ->
