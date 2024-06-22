@@ -6,6 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import com.tunjid.airbnb.BuildConfig
 import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.mutator.ActionStateMutator
@@ -132,7 +135,7 @@ class PersistedListingApp @Inject constructor(
         }
 
         @Suppress("UNCHECKED_CAST")
-        override fun <T> screenStateHolderFor(route: Route, lazyCreate: Boolean): T? =
+        override fun <T: ViewModel> screenStateHolderFor(route: Route, lazyCreate: Boolean): T? =
             when {
                 lazyCreate -> routeStateHolderCache.getOrPut(route.id) {
                     val stateHolderCreator = stateHolderTrie[route] ?: return@getOrPut null
@@ -172,7 +175,7 @@ class PersistedListingApp @Inject constructor(
         routeStates = flatten(order = Order.BreadthFirst)
             .filterIsInstance<Route>()
             .fold(mutableMapOf()) { map, route ->
-                val stateHolder = screenStateHolderCache.screenStateHolderFor<Any>(
+                val stateHolder = screenStateHolderCache.screenStateHolderFor<ViewModel>(
                     route = route,
                     lazyCreate = false
                 )
@@ -188,6 +191,10 @@ private data class ScopeHolder(
     val scope: CoroutineScope,
     val stateHolder: Any,
 )
+
+private class RouteViewModelStoreOwner : ViewModelStoreOwner {
+    override val viewModelStore: ViewModelStore = ViewModelStore()
+}
 
 @Module
 @InstallIn(SingletonComponent::class)

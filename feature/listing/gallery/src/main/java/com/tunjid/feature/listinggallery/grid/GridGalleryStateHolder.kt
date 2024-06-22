@@ -1,5 +1,6 @@
 package com.tunjid.feature.listinggallery.grid
 
+import androidx.lifecycle.ViewModel
 import com.tunjid.feature.listinggallery.grid.di.initialQuery
 import com.tunjid.feature.listinggallery.grid.di.startingMediaUrls
 import com.tunjid.feature.listinggallery.mediaListTiler
@@ -44,17 +45,19 @@ interface GridGalleryStateHolderFactory {
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,
-    ): ActualGridGalleryStateHolder
+    ): GridGalleryViewModel
 }
 
-class ActualGridGalleryStateHolder @AssistedInject constructor(
+class GridGalleryViewModel @AssistedInject constructor(
     mediaRepository: MediaRepository,
     byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : GridGalleryStateHolder by scope.gridGalleryMutator(
+) : ViewModel(
+    viewModelScope = scope,
+), GridGalleryStateHolder by scope.gridGalleryMutator(
     mediaRepository = mediaRepository,
     navigationActions = navigationActions,
     byteSerializer = byteSerializer,

@@ -2,8 +2,8 @@ package com.tunjid.feature.feed.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.feed.ListingFeedScreen
-import com.tunjid.feature.feed.ListingFeedStateHolder
 import com.tunjid.feature.feed.ListingFeedStateHolderFactory
+import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.feature.feed.State
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -80,7 +80,7 @@ object ListingFeedModule {
     @Provides
     @StringKey(FeedPattern)
     fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<ListingFeedStateHolder>(
+        val stateHolder = rememberRetainedStateHolder<ListingFeedViewModel>(
             route = route
         )
         ListingFeedScreen(

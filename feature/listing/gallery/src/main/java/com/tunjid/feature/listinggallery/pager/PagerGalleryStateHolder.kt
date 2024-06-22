@@ -1,5 +1,6 @@
 package com.tunjid.feature.listinggallery.pager
 
+import androidx.lifecycle.ViewModel
 import com.tunjid.feature.listinggallery.mediaListTiler
 import com.tunjid.feature.listinggallery.mediaPivotRequest
 import com.tunjid.feature.listinggallery.pager.di.initialQuery
@@ -28,25 +29,25 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
-typealias PagerGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
-
 @AssistedFactory
 interface PagerGalleryStateHolderFactory {
     fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,
-    ): ActualPagerGalleryStateHolder
+    ): PagerGalleryViewModel
 }
 
-class ActualPagerGalleryStateHolder @AssistedInject constructor(
+class PagerGalleryViewModel @AssistedInject constructor(
     mediaRepository: MediaRepository,
     byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : PagerGalleryStateHolder by scope.pagerGalleryMutator(
+) : ViewModel(
+    viewModelScope = scope,
+), ActionStateMutator<Action, StateFlow<State>> by scope.pagerGalleryMutator(
     mediaRepository = mediaRepository,
     byteSerializer = byteSerializer,
     navigationActions = navigationActions,

@@ -1,5 +1,7 @@
 package com.tunjid.feature.detail
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.tunjid.feature.detail.di.initialQuery
 import com.tunjid.feature.detail.di.listingId
 import com.tunjid.feature.detail.di.startingMediaUrls
@@ -42,18 +44,16 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
-typealias ListingDetailStateHolder = ActionStateMutator<Action, StateFlow<State>>
-
 @AssistedFactory
-interface ListingStateHolderFactory {
+interface ListingStateHolderFactory: ViewModelProvider.Factory {
     fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,
-    ): ActualListingDetailStateHolder
+    ): ListingDetailViewModel
 }
 
-class ActualListingDetailStateHolder @AssistedInject constructor(
+class ListingDetailViewModel @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
@@ -64,7 +64,9 @@ class ActualListingDetailStateHolder @AssistedInject constructor(
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : ListingDetailStateHolder by scope.listingDetailMutator(
+) : ViewModel(
+    viewModelScope = scope,
+), ActionStateMutator<Action, StateFlow<State>> by scope.listingDetailMutator(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     userRepository = userRepository,

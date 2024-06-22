@@ -2,8 +2,8 @@ package com.tunjid.feature.listinggallery.pager.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
-import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolder
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
+import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
 import com.tunjid.feature.listinggallery.pager.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -60,7 +60,7 @@ object PagerGalleryModule {
     @Provides
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<PagerGalleryStateHolder>(
+        val stateHolder = rememberRetainedStateHolder<PagerGalleryViewModel>(
             route = route
         )
         FullscreenGalleryScreen(

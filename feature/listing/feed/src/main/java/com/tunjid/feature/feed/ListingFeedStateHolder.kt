@@ -1,5 +1,6 @@
 package com.tunjid.feature.feed
 
+import androidx.lifecycle.ViewModel
 import com.tunjid.feature.feed.di.initialQuery
 import com.tunjid.feature.feed.di.isFavorites
 import com.tunjid.feature.feed.di.startingMediaUrls
@@ -58,10 +59,10 @@ interface ListingFeedStateHolderFactory {
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,
-    ): ActualListingFeedStateHolder
+    ): ListingFeedViewModel
 }
 
-class ActualListingFeedStateHolder @AssistedInject constructor(
+class ListingFeedViewModel @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
@@ -71,7 +72,9 @@ class ActualListingFeedStateHolder @AssistedInject constructor(
     @Assisted scope: CoroutineScope,
     @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : ListingFeedStateHolder by scope.listingFeedStateHolder(
+) : ViewModel(
+    viewModelScope = scope,
+), ActionStateMutator<Action, StateFlow<State>> by scope.listingFeedStateHolder(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     favoriteRepository = favoriteRepository,

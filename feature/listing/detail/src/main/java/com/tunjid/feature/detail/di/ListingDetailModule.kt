@@ -2,7 +2,7 @@ package com.tunjid.feature.detail.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.detail.ListingDetailScreen
-import com.tunjid.feature.detail.ListingDetailStateHolder
+import com.tunjid.feature.detail.ListingDetailViewModel
 import com.tunjid.feature.detail.ListingStateHolderFactory
 import com.tunjid.feature.detail.State
 import com.tunjid.listing.data.model.MediaQuery
@@ -75,13 +75,13 @@ object ListingDetailModule {
             route.children.first() as? Route
         },
         render = { route ->
-            val stateHolder = rememberRetainedStateHolder<ListingDetailStateHolder>(
+            val viewModel = rememberRetainedStateHolder<ListingDetailViewModel>(
                 route = route
             )
             ListingDetailScreen(
                 modifier = Modifier.backPreviewBackgroundModifier(),
-                state = stateHolder.state.collectAsStateWithLifecycle().value,
-                actions = stateHolder.accept
+                state = viewModel.state.collectAsStateWithLifecycle().value,
+                actions = viewModel.accept
             )
         })
 

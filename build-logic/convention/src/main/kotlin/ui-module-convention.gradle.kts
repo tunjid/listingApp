@@ -18,6 +18,7 @@ dependencies {
 
     "implementation"(platform(libs.findLibrary("compose.bom").get()))
     "implementation"(libs.findLibrary("androidx.activity.compose").get())
+    "implementation"(libs.findLibrary("androidx.lifecycle.viewmodel.compose").get())
     "implementation"(libs.findLibrary("androidx.compose.runtime").get())
     "implementation"(libs.findLibrary("androidx.compose.animation").get())
     "implementation"(libs.findLibrary("androidx.compose.foundation.foundation").get())
@@ -30,6 +31,8 @@ dependencies {
     "implementation"(libs.findLibrary("androidx.compose.material.iconsExtended").get())
     "implementation"(libs.findLibrary("androidx.compose.material3").get())
     "implementation"(libs.findLibrary("androidx.datastore.core.okio").get())
+
+    "implementation"(libs.findLibrary("hilt.ext.common").get())
 
     "implementation"(libs.findLibrary("kotlinx.coroutines.core").get())
     "implementation"(libs.findLibrary("kotlinx.serialization.protobuf").get())
