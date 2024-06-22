@@ -20,6 +20,7 @@ import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.mutator.identity
 import com.tunjid.scaffold.ByteSerializer
+import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.di.restoreState
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
@@ -54,8 +55,8 @@ import kotlinx.coroutines.flow.scan
 typealias ListingFeedStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface ListingFeedStateHolderFactory {
-    fun create(
+interface ListingFeedStateHolderFactory : ScreenStateHolderCreator {
+    override fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,

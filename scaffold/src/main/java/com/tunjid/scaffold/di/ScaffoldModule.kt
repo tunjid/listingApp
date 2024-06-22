@@ -3,6 +3,7 @@ package com.tunjid.scaffold.di
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
@@ -27,9 +28,9 @@ import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParser
 import com.tunjid.treenav.strings.RouteTrie
-import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.routeParserFrom
 import dagger.Binds
 import dagger.Module
@@ -50,7 +51,13 @@ import okio.Path
 import okio.Path.Companion.toPath
 import javax.inject.Singleton
 
-typealias ScreenStateHolderCreator = (CoroutineScope, ByteArray?, Route) -> Any
+interface ScreenStateHolderCreator {
+    fun create(
+        scope: CoroutineScope,
+        savedState: ByteArray?,
+        route: Route
+    ): ViewModel
+}
 
 typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 
@@ -177,7 +184,8 @@ object ScaffoldModule {
     @Provides
     fun adaptiveContentStateCreator(
         factory: AdaptiveContentStateFactory
-    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState = factory::create
+    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState =
+        factory::create
 }
 
 @Module

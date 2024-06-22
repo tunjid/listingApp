@@ -78,5 +78,5 @@ object GridGalleryModule {
     @StringKey(RoutePattern)
     fun listingGalleryStateHolderCreator(
         factory: GridGalleryStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

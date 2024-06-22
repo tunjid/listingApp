@@ -90,5 +90,5 @@ object ListingDetailModule {
     @StringKey(RoutePattern)
     fun archiveListStateHolderCreator(
         factory: ListingStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

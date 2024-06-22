@@ -100,12 +100,12 @@ object ListingFeedModule {
     @StringKey(FeedPattern)
     fun listingFeedStateHolderCreator(
         factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 
     @IntoMap
     @Provides
     @StringKey(FavoritesPattern)
     fun favoritesStateHolderCreator(
         factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

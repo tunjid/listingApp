@@ -75,5 +75,5 @@ object PagerGalleryModule {
     @StringKey(RoutePattern)
     fun fullscreenGalleryStateHolderCreator(
         factory: PagerGalleryStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

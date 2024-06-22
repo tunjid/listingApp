@@ -13,6 +13,7 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.ByteSerializer
+import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.di.restoreState
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
@@ -30,8 +31,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
 @AssistedFactory
-interface PagerGalleryStateHolderFactory {
-    fun create(
+interface PagerGalleryStateHolderFactory : ScreenStateHolderCreator {
+    override fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,

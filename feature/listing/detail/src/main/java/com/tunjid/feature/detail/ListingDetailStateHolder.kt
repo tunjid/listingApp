@@ -18,6 +18,7 @@ import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.ByteSerializer
+import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.di.restoreState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
@@ -45,8 +46,8 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
 @AssistedFactory
-interface ListingStateHolderFactory: ViewModelProvider.Factory {
-    fun create(
+interface ListingStateHolderFactory: ScreenStateHolderCreator {
+    override fun create(
         scope: CoroutineScope,
         savedState: ByteArray?,
         route: Route,
