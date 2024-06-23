@@ -20,6 +20,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -79,14 +80,12 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
-    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = viewModel<ListingFeedViewModel>(
-            route = route
-        )
+    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration {
+        val viewModel = viewModel<ListingFeedViewModel>()
         ListingFeedScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
+            state = viewModel.state.collectAsStateWithLifecycle().value,
+            actions = viewModel.accept
         )
     }
 
@@ -104,7 +103,7 @@ object ListingFeedModule {
 
     @IntoMap
     @Provides
-    @StringKey(FavoritesPattern)
+    @ClassKey(ListingFeedViewModel::class)
     fun favoritesStateHolderCreator(
         factory: ListingFeedStateHolderFactory
     ): ScreenStateHolderCreator = factory

@@ -19,6 +19,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -70,7 +71,7 @@ object PagerGalleryModule {
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @ClassKey(PagerGalleryViewModel::class)
     fun fullscreenGalleryStateHolderCreator(
         factory: PagerGalleryStateHolderFactory
     ): ScreenStateHolderCreator = factory

@@ -21,6 +21,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -85,7 +86,7 @@ object ListingDetailModule {
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @ClassKey(ListingDetailViewModel::class)
     fun archiveListStateHolderCreator(
         factory: ListingStateHolderFactory
     ): ScreenStateHolderCreator = factory

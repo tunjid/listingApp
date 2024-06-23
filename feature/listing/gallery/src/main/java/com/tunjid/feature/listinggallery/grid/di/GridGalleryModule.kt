@@ -20,6 +20,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -60,20 +61,18 @@ object GridGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = viewModel<GridGalleryViewModel>(
-            route = route
-        )
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration {
+        val viewModel = viewModel<GridGalleryViewModel>()
         GridGalleryScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
+            state = viewModel.state.collectAsStateWithLifecycle().value,
+            actions = viewModel.accept
         )
     }
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @ClassKey(GridGalleryViewModel::class)
     fun listingGalleryStateHolderCreator(
         factory: GridGalleryStateHolderFactory
     ): ScreenStateHolderCreator = factory
