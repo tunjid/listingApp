@@ -1,7 +1,6 @@
 package com.tunjid.feature.detail
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.tunjid.feature.detail.di.initialQuery
 import com.tunjid.feature.detail.di.listingId
 import com.tunjid.feature.detail.di.startingMediaUrls
@@ -17,9 +16,7 @@ import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.di.restoreState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.isInPrimaryNavMutations
@@ -46,10 +43,9 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
 @AssistedFactory
-interface ListingStateHolderFactory: ScreenStateHolderCreator {
+interface ListingStateHolderFactory : ScreenStateHolderCreator {
     override fun create(
         scope: CoroutineScope,
-        savedState: ByteArray?,
         route: Route,
     ): ListingDetailViewModel
 }
@@ -58,12 +54,10 @@ class ListingDetailViewModel @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
-    byteSerializer: ByteSerializer,
     uiStateFlow: StateFlow<UiState>,
     navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
-    @Assisted savedState: ByteArray?,
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
@@ -71,11 +65,9 @@ class ListingDetailViewModel @AssistedInject constructor(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     userRepository = userRepository,
-    byteSerializer = byteSerializer,
     uiStateFlow = uiStateFlow,
     navStateFlow = navStateFlow,
     navigationActions = navigationActions,
-    savedState = savedState,
     route = route
 )
 
@@ -83,19 +75,15 @@ private fun CoroutineScope.listingDetailMutator(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
-    byteSerializer: ByteSerializer,
     uiStateFlow: StateFlow<UiState>,
     navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (NavigationMutation) -> Unit,
-    savedState: ByteArray?,
     route: Route,
 ): ActionStateMutator<Action, StateFlow<State>> = actionStateFlowMutator(
-    initialState = byteSerializer.restoreState<State>(savedState)
-        ?.copy(listingItems = route.preSeededNavigationItems())
-        ?: State(
-            currentQuery = route.routeParams.initialQuery,
-            listingItems = route.preSeededNavigationItems()
-        ),
+    initialState = State(
+        currentQuery = route.routeParams.initialQuery,
+        listingItems = route.preSeededNavigationItems()
+    ),
     inputs = listOf(
         mediaRepository.countMutations(
             listingId = route.routeParams.listingId

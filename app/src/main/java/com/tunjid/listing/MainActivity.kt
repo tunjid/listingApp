@@ -7,8 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalConfiguration
@@ -25,7 +23,7 @@ import com.tunjid.scaffold.lifecycle.LocalLifecycleStateHolder
 import com.tunjid.scaffold.scaffold.Scaffold
 import com.tunjid.mutator.mutationOf
 import com.tunjid.scaffold.globalui.insetMutations
-import com.tunjid.scaffold.lifecycle.LocalScreenStateHolderCache
+import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -44,7 +42,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ListingAppTheme {
                 CompositionLocalProvider(
-                    LocalScreenStateHolderCache provides listingApp.screenStateHolderCache,
+                    LocalViewModelFactory provides listingApp.screenStateHolderCache,
                     LocalLifecycleStateHolder provides listingApp.lifecycleStateHolder,
                 ) {
                     Scaffold(

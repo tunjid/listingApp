@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
@@ -54,7 +55,6 @@ import javax.inject.Singleton
 interface ScreenStateHolderCreator {
     fun create(
         scope: CoroutineScope,
-        savedState: ByteArray?,
         route: Route
     ): ViewModel
 }
@@ -143,7 +143,9 @@ object ScaffoldModule {
 
 
             override fun destination(route: Route): @Composable () -> Unit = {
-                configurationTrie[route]?.Render(route) ?: RouteNotFound()
+                LocalViewModelStoreOwner provides m {
+                    configurationTrie[route]?.Render(route) ?: RouteNotFound()
+                }
             }
         }
     }

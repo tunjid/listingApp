@@ -1,8 +1,6 @@
 package com.tunjid.feature.listinggallery.grid.di
 
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.tunjid.feature.listinggallery.grid.GridGalleryScreen
 import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.grid.GridGalleryViewModel
@@ -13,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
+import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -63,7 +61,7 @@ object GridGalleryModule {
     @Provides
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<GridGalleryViewModel>(
+        val stateHolder = viewModel<GridGalleryViewModel>(
             route = route
         )
         GridGalleryScreen(

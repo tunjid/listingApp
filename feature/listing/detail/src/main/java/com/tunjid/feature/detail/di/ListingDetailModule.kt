@@ -11,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
+import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -74,10 +74,8 @@ object ListingDetailModule {
         secondaryRoute = { route ->
             route.children.first() as? Route
         },
-        render = { route ->
-            val viewModel = rememberRetainedStateHolder<ListingDetailViewModel>(
-                route = route
-            )
+        render = {
+            val viewModel = viewModel<ListingDetailViewModel>()
             ListingDetailScreen(
                 modifier = Modifier.backPreviewBackgroundModifier(),
                 state = viewModel.state.collectAsStateWithLifecycle().value,

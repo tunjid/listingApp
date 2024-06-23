@@ -19,9 +19,7 @@ import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.mutator.identity
-import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.di.restoreState
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.PivotRequest
@@ -58,7 +56,6 @@ typealias ListingFeedStateHolder = ActionStateMutator<Action, StateFlow<State>>
 interface ListingFeedStateHolderFactory : ScreenStateHolderCreator {
     override fun create(
         scope: CoroutineScope,
-        savedState: ByteArray?,
         route: Route,
     ): ListingFeedViewModel
 }
@@ -68,10 +65,8 @@ class ListingFeedViewModel @AssistedInject constructor(
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
     syncManager: SyncManager,
-    byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
-    @Assisted savedState: ByteArray?,
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
@@ -80,9 +75,7 @@ class ListingFeedViewModel @AssistedInject constructor(
     mediaRepository = mediaRepository,
     favoriteRepository = favoriteRepository,
     syncManager = syncManager,
-    byteSerializer = byteSerializer,
     navigationActions = navigationActions,
-    savedState = savedState,
     route = route
 )
 
@@ -91,17 +84,13 @@ fun CoroutineScope.listingFeedStateHolder(
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
     syncManager: SyncManager,
-    byteSerializer: ByteSerializer,
     navigationActions: (NavigationMutation) -> Unit,
-    savedState: ByteArray?,
     route: Route,
 ): ListingFeedStateHolder = actionStateFlowMutator(
-    initialState = byteSerializer.restoreState<State>(savedState)
-        ?.copy(listings = route.preSeededNavigationItems())
-        ?: State(
-            currentQuery = route.routeParams.initialQuery,
-            listings = route.preSeededNavigationItems(),
-        ),
+    initialState = State(
+        currentQuery = route.routeParams.initialQuery,
+        listings = route.preSeededNavigationItems(),
+    ),
     started = SharingStarted.WhileSubscribed(3000),
     inputs = listOf(
         syncManager.refreshStatusMutations()
