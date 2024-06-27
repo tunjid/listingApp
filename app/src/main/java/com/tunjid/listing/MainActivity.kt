@@ -14,16 +14,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.lifecycleScope
 import androidx.window.layout.WindowMetricsCalculator
 import com.tunjid.listing.ui.theme.ListingAppTheme
+import com.tunjid.mutator.mutationOf
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.NavMode
 import com.tunjid.scaffold.globalui.WindowSizeClass
+import com.tunjid.scaffold.globalui.insetMutations
 import com.tunjid.scaffold.globalui.integrateBackActions
 import com.tunjid.scaffold.globalui.toWindowSizeClass
 import com.tunjid.scaffold.lifecycle.LocalLifecycleStateHolder
 import com.tunjid.scaffold.scaffold.Scaffold
-import com.tunjid.mutator.mutationOf
-import com.tunjid.scaffold.globalui.insetMutations
-import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -42,7 +41,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             ListingAppTheme {
                 CompositionLocalProvider(
-                    LocalViewModelFactory provides listingApp.screenStateHolderCache,
                     LocalLifecycleStateHolder provides listingApp.lifecycleStateHolder,
                 ) {
                     Scaffold(

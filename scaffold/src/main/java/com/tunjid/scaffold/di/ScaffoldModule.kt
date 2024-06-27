@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
@@ -19,6 +18,8 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.ActualLifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.Lifecycle
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
+import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
+import com.tunjid.scaffold.lifecycle.AppViewModelDependencyManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
@@ -143,9 +144,7 @@ object ScaffoldModule {
 
 
             override fun destination(route: Route): @Composable () -> Unit = {
-                LocalViewModelStoreOwner provides m {
-                    configurationTrie[route]?.Render(route) ?: RouteNotFound()
-                }
+                configurationTrie[route]?.Render(route) ?: RouteNotFound()
             }
         }
     }
@@ -222,6 +221,11 @@ interface ScaffoldBindModule {
     fun bindSavedStateRepository(
         dataStoreSavedStateRepository: DataStoreSavedStateRepository
     ): SavedStateRepository
+
+    @Binds
+    fun bindRouteViewModelFactoryProvider(
+        routeViewModelFactoryProviderImpl: AppViewModelDependencyManager
+    ): ViewModelDependencyManager
 }
 
 private fun routeMatchingComparator() =

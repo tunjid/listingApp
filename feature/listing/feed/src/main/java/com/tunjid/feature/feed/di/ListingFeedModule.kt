@@ -25,6 +25,7 @@ import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
 import kotlinx.serialization.modules.subclass
+import kotlin.reflect.KClass
 
 internal const val FeedPattern = "/listings"
 internal const val FavoritesPattern = "/favorites"

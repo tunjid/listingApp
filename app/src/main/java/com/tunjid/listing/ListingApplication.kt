@@ -6,41 +6,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import com.tunjid.airbnb.BuildConfig
 import com.tunjid.listing.workmanager.initializers.Sync
-import com.tunjid.mutator.ActionStateMutator
-import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.di.AdaptiveRouter
-import com.tunjid.scaffold.di.SavedStateCache
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
-import com.tunjid.scaffold.lifecycle.ScreenStateHolderCache
+import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
 import com.tunjid.scaffold.navigation.NavigationStateHolder
-import com.tunjid.scaffold.navigation.removedRoutes
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.scaffold.toBytes
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.Order
-import com.tunjid.treenav.flatten
-import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
-import com.tunjid.treenav.strings.RouteTrie
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -70,7 +52,7 @@ interface ListingApp {
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
-    val screenStateHolderCache: ScreenStateHolderCache
+    val viewModelDependencyManager: ViewModelDependencyManager
 }
 
 @Composable
@@ -88,31 +70,20 @@ fun ListingApp.adaptiveContentState(): AdaptiveContentState {
 @Singleton
 class PersistedListingApp @Inject constructor(
     appScope: CoroutineScope,
-    byteSerializer: ByteSerializer,
     navigationStateStream: StateFlow<MultiStackNav>,
     savedStateRepository: SavedStateRepository,
     override val adaptiveRouter: AdaptiveRouter,
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
-    override val adaptiveContentStateCreator: (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState,
-    private val savedStateCache: SavedStateCache,
-    private val allScreenStateHolders: Map<String, @JvmSuppressWildcards ScreenStateHolderCreator>,
+    override val viewModelDependencyManager: ViewModelDependencyManager,
+    override val adaptiveContentStateCreator: (
+        @JvmSuppressWildcards CoroutineScope,
+        @JvmSuppressWildcards SaveableStateHolder
+    ) -> @JvmSuppressWildcards AdaptiveContentState,
 ) : ListingApp {
-    private val routeStateHolderCache = mutableMapOf<String, ScopeHolder?>()
 
     init {
-        navigationStateStream
-            .removedRoutes()
-            .onEach { removedRoutes ->
-                removedRoutes.forEach { route ->
-                    if (BuildConfig.DEBUG) println("Cleared ${route.id}")
-                    val holder = routeStateHolderCache.remove(route.id)
-                    holder?.scope?.cancel()
-                }
-            }
-            .launchIn(appScope)
-
         lifecycleStateHolder.state
             .map { it.isInForeground }
             .distinctUntilChanged()
@@ -120,47 +91,14 @@ class PersistedListingApp @Inject constructor(
             .flatMapLatest {
                 navigationStateStream
                     .mapLatest { navState ->
-                        navState.toSavedState(byteSerializer)
+                        navState.toSavedState()
                     }
             }
             .onEach(savedStateRepository::saveState)
             .launchIn(appScope)
     }
 
-    override val screenStateHolderCache: ScreenStateHolderCache = object : ScreenStateHolderCache {
-        private val stateHolderTrie = RouteTrie<ScreenStateHolderCreator>().apply {
-            allScreenStateHolders
-                .mapKeys { (template) -> PathPattern(template) }
-                .forEach(::set)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun <T: ViewModel> screenStateHolderFor(route: Route, lazyCreate: Boolean): T? =
-            when {
-                lazyCreate -> routeStateHolderCache.getOrPut(route.id) {
-                    val stateHolderCreator = stateHolderTrie[route] ?: return@getOrPut null
-
-                    val routeScope = CoroutineScope(
-                        SupervisorJob() + Dispatchers.Main.immediate
-                    )
-                    ScopeHolder(
-                        scope = routeScope,
-                        stateHolder = stateHolderCreator(
-                            routeScope,
-                            savedStateCache(route),
-                            route
-                        )
-                    )
-
-                }
-
-                else -> routeStateHolderCache[route.id]
-            }?.stateHolder as? T
-    }
-
-    private fun MultiStackNav.toSavedState(
-        byteSerializer: ByteSerializer,
-    ) = SavedState(
+    private fun MultiStackNav.toSavedState() = SavedState(
         isEmpty = false,
         activeNav = currentIndex,
         navigation = stacks.fold(listOf()) { listOfLists, stackNav ->
@@ -172,19 +110,8 @@ class PersistedListingApp @Inject constructor(
                     }
             )
         },
-        routeStates = flatten(order = Order.BreadthFirst)
-            .filterIsInstance<Route>()
-            .fold(mutableMapOf()) { map, route ->
-                val stateHolder = screenStateHolderCache.screenStateHolderFor<ViewModel>(
-                    route = route,
-                    lazyCreate = false
-                )
-                val state = (stateHolder as? ActionStateMutator<*, *>)?.state ?: return@fold map
-                val serializable = (state as? StateFlow<*>)?.value ?: return@fold map
-                if (serializable is ByteSerializable) map[route.id] =
-                    byteSerializer.toBytes(serializable)
-                map
-            })
+        routeStates = emptyMap()
+    )
 }
 
 private data class ScopeHolder(
@@ -192,9 +119,6 @@ private data class ScopeHolder(
     val stateHolder: Any,
 )
 
-private class RouteViewModelStoreOwner : ViewModelStoreOwner {
-    override val viewModelStore: ViewModelStore = ViewModelStore()
-}
 
 @Module
 @InstallIn(SingletonComponent::class)

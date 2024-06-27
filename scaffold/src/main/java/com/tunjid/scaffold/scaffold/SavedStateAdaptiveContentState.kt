@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.AnimatedAdaptiveContentScope
@@ -36,6 +37,8 @@ import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
+import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
+import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
 import com.tunjid.treenav.MultiStackNav
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -54,6 +57,7 @@ interface AdaptiveContentStateFactory {
 @Stable
 class SavedStateAdaptiveContentState @AssistedInject constructor(
     val adaptiveRouter: AdaptiveRouter,
+    val viewModelDependencyManager: ViewModelDependencyManager,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
     @Assisted coroutineScope: CoroutineScope,
@@ -154,7 +158,9 @@ private fun SavedStateAdaptiveContentState.Render(
                 )
             ) {
                 CompositionLocalProvider(
-                    LocalAdaptiveContentScope provides scope
+                    LocalAdaptiveContentScope provides scope,
+                    LocalViewModelFactory provides viewModelDependencyManager.viewModelFactoryFor(route),
+                    LocalViewModelStoreOwner provides viewModelDependencyManager.viewModelStoreOwnerFor(route),
                 ) {
                     SaveableStateProvider(route.id) {
                         adaptiveRouter.destination(route).invoke()
