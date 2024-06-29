@@ -1,5 +1,6 @@
 package com.tunjid.feature.feed
 
+import androidx.lifecycle.ViewModel
 import com.tunjid.feature.feed.di.initialQuery
 import com.tunjid.feature.feed.di.isFavorites
 import com.tunjid.feature.feed.di.startingMediaUrls
@@ -18,8 +19,7 @@ import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.mutator.identity
-import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.di.restoreState
+import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.PivotRequest
@@ -53,32 +53,29 @@ import kotlinx.coroutines.flow.scan
 typealias ListingFeedStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface ListingFeedStateHolderFactory {
-    fun create(
+interface ListingFeedStateHolderFactory : ScreenStateHolderCreator {
+    override fun create(
         scope: CoroutineScope,
-        savedState: ByteArray?,
         route: Route,
-    ): ActualListingFeedStateHolder
+    ): ListingFeedViewModel
 }
 
-class ActualListingFeedStateHolder @AssistedInject constructor(
+class ListingFeedViewModel @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
     syncManager: SyncManager,
-    byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
-    @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : ListingFeedStateHolder by scope.listingFeedStateHolder(
+) : ViewModel(
+    viewModelScope = scope,
+), ActionStateMutator<Action, StateFlow<State>> by scope.listingFeedStateHolder(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     favoriteRepository = favoriteRepository,
     syncManager = syncManager,
-    byteSerializer = byteSerializer,
     navigationActions = navigationActions,
-    savedState = savedState,
     route = route
 )
 
@@ -87,17 +84,13 @@ fun CoroutineScope.listingFeedStateHolder(
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
     syncManager: SyncManager,
-    byteSerializer: ByteSerializer,
     navigationActions: (NavigationMutation) -> Unit,
-    savedState: ByteArray?,
     route: Route,
 ): ListingFeedStateHolder = actionStateFlowMutator(
-    initialState = byteSerializer.restoreState<State>(savedState)
-        ?.copy(listings = route.preSeededNavigationItems())
-        ?: State(
-            currentQuery = route.routeParams.initialQuery,
-            listings = route.preSeededNavigationItems(),
-        ),
+    initialState = State(
+        currentQuery = route.routeParams.initialQuery,
+        listings = route.preSeededNavigationItems(),
+    ),
     started = SharingStarted.WhileSubscribed(3000),
     inputs = listOf(
         syncManager.refreshStatusMutations()

@@ -2,8 +2,8 @@ package com.tunjid.feature.feed.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.feed.ListingFeedScreen
-import com.tunjid.feature.feed.ListingFeedStateHolder
 import com.tunjid.feature.feed.ListingFeedStateHolderFactory
+import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.feature.feed.State
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -11,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
+import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -20,10 +20,12 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
 import kotlinx.serialization.modules.subclass
+import kotlin.reflect.KClass
 
 internal const val FeedPattern = "/listings"
 internal const val FavoritesPattern = "/favorites"
@@ -79,14 +81,12 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
-    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<ListingFeedStateHolder>(
-            route = route
-        )
+    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration {
+        val viewModel = viewModel<ListingFeedViewModel>()
         ListingFeedScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
+            state = viewModel.state.collectAsStateWithLifecycle().value,
+            actions = viewModel.accept
         )
     }
 
@@ -100,12 +100,12 @@ object ListingFeedModule {
     @StringKey(FeedPattern)
     fun listingFeedStateHolderCreator(
         factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 
     @IntoMap
     @Provides
-    @StringKey(FavoritesPattern)
+    @ClassKey(ListingFeedViewModel::class)
     fun favoritesStateHolderCreator(
         factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

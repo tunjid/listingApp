@@ -3,6 +3,7 @@ package com.tunjid.scaffold.di
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
@@ -17,6 +18,8 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.ActualLifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.Lifecycle
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
+import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
+import com.tunjid.scaffold.lifecycle.AppViewModelDependencyManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
@@ -27,9 +30,9 @@ import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParser
 import com.tunjid.treenav.strings.RouteTrie
-import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.routeParserFrom
 import dagger.Binds
 import dagger.Module
@@ -50,7 +53,12 @@ import okio.Path
 import okio.Path.Companion.toPath
 import javax.inject.Singleton
 
-typealias ScreenStateHolderCreator = (CoroutineScope, ByteArray?, Route) -> Any
+interface ScreenStateHolderCreator {
+    fun create(
+        scope: CoroutineScope,
+        route: Route
+    ): ViewModel
+}
 
 typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 
@@ -177,7 +185,8 @@ object ScaffoldModule {
     @Provides
     fun adaptiveContentStateCreator(
         factory: AdaptiveContentStateFactory
-    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState = factory::create
+    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState =
+        factory::create
 }
 
 @Module
@@ -212,6 +221,11 @@ interface ScaffoldBindModule {
     fun bindSavedStateRepository(
         dataStoreSavedStateRepository: DataStoreSavedStateRepository
     ): SavedStateRepository
+
+    @Binds
+    fun bindRouteViewModelFactoryProvider(
+        routeViewModelFactoryProviderImpl: AppViewModelDependencyManager
+    ): ViewModelDependencyManager
 }
 
 private fun routeMatchingComparator() =

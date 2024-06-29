@@ -14,6 +14,7 @@ android {
 dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.foundation)
     implementation(libs.androidx.compose.foundation.layout)
@@ -25,6 +26,9 @@ dependencies {
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.datastore.core.okio)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.media3.exoplayer)
 
     implementation(libs.kotlinx.coroutines.core)

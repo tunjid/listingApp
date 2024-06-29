@@ -2,8 +2,8 @@ package com.tunjid.feature.listinggallery.pager.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
-import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolder
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
+import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
 import com.tunjid.feature.listinggallery.pager.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -11,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
+import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -19,6 +19,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -59,21 +60,19 @@ object PagerGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<PagerGalleryStateHolder>(
-            route = route
-        )
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration {
+        val viewModel = viewModel<PagerGalleryViewModel>()
         FullscreenGalleryScreen(
             modifier = Modifier,
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
+            state = viewModel.state.collectAsStateWithLifecycle().value,
+            actions = viewModel.accept
         )
     }
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @ClassKey(PagerGalleryViewModel::class)
     fun fullscreenGalleryStateHolderCreator(
         factory: PagerGalleryStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

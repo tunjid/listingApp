@@ -2,7 +2,7 @@ package com.tunjid.feature.detail.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.detail.ListingDetailScreen
-import com.tunjid.feature.detail.ListingDetailStateHolder
+import com.tunjid.feature.detail.ListingDetailViewModel
 import com.tunjid.feature.detail.ListingStateHolderFactory
 import com.tunjid.feature.detail.State
 import com.tunjid.listing.data.model.MediaQuery
@@ -11,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
+import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -21,6 +21,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -74,21 +75,19 @@ object ListingDetailModule {
         secondaryRoute = { route ->
             route.children.first() as? Route
         },
-        render = { route ->
-            val stateHolder = rememberRetainedStateHolder<ListingDetailStateHolder>(
-                route = route
-            )
+        render = {
+            val viewModel = viewModel<ListingDetailViewModel>()
             ListingDetailScreen(
                 modifier = Modifier.backPreviewBackgroundModifier(),
-                state = stateHolder.state.collectAsStateWithLifecycle().value,
-                actions = stateHolder.accept
+                state = viewModel.state.collectAsStateWithLifecycle().value,
+                actions = viewModel.accept
             )
         })
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @ClassKey(ListingDetailViewModel::class)
     fun archiveListStateHolderCreator(
         factory: ListingStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

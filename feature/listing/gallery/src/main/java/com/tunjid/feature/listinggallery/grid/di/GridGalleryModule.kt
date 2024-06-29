@@ -2,8 +2,8 @@ package com.tunjid.feature.listinggallery.grid.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.feature.listinggallery.grid.GridGalleryScreen
-import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolder
 import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolderFactory
+import com.tunjid.feature.listinggallery.grid.GridGalleryViewModel
 import com.tunjid.feature.listinggallery.grid.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -11,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.rememberRetainedStateHolder
+import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -20,6 +20,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -60,21 +61,19 @@ object GridGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val stateHolder = rememberRetainedStateHolder<GridGalleryStateHolder>(
-            route = route
-        )
+    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration {
+        val viewModel = viewModel<GridGalleryViewModel>()
         GridGalleryScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),
-            state = stateHolder.state.collectAsStateWithLifecycle().value,
-            actions = stateHolder.accept
+            state = viewModel.state.collectAsStateWithLifecycle().value,
+            actions = viewModel.accept
         )
     }
 
     @IntoMap
     @Provides
-    @StringKey(RoutePattern)
+    @ClassKey(GridGalleryViewModel::class)
     fun listingGalleryStateHolderCreator(
         factory: GridGalleryStateHolderFactory
-    ): ScreenStateHolderCreator = factory::create
+    ): ScreenStateHolderCreator = factory
 }

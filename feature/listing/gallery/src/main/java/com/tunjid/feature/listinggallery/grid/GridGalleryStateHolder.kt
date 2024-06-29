@@ -1,5 +1,6 @@
 package com.tunjid.feature.listinggallery.grid
 
+import androidx.lifecycle.ViewModel
 import com.tunjid.feature.listinggallery.grid.di.initialQuery
 import com.tunjid.feature.listinggallery.grid.di.startingMediaUrls
 import com.tunjid.feature.listinggallery.mediaListTiler
@@ -12,8 +13,7 @@ import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.di.restoreState
+import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.PivotRequest
@@ -39,42 +39,35 @@ import kotlinx.coroutines.flow.scan
 typealias GridGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface GridGalleryStateHolderFactory {
-    fun create(
+interface GridGalleryStateHolderFactory : ScreenStateHolderCreator {
+    override fun create(
         scope: CoroutineScope,
-        savedState: ByteArray?,
         route: Route,
-    ): ActualGridGalleryStateHolder
+    ): GridGalleryViewModel
 }
 
-class ActualGridGalleryStateHolder @AssistedInject constructor(
+class GridGalleryViewModel @AssistedInject constructor(
     mediaRepository: MediaRepository,
-    byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
-    @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : GridGalleryStateHolder by scope.gridGalleryMutator(
+) : ViewModel(
+    viewModelScope = scope,
+), GridGalleryStateHolder by scope.gridGalleryMutator(
     mediaRepository = mediaRepository,
     navigationActions = navigationActions,
-    byteSerializer = byteSerializer,
-    savedState = savedState,
     route = route
 )
 
 private fun CoroutineScope.gridGalleryMutator(
     mediaRepository: MediaRepository,
     navigationActions: (NavigationMutation) -> Unit,
-    byteSerializer: ByteSerializer,
-    savedState: ByteArray?,
     route: Route,
 ) = actionStateFlowMutator<Action, State>(
-    initialState = byteSerializer.restoreState<State>(savedState)
-        ?.copy(items = route.preSeededNavigationItems())
-        ?: State(
-            currentQuery = route.routeParams.initialQuery,
-            items = route.preSeededNavigationItems()
-        ),
+    initialState = State(
+        currentQuery = route.routeParams.initialQuery,
+        items = route.preSeededNavigationItems()
+    ),
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {

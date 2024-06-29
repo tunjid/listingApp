@@ -1,5 +1,6 @@
 package com.tunjid.feature.listinggallery.pager
 
+import androidx.lifecycle.ViewModel
 import com.tunjid.feature.listinggallery.mediaListTiler
 import com.tunjid.feature.listinggallery.mediaPivotRequest
 import com.tunjid.feature.listinggallery.pager.di.initialQuery
@@ -11,8 +12,7 @@ import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.di.restoreState
+import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.buildTiledList
@@ -28,45 +28,36 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
-typealias PagerGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
-
 @AssistedFactory
-interface PagerGalleryStateHolderFactory {
-    fun create(
+interface PagerGalleryStateHolderFactory : ScreenStateHolderCreator {
+    override fun create(
         scope: CoroutineScope,
-        savedState: ByteArray?,
         route: Route,
-    ): ActualPagerGalleryStateHolder
+    ): PagerGalleryViewModel
 }
 
-class ActualPagerGalleryStateHolder @AssistedInject constructor(
+class PagerGalleryViewModel @AssistedInject constructor(
     mediaRepository: MediaRepository,
-    byteSerializer: ByteSerializer,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
-    @Assisted savedState: ByteArray?,
     @Assisted route: Route,
-) : PagerGalleryStateHolder by scope.pagerGalleryMutator(
+) : ViewModel(
+    viewModelScope = scope,
+), ActionStateMutator<Action, StateFlow<State>> by scope.pagerGalleryMutator(
     mediaRepository = mediaRepository,
-    byteSerializer = byteSerializer,
     navigationActions = navigationActions,
-    savedState = savedState,
     route = route
 )
 
 private fun CoroutineScope.pagerGalleryMutator(
     mediaRepository: MediaRepository,
-    byteSerializer: ByteSerializer,
     navigationActions: (NavigationMutation) -> Unit,
-    savedState: ByteArray?,
     route: Route,
 ) = actionStateFlowMutator<Action, State>(
-    initialState = byteSerializer.restoreState<State>(savedState)
-        ?.copy(items = route.preSeededNavigationItems())
-        ?: State(
-            currentQuery = route.routeParams.initialQuery,
-            items = route.preSeededNavigationItems()
-        ),
+    initialState = State(
+        currentQuery = route.routeParams.initialQuery,
+        items = route.preSeededNavigationItems()
+    ),
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
