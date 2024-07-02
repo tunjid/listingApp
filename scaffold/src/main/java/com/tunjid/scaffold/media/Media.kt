@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.ContentScale
@@ -25,12 +26,12 @@ import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.AsyncImage
 
 @Composable
-fun Media(
-    mediaArgs: MediaArgs,
+fun Photo(
+    photoArgs: PhotoArgs,
     modifier: Modifier
 ) {
-    val url = mediaArgs.url ?: return
-    val mimeType = mediaArgs.url.mimeType() ?: return
+    val url = photoArgs.url ?: return
+    val mimeType = photoArgs.url.mimeType() ?: return
 
     Box(modifier) {
         when {
@@ -38,7 +39,7 @@ fun Media(
                 modifier = Modifier.fillMaxSize(),
                 model = url,
                 contentDescription = null,
-                contentScale = mediaArgs.contentScale.interpolate()
+                contentScale = photoArgs.contentScale.interpolate()
             )
 
             mimeType.startsWith("video") -> VideoPlayer(
@@ -173,8 +174,9 @@ private fun VideoPlayer(
     }
 }
 
-data class MediaArgs(
+data class PhotoArgs(
     val url: String?,
+    val contentScale: ContentScale,
+    val alignment: Alignment = Alignment.Center,
     val description: String? = null,
-    val contentScale: ContentScale
 )

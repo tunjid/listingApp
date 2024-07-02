@@ -12,8 +12,8 @@ import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.media.Media
-import com.tunjid.scaffold.media.MediaArgs
+import com.tunjid.scaffold.media.Photo
+import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.tiler.compose.PivotedTilingEffect
 
 @Composable
@@ -41,17 +41,17 @@ fun FullscreenGalleryScreen(
         key = { index -> state.items[index].url }
     ) { index ->
         val item = state.items[index]
-        val thumbnail = movableSharedElementOf<MediaArgs>(
+        val thumbnail = movableSharedElementOf<PhotoArgs>(
             thumbnailSharedElementKey(item.url)
         ) { args, innerModifier ->
-            Media(
+            Photo(
                 modifier = innerModifier,
-                mediaArgs = args
+                photoArgs = args
             )
         }
 
         thumbnail(
-            MediaArgs(
+            PhotoArgs(
                 url = item.url,
                 contentScale = ContentScale.Fit
             ),
