@@ -46,7 +46,7 @@ fun FullscreenGalleryScreen(
         ) { args, innerModifier ->
             Photo(
                 modifier = innerModifier,
-                photoArgs = args
+                args = args
             )
         }
 

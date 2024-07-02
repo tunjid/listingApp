@@ -158,7 +158,7 @@ private fun ListingMediaPager(
             ) { args, innerModifier ->
                 Photo(
                     modifier = innerModifier,
-                    photoArgs = args
+                    args = args
                 )
             }
 

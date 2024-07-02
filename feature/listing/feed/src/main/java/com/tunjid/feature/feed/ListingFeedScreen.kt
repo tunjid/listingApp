@@ -289,7 +289,7 @@ private fun FeedMediaPager(
         ) { args, innerModifier ->
             Photo(
                 modifier = innerModifier,
-                photoArgs = args
+                args = args
             )
         }
         thumbnail(
