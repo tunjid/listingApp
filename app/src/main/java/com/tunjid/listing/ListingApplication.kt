@@ -6,6 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.decode.VideoFrameDecoder
 import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.di.AdaptiveRouter
@@ -35,15 +38,27 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @HiltAndroidApp
-class ListingApplication : Application() {
+class ListingApplication : Application(), ImageLoaderFactory {
     @Inject
     lateinit var listingApp: ListingApp
 
     override fun onCreate() {
         super.onCreate()
+        ImageLoader.Builder(this)
+            .components {
+                add(VideoFrameDecoder.Factory())
+            }
+            .build()
+
         // Initialize Sync; the system responsible for keeping data in the app up to date.
         Sync.initialize(context = this)
     }
+
+    override fun newImageLoader(): ImageLoader = ImageLoader.Builder(this)
+        .components {
+            add(VideoFrameDecoder.Factory())
+        }
+        .build()
 }
 
 interface ListingApp {

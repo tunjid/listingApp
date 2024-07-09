@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.squareup.okio)
 
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.video)
 
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)

@@ -2,35 +2,42 @@ package com.tunjid.scaffold.media
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.times
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toIntSize
 import androidx.compose.ui.unit.toSize
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.Player.REPEAT_MODE_ONE
-import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
+import coil.compose.AsyncImage
+import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.abs
 
 @Composable
@@ -38,112 +45,169 @@ fun Video(
     args: VideoArgs,
     modifier: Modifier
 ) {
-    Box(modifier) {
-        when (val url = args.url) {
-            null -> Box(
-                modifier = Modifier.fillMaxSize(),
-            )
 
-            else -> VideoPlayer(
-                modifier = Modifier.fillMaxSize(),
-                url = url,
-                contentScale = args.contentScale.interpolate(),
-                alignment = args.alignment,
-                isPlaying = args.isPlaying,
-            )
-        }
-    }
+    VideoPlayer(
+        modifier = modifier,
+        url = args.url,
+        contentScale = args.contentScale.interpolate(),
+        alignment = args.alignment,
+    )
 }
 
 @OptIn(UnstableApi::class)
 @Composable
 private fun VideoPlayer(
     modifier: Modifier = Modifier,
-    url: String?,
+    url: String,
     contentScale: ContentScale,
     alignment: Alignment,
-    isPlaying: Boolean,
 ) {
-    var videoSize by remember { mutableStateOf<IntSize?>(null) }
-    var surfaceSize by remember { mutableStateOf<IntSize?>(null) }
-    var videoMatrix by remember { mutableStateOf(Matrix()) }
-    var mediaItem by remember { mutableStateOf<MediaItem?>(null) }
+    val state = LocalPlayerManager.current.stateFor(url)
+    val player = state.player
+    val playerStatus = state.status
+    val stillBitmap = state.videoStill
+    val graphicsLayer = rememberGraphicsLayer()
 
-    val context = LocalContext.current
-    val player = remember(context) {
-        ExoPlayer.Builder(context)
-            .setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
-            .build()
-            .apply {
-                repeatMode = REPEAT_MODE_ONE
-            }
-    }
 
-    AndroidEmbeddedExternalSurface(
-        modifier = modifier.clip(RoundedCornerShape(0.dp)),
-        transform = videoMatrix,
-    ) {
-        onSurface { surface, _, _ ->
-            player.setVideoSurface(surface)
-            surface.onChanged { width, height ->
-                surfaceSize = IntSize(width, height)
-            }
-            surface.onDestroyed {
-                player.setVideoSurface(null)
+    if (playerStatus.canShowVideo()) {
+        PlayingVideo(
+            modifier = remember(modifier) {
+                modifier
+                    .drawWithContent {
+                        // call record to capture the content in the graphics layer
+                        graphicsLayer.record {
+                            // draw the contents of the composable into the graphics layer
+                            this@drawWithContent.drawContent()
+                        }
+                        // draw the graphics layer on the visible canvas
+                        drawLayer(graphicsLayer)
+                    }
+            },
+            player = player,
+            contentScale = contentScale,
+            alignment = alignment,
+            videoSize = state.videoSize
+        )
+        // Capture a still frame from the video to use as a stand in when buffering playback
+        LaunchedEffect(playerStatus) {
+            if ((playerStatus is PlayerStatus.PauseRequested || playerStatus is PlayerStatus.Paused)
+//            && state.player?.playbackState == Player.STATE_READY
+                && graphicsLayer.size.height != 0
+                && graphicsLayer.size.width != 0
+            ) {
+                val still = graphicsLayer.toImageBitmap()
+                state.videoStill = still
             }
         }
+        Label(text = "VIDEO; $playerStatus", modifier)
     }
 
-    LaunchedEffect(url) {
-        if (url == null) return@LaunchedEffect
-        mediaItem = MediaItem.fromUri(url)
+    if (playerStatus.canShowStill(state.videoSize)) {
+        VideoStill(
+            lastBitmap = stillBitmap.takeIf { playerStatus != PlayerStatus.Initial },
+            url = url,
+            modifier = modifier,
+            contentScale = contentScale
+        )
+        Label(text = "STILL; $playerStatus", modifier)
     }
 
-    LaunchedEffect(mediaItem) {
-        val item = mediaItem ?: return@LaunchedEffect
-        player.setMediaItem(item)
-        player.prepare()
+    DisposableEffect(Unit) {
+        state.status = PlayerStatus.Initial
+        onDispose {
+            state.status = PlayerStatus.Evicted
+            state.playerPosition = 0L
+        }
     }
+}
 
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) player.play()
-        else player.pause()
+@Composable
+private fun Label(text: String, modifier: Modifier) {
+    Box(modifier = modifier.background(Color.Black.copy(alpha = 0.4f))) {
+        Text(text = text, color = Color.White, modifier = Modifier.align(Alignment.TopStart))
+        Text(text = text, color = Color.White, modifier = Modifier.align(Alignment.BottomEnd))
+    }
+}
+
+@Composable
+private fun VideoStill(
+    lastBitmap: ImageBitmap?,
+    url: String?,
+    modifier: Modifier,
+    contentScale: ContentScale
+) {
+    when (lastBitmap) {
+        null -> AsyncImage(
+            modifier = modifier,
+            model = url,
+            contentDescription = null,
+            contentScale = contentScale
+        )
+
+        else -> Image(
+            modifier = modifier,
+            bitmap = lastBitmap,
+            contentDescription = null,
+            contentScale = contentScale
+        )
+    }
+}
+
+@OptIn(UnstableApi::class)
+@Composable
+private fun PlayingVideo(
+    modifier: Modifier,
+    player: Player?,
+    contentScale: ContentScale,
+    alignment: Alignment,
+    videoSize: IntSize,
+) {
+    val updatedPlayer = rememberUpdatedState(player)
+    var surfaceSize by remember { mutableStateOf(IntSize.Zero) }
+    var videoMatrix by remember {
+        mutableStateOf(
+            value = Matrix(),
+            policy = referentialEqualityPolicy()
+        )
+    }
+    AndroidEmbeddedExternalSurface(
+        modifier = modifier
+            .clip(RoundedCornerShape(0.dp))
+            .onSizeChanged { surfaceSize = it },
+        surfaceSize = IntSize(320, 240),
+        transform = videoMatrix,
+    ) {
+        onSurface { createdSurface, _, _ ->
+            createdSurface.onDestroyed {
+                updatedPlayer.value?.setVideoSurface(null)
+            }
+            snapshotFlow { updatedPlayer.value }
+                .filterNotNull()
+                .collect {
+                    it.setVideoSurface(createdSurface)
+                    it.play()
+                }
+        }
     }
 
     LaunchedEffect(videoSize, surfaceSize) {
-        val currentVideoSize = videoSize
-        val currentSurfaceSize = surfaceSize
-
-        if (currentVideoSize == null || currentVideoSize.height == 0 || currentVideoSize.width == 0) {
+        if (videoSize.height == 0 || videoSize.width == 0) {
             return@LaunchedEffect
         }
-        if (currentSurfaceSize == null || currentSurfaceSize.height == 0 || currentSurfaceSize.width == 0) {
+        if (surfaceSize.height == 0 || surfaceSize.width == 0) {
             return@LaunchedEffect
         }
-
         videoMatrix = Matrix()
             .removeFillBounds(
-                videoSize = currentVideoSize,
-                surfaceSize = currentSurfaceSize
+                videoSize = videoSize,
+                surfaceSize = surfaceSize
             )
             .scaleTo(
-                videoSize = currentVideoSize,
-                surfaceSize = currentSurfaceSize,
+                videoSize = videoSize,
+                surfaceSize = surfaceSize,
                 contentScale = contentScale,
                 alignment = alignment,
             )
-    }
-
-    DisposableEffect(player) {
-        val listener = object : Player.Listener {
-            override fun onVideoSizeChanged(size: VideoSize) {
-                videoSize = IntSize(size.width, size.height)
-            }
-        }
-        player.addListener(listener)
-        onDispose {
-            player.removeListener(listener)
-        }
     }
 }
 
@@ -199,9 +263,30 @@ private fun Matrix.scaleTo(
     }
 }
 
+private fun PlayerStatus.canShowVideo() = when (this) {
+    is PlayerStatus.Initial -> true
+    PlayerStatus.PauseRequested -> true
+    PlayerStatus.Paused -> true
+    // Load the player
+    PlayerStatus.PlayRequested -> true
+    // Show the video player when playing
+    PlayerStatus.Playing -> true
+    PlayerStatus.Evicted -> false
+}
+
+private fun PlayerStatus.canShowStill(videoSize: IntSize) = when (this) {
+    is PlayerStatus.Initial -> true
+    PlayerStatus.Evicted -> true
+    PlayerStatus.PauseRequested -> false
+    PlayerStatus.Paused -> false
+    // Show the still before playing
+    PlayerStatus.PlayRequested -> true
+    // Show the video player when playing
+    PlayerStatus.Playing -> false
+} || videoSize == IntSize.Zero
+
 data class VideoArgs(
-    val url: String?,
+    val url: String,
     val contentScale: ContentScale,
     val alignment: Alignment = Alignment.Center,
-    val isPlaying: Boolean = false,
 )

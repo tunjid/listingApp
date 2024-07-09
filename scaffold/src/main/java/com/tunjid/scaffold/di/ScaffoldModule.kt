@@ -20,6 +20,8 @@ import com.tunjid.scaffold.lifecycle.Lifecycle
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
 import com.tunjid.scaffold.lifecycle.AppViewModelDependencyManager
+import com.tunjid.scaffold.media.ExoPlayerManager
+import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
@@ -226,6 +228,11 @@ interface ScaffoldBindModule {
     fun bindRouteViewModelFactoryProvider(
         routeViewModelFactoryProviderImpl: AppViewModelDependencyManager
     ): ViewModelDependencyManager
+
+    @Binds
+    fun bindPlayerManager(
+        playerManager: ExoPlayerManager
+    ): PlayerManager
 }
 
 private fun routeMatchingComparator() =

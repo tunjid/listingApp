@@ -77,6 +77,9 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.window.window)
 
+    implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.video)
+
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)
 
