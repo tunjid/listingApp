@@ -45,7 +45,6 @@ fun Video(
     args: VideoArgs,
     modifier: Modifier
 ) {
-
     VideoPlayer(
         modifier = modifier,
         url = args.url,
@@ -63,59 +62,66 @@ private fun VideoPlayer(
     alignment: Alignment,
 ) {
     val state = LocalPlayerManager.current.stateFor(url)
-    val player = state.player
-    val playerStatus = state.status
-    val stillBitmap = state.videoStill
     val graphicsLayer = rememberGraphicsLayer()
 
-
-    if (playerStatus.canShowVideo()) {
-        PlayingVideo(
-            modifier = remember(modifier) {
-                modifier
-                    .drawWithContent {
-                        // call record to capture the content in the graphics layer
-                        graphicsLayer.record {
-                            // draw the contents of the composable into the graphics layer
-                            this@drawWithContent.drawContent()
-                        }
-                        // draw the graphics layer on the visible canvas
-                        drawLayer(graphicsLayer)
+    if (state.canShowVideo()) PlayingVideo(
+        modifier = remember(modifier) {
+            modifier
+                .drawWithContent {
+                    // call record to capture the content in the graphics layer
+                    graphicsLayer.record {
+                        // draw the contents of the composable into the graphics layer
+                        this@drawWithContent.drawContent()
                     }
-            },
-            player = player,
-            contentScale = contentScale,
-            alignment = alignment,
-            videoSize = state.videoSize
-        )
-        // Capture a still frame from the video to use as a stand in when buffering playback
-        LaunchedEffect(playerStatus) {
-            if ((playerStatus is PlayerStatus.PauseRequested || playerStatus is PlayerStatus.Paused)
-//            && state.player?.playbackState == Player.STATE_READY
-                && graphicsLayer.size.height != 0
-                && graphicsLayer.size.width != 0
-            ) {
-                val still = graphicsLayer.toImageBitmap()
-                state.videoStill = still
-            }
+                    // draw the graphics layer on the visible canvas
+                    drawLayer(graphicsLayer)
+                }
+        },
+        player = state.player,
+        contentScale = contentScale,
+        alignment = alignment,
+        videoSize = state.videoSize
+    )
+    // Capture a still frame from the video to use as a stand in when buffering playback
+    LaunchedEffect(state.status) {
+        if (state.status is PlayerStatus.Pause
+            && state.renderedFirstFrame
+            && graphicsLayer.size.height != 0
+            && graphicsLayer.size.width != 0
+        ) {
+            val still = graphicsLayer.toImageBitmap()
+            state.videoStill = still
         }
-        Label(text = "VIDEO; $playerStatus", modifier)
     }
 
-    if (playerStatus.canShowStill(state.videoSize)) {
-        VideoStill(
-            lastBitmap = stillBitmap.takeIf { playerStatus != PlayerStatus.Initial },
-            url = url,
-            modifier = modifier,
-            contentScale = contentScale
-        )
-        Label(text = "STILL; $playerStatus", modifier)
-    }
+
+    if (state.canShowStill()) VideoStill(
+        lastBitmap = state.videoStill.takeIf {
+            state.status != PlayerStatus.Idle.Initial
+        },
+        url = url,
+        modifier = modifier,
+        contentScale = contentScale
+    )
+
+
+    Label(
+        text = listOfNotNull(
+            "STILL".takeIf { state.canShowStill() },
+            "VIDEO".takeIf { state.canShowVideo() },
+            "${state.videoSize}".takeIf { state.canShowVideo() },
+            "${state.renderedFirstFrame}",
+            "${state.status}",
+        ).joinToString(separator = "\n"),
+        modifier
+    )
+
 
     DisposableEffect(Unit) {
-        state.status = PlayerStatus.Initial
+        state.status = PlayerStatus.Idle.Initial
         onDispose {
-            state.status = PlayerStatus.Evicted
+            state.renderedFirstFrame = false
+            state.status = PlayerStatus.Idle.Evicted
             state.playerPosition = 0L
         }
     }
@@ -123,9 +129,21 @@ private fun VideoPlayer(
 
 @Composable
 private fun Label(text: String, modifier: Modifier) {
-    Box(modifier = modifier.background(Color.Black.copy(alpha = 0.4f))) {
-        Text(text = text, color = Color.White, modifier = Modifier.align(Alignment.TopStart))
-        Text(text = text, color = Color.White, modifier = Modifier.align(Alignment.BottomEnd))
+    Box(modifier = modifier) {
+        Text(
+            text = text,
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .background(Color.Black.copy(alpha = 0.4f))
+        )
+        Text(
+            text = text,
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .background(Color.Black.copy(alpha = 0.4f))
+        )
     }
 }
 
@@ -263,27 +281,22 @@ private fun Matrix.scaleTo(
     }
 }
 
-private fun PlayerStatus.canShowVideo() = when (this) {
-    is PlayerStatus.Initial -> true
-    PlayerStatus.PauseRequested -> true
-    PlayerStatus.Paused -> true
-    // Load the player
-    PlayerStatus.PlayRequested -> true
-    // Show the video player when playing
-    PlayerStatus.Playing -> true
-    PlayerStatus.Evicted -> false
+private fun PlayerState.canShowVideo() = when (status) {
+    is PlayerStatus.Idle.Initial -> true
+    is PlayerStatus.Play -> true
+    is PlayerStatus.Pause -> true
+    PlayerStatus.Idle.Evicted -> false
 }
 
-private fun PlayerStatus.canShowStill(videoSize: IntSize) = when (this) {
-    is PlayerStatus.Initial -> true
-    PlayerStatus.Evicted -> true
-    PlayerStatus.PauseRequested -> false
-    PlayerStatus.Paused -> false
-    // Show the still before playing
-    PlayerStatus.PlayRequested -> true
-    // Show the video player when playing
-    PlayerStatus.Playing -> false
-} || videoSize == IntSize.Zero
+private fun PlayerState.canShowStill() =
+    videoSize == IntSize.Zero
+            || !renderedFirstFrame
+            || when (status) {
+        is PlayerStatus.Idle -> true
+        is PlayerStatus.Pause -> false
+        PlayerStatus.Play.PlayRequested -> true
+        PlayerStatus.Play.Playing -> false
+    }
 
 data class VideoArgs(
     val url: String,

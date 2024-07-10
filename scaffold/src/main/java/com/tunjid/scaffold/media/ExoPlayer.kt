@@ -28,18 +28,20 @@ import javax.inject.Inject
 @Stable
 sealed class PlayerStatus {
 
-    data object Initial : PlayerStatus()
+    sealed class Idle : PlayerStatus() {
+        data object Initial : Idle()
+        data object Evicted : Idle()
+    }
 
-    data object PauseRequested : PlayerStatus()
+    sealed class Play : PlayerStatus() {
+        data object PlayRequested : Play()
+        data object Playing : Play()
+    }
 
-    data object Paused : PlayerStatus()
-
-    data object PlayRequested : PlayerStatus()
-
-    data object Playing : PlayerStatus()
-
-    data object Evicted : PlayerStatus()
-
+    sealed class Pause : PlayerStatus() {
+        data object Requested : Pause()
+        data object Confirmed : Pause()
+    }
 }
 
 interface PlayerManager {
@@ -64,8 +66,9 @@ class PlayerState : Player.Listener {
         value = null,
         policy = referentialEqualityPolicy()
     )
+    var renderedFirstFrame by mutableStateOf(false)
     var videoSize by mutableStateOf(IntSize.Zero)
-    var status by mutableStateOf<PlayerStatus>(PlayerStatus.Initial)
+    var status by mutableStateOf<PlayerStatus>(PlayerStatus.Idle.Initial)
     var playerPosition by mutableLongStateOf(0L)
     var contentScale by mutableStateOf(ContentScale.Crop)
     var alignment by mutableStateOf(Alignment.Center)
@@ -76,25 +79,29 @@ class PlayerState : Player.Listener {
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         status = when {
-            playWhenReady && player?.playbackState == Player.STATE_READY -> PlayerStatus.Playing.also { player?.play() }
-            playWhenReady -> PlayerStatus.PlayRequested
-            status == PlayerStatus.Initial -> status
-            else -> PlayerStatus.Paused
+            playWhenReady && player?.playbackState == Player.STATE_READY -> PlayerStatus.Play.Playing.also { player?.play() }
+            playWhenReady -> PlayerStatus.Play.PlayRequested
+            status == PlayerStatus.Idle.Initial -> status
+            else -> PlayerStatus.Pause.Confirmed
         }
         player?.videoSize?.let(::updateVideoSize)
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         status = when {
-            playbackState == Player.STATE_READY && player?.playWhenReady == true -> PlayerStatus.Playing
-            player?.playWhenReady == true -> PlayerStatus.PlayRequested
+            playbackState == Player.STATE_READY && player?.playWhenReady == true -> PlayerStatus.Play.Playing
+            player?.playWhenReady == true -> PlayerStatus.Play.PlayRequested
             else -> status
         }
         player?.videoSize?.let(::updateVideoSize)
     }
 
+    override fun onRenderedFirstFrame() {
+        renderedFirstFrame = true
+    }
+
     private fun updateVideoSize(size: VideoSize) {
-        videoSize =  when (val intSize = size.toIntSize()) {
+        videoSize = when (val intSize = size.toIntSize()) {
             IntSize.Zero -> videoSize
             else -> intSize
         }
@@ -139,7 +146,7 @@ class ExoPlayerManager @Inject constructor(
         currentUrl = url
 
         urlToStates[previousUrl]?.apply {
-            status = PlayerStatus.PauseRequested
+            status = PlayerStatus.Pause.Requested
             player?.apply {
                 setVideoSurface(null)
                 playerPosition = currentPosition
@@ -147,17 +154,21 @@ class ExoPlayerManager @Inject constructor(
             player = null
         }
         urlToStates.getOrPut(url, ::PlayerState).apply state@{
+            check(player == null) {
+                "Calling play with player attached"
+            }
+            renderedFirstFrame = false
             status = when (val currentStatus = status) {
-                PlayerStatus.Evicted -> throw IllegalStateException(
+                PlayerStatus.Idle.Evicted -> throw IllegalStateException(
                     "Attempt to play evicted player"
                 )
 
-                PlayerStatus.Initial,
-                PlayerStatus.PauseRequested,
-                PlayerStatus.Paused -> PlayerStatus.PlayRequested
+                PlayerStatus.Idle.Initial,
+                PlayerStatus.Pause.Requested,
+                PlayerStatus.Pause.Confirmed -> PlayerStatus.Play.PlayRequested
 
-                PlayerStatus.PlayRequested,
-                PlayerStatus.Playing -> currentStatus
+                PlayerStatus.Play.PlayRequested,
+                PlayerStatus.Play.Playing -> currentStatus
             }
             player = singletonPlayer.apply {
                 urlToStates[previousUrl]?.let(::removeListener)
@@ -178,7 +189,7 @@ class ExoPlayerManager @Inject constructor(
 
     override fun pause() {
         currentUrl?.let(urlToStates::get)?.apply {
-            status = PlayerStatus.PauseRequested
+            status = PlayerStatus.Pause.Requested
         }
         singletonPlayer.pause()
     }
