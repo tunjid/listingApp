@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -44,20 +43,10 @@ sealed class PlayerStatus {
     }
 }
 
-interface PlayerManager {
-
-    fun enqueue(url: String)
-
-    fun play(url: String)
-
-    fun pause()
-
-    @Composable
-    fun stateFor(url: String?): PlayerState
-}
-
 @Stable
-class PlayerState : Player.Listener {
+class VideoState(
+    url: String
+) {
     var player by mutableStateOf<Player?>(
         value = null,
         policy = referentialEqualityPolicy()
@@ -72,32 +61,36 @@ class PlayerState : Player.Listener {
     var playerPosition by mutableLongStateOf(0L)
     var contentScale by mutableStateOf(ContentScale.Crop)
     var alignment by mutableStateOf(Alignment.Center)
+    var url by mutableStateOf(url)
 
-    override fun onVideoSizeChanged(size: VideoSize) {
-        updateVideoSize(size)
-    }
-
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        status = when {
-            playWhenReady && player?.playbackState == Player.STATE_READY -> PlayerStatus.Play.Playing.also { player?.play() }
-            playWhenReady -> PlayerStatus.Play.PlayRequested
-            status == PlayerStatus.Idle.Initial -> status
-            else -> PlayerStatus.Pause.Confirmed
+    internal val playerListener = object : Player.Listener {
+        override fun onVideoSizeChanged(size: VideoSize) {
+            updateVideoSize(size)
         }
-        player?.videoSize?.let(::updateVideoSize)
-    }
 
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        status = when {
-            playbackState == Player.STATE_READY && player?.playWhenReady == true -> PlayerStatus.Play.Playing
-            player?.playWhenReady == true -> PlayerStatus.Play.PlayRequested
-            else -> status
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            status = when {
+                playWhenReady && player?.playbackState == Player.STATE_READY -> PlayerStatus.Play.Playing.also { player?.play() }
+                playWhenReady -> PlayerStatus.Play.PlayRequested
+                status == PlayerStatus.Idle.Initial -> status
+                else -> PlayerStatus.Pause.Confirmed
+            }
+            player?.videoSize?.let(::updateVideoSize)
         }
-        player?.videoSize?.let(::updateVideoSize)
-    }
 
-    override fun onRenderedFirstFrame() {
-        renderedFirstFrame = true
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            status = when {
+                playbackState == Player.STATE_READY && player?.playWhenReady == true -> PlayerStatus.Play.Playing
+                player?.playWhenReady == true -> PlayerStatus.Play.PlayRequested
+                else -> status
+            }
+            player?.videoSize?.let(::updateVideoSize)
+        }
+
+        override fun onRenderedFirstFrame() {
+            renderedFirstFrame = true
+            player?.videoSize?.let(::updateVideoSize)
+        }
     }
 
     private fun updateVideoSize(size: VideoSize) {
@@ -105,6 +98,56 @@ class PlayerState : Player.Listener {
             IntSize.Zero -> videoSize
             else -> intSize
         }
+    }
+}
+
+val VideoState.canShowVideo
+    get() = when (status) {
+        is PlayerStatus.Idle.Initial -> true
+        is PlayerStatus.Play -> true
+        is PlayerStatus.Pause -> true
+        PlayerStatus.Idle.Evicted -> false
+    }
+
+val VideoState.canShowStill
+    get() = videoSize == IntSize.Zero
+            || !renderedFirstFrame
+            || when (status) {
+        is PlayerStatus.Idle -> true
+        is PlayerStatus.Pause -> false
+        PlayerStatus.Play.PlayRequested -> true
+        PlayerStatus.Play.Playing -> false
+    }
+
+interface PlayerManager {
+
+    fun enqueue(url: String)
+
+    fun play(url: String)
+
+    fun pause()
+
+    @Composable
+    fun stateFor(url: String): VideoState
+}
+
+@Stable
+object NoOpPlayerManager : PlayerManager {
+    override fun enqueue(url: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun play(url: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun pause() {
+        TODO("Not yet implemented")
+    }
+
+    @Composable
+    override fun stateFor(url: String): VideoState {
+        TODO("Not yet implemented")
     }
 }
 
@@ -125,7 +168,7 @@ class ExoPlayerManager @Inject constructor(
 
     private val items = mutableSetOf<String>()
 
-    private val urlToStates = mutableStateMapOf<String?, PlayerState>()
+    private val urlToStates = mutableStateMapOf<String?, VideoState>()
 
     override fun enqueue(url: String) {
         if (items.contains(url)) return
@@ -153,7 +196,9 @@ class ExoPlayerManager @Inject constructor(
             }
             player = null
         }
-        urlToStates.getOrPut(url, ::PlayerState).apply state@{
+        urlToStates.getOrPut(url) {
+            VideoState(url)
+        }.apply state@{
             check(player == null) {
                 "Calling play with player attached"
             }
@@ -171,8 +216,8 @@ class ExoPlayerManager @Inject constructor(
                 PlayerStatus.Play.Playing -> currentStatus
             }
             player = singletonPlayer.apply {
-                urlToStates[previousUrl]?.let(::removeListener)
-                addListener(this@state)
+                urlToStates[previousUrl]?.playerListener?.let(::removeListener)
+                addListener(this@state.playerListener)
                 enqueue(url)
 
                 singletonPlayer.seekTo(
@@ -196,12 +241,10 @@ class ExoPlayerManager @Inject constructor(
 
     @Composable
     override fun stateFor(
-        url: String?
-    ): PlayerState = urlToStates.getOrPut(url, ::PlayerState)
-}
-
-val LocalPlayerManager = staticCompositionLocalOf<PlayerManager> {
-    TODO()
+        url: String
+    ): VideoState = urlToStates.getOrPut(url) {
+        VideoState(url)
+    }
 }
 
 private fun VideoSize.toIntSize() = IntSize(width, height)

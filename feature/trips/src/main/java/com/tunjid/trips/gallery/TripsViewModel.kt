@@ -1,4 +1,4 @@
-package com.tunjid.trips
+package com.tunjid.trips.gallery
 
 import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.ActionStateMutator
@@ -47,7 +47,9 @@ fun CoroutineScope.listingFeedStateHolder(
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
 ): TripStateHolder = actionStateFlowMutator(
-    initialState = State(),
+    initialState = State(
+        playerManager = playerManager,
+    ),
     started = SharingStarted.WhileSubscribed(3000),
     inputs = listOf(
     ),

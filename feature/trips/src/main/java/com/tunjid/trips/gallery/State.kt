@@ -1,8 +1,9 @@
-package com.tunjid.trips
+package com.tunjid.trips.gallery
 
 import androidx.compose.ui.layout.ContentScale
 import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.media.PhotoArgs
+import com.tunjid.scaffold.media.NoOpPlayerManager
+import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.media.VideoArgs
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -15,6 +16,8 @@ sealed class Action(val key: String) {
 
 @Serializable
 data class State(
+    @Transient
+    val playerManager: PlayerManager = NoOpPlayerManager,
     @Transient
     val currentlyPlayingKey: Any? = null,
     @Transient

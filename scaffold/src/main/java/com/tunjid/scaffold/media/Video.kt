@@ -3,10 +3,7 @@ package com.tunjid.scaffold.media
 import androidx.annotation.OptIn
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.layer.drawLayer
@@ -42,29 +38,31 @@ import kotlin.math.abs
 
 @Composable
 fun Video(
-    args: VideoArgs,
+    state: VideoState,
     modifier: Modifier
 ) {
     VideoPlayer(
+        state = state,
         modifier = modifier,
-        url = args.url,
-        contentScale = args.contentScale.interpolate(),
-        alignment = args.alignment,
     )
 }
 
 @OptIn(UnstableApi::class)
 @Composable
 private fun VideoPlayer(
+    state: VideoState,
     modifier: Modifier = Modifier,
-    url: String,
-    contentScale: ContentScale,
-    alignment: Alignment,
 ) {
-    val state = LocalPlayerManager.current.stateFor(url)
     val graphicsLayer = rememberGraphicsLayer()
+    val contentScale = state.contentScale.interpolate()
 
-    if (state.canShowVideo()) PlayingVideo(
+    // Note its important the embedded Surface is removed from the composition when it is scrolled
+    // off screen
+    if (state.canShowVideo) PlayingVideo(
+        player = state.player,
+        contentScale = contentScale,
+        alignment = state.alignment,
+        videoSize = state.videoSize,
         modifier = remember(modifier) {
             modifier
                 .drawWithContent {
@@ -76,12 +74,18 @@ private fun VideoPlayer(
                     // draw the graphics layer on the visible canvas
                     drawLayer(graphicsLayer)
                 }
-        },
-        player = state.player,
-        contentScale = contentScale,
-        alignment = alignment,
-        videoSize = state.videoSize
+        }
     )
+
+    if (state.canShowStill) VideoStill(
+        lastBitmap = state.videoStill.takeIf {
+            state.status != PlayerStatus.Idle.Initial
+        },
+        url = state.url,
+        modifier = modifier,
+        contentScale = contentScale
+    )
+
     // Capture a still frame from the video to use as a stand in when buffering playback
     LaunchedEffect(state.status) {
         if (state.status is PlayerStatus.Pause
@@ -89,33 +93,9 @@ private fun VideoPlayer(
             && graphicsLayer.size.height != 0
             && graphicsLayer.size.width != 0
         ) {
-            val still = graphicsLayer.toImageBitmap()
-            state.videoStill = still
+            state.videoStill = graphicsLayer.toImageBitmap()
         }
     }
-
-
-    if (state.canShowStill()) VideoStill(
-        lastBitmap = state.videoStill.takeIf {
-            state.status != PlayerStatus.Idle.Initial
-        },
-        url = url,
-        modifier = modifier,
-        contentScale = contentScale
-    )
-
-
-    Label(
-        text = listOfNotNull(
-            "STILL".takeIf { state.canShowStill() },
-            "VIDEO".takeIf { state.canShowVideo() },
-            "${state.videoSize}".takeIf { state.canShowVideo() },
-            "${state.renderedFirstFrame}",
-            "${state.status}",
-        ).joinToString(separator = "\n"),
-        modifier
-    )
-
 
     DisposableEffect(Unit) {
         state.status = PlayerStatus.Idle.Initial
@@ -124,26 +104,6 @@ private fun VideoPlayer(
             state.status = PlayerStatus.Idle.Evicted
             state.playerPosition = 0L
         }
-    }
-}
-
-@Composable
-private fun Label(text: String, modifier: Modifier) {
-    Box(modifier = modifier) {
-        Text(
-            text = text,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .background(Color.Black.copy(alpha = 0.4f))
-        )
-        Text(
-            text = text,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .background(Color.Black.copy(alpha = 0.4f))
-        )
     }
 }
 
@@ -220,7 +180,7 @@ private fun PlayingVideo(
                 videoSize = videoSize,
                 surfaceSize = surfaceSize
             )
-            .scaleTo(
+            .scaleAndAlignTo(
                 videoSize = videoSize,
                 surfaceSize = surfaceSize,
                 contentScale = contentScale,
@@ -245,7 +205,7 @@ private fun Matrix.removeFillBounds(
     invert()
 }
 
-private fun Matrix.scaleTo(
+private fun Matrix.scaleAndAlignTo(
     videoSize: IntSize,
     surfaceSize: IntSize,
     contentScale: ContentScale,
@@ -280,23 +240,6 @@ private fun Matrix.scaleTo(
         )
     }
 }
-
-private fun PlayerState.canShowVideo() = when (status) {
-    is PlayerStatus.Idle.Initial -> true
-    is PlayerStatus.Play -> true
-    is PlayerStatus.Pause -> true
-    PlayerStatus.Idle.Evicted -> false
-}
-
-private fun PlayerState.canShowStill() =
-    videoSize == IntSize.Zero
-            || !renderedFirstFrame
-            || when (status) {
-        is PlayerStatus.Idle -> true
-        is PlayerStatus.Pause -> false
-        PlayerStatus.Play.PlayRequested -> true
-        PlayerStatus.Play.Playing -> false
-    }
 
 data class VideoArgs(
     val url: String,

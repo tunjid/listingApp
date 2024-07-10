@@ -1,7 +1,6 @@
-package com.tunjid.trips
+package com.tunjid.trips.gallery
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableState
@@ -31,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -44,22 +42,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.tunjid.feature.trips.R
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.media.ExoPlayerManager
-import com.tunjid.scaffold.media.LocalPlayerManager
-import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.Video
-import com.tunjid.scaffold.media.VideoArgs
+import com.tunjid.scaffold.media.VideoState
+import com.tunjid.scaffold.media.canShowStill
+import com.tunjid.scaffold.media.canShowVideo
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -78,75 +70,96 @@ fun TripsScreen(
         )
     )
 
-    val context = LocalContext.current
-    val playerManager = remember {
-        ExoPlayerManager(context)
-    }
+    val playerManager = state.playerManager
 
-   CompositionLocalProvider(
-       LocalPlayerManager provides playerManager
-   ) {
-       Column(
-           modifier = modifier.fillMaxSize(),
-       ) {
-           TopAppBar(
-               modifier = Modifier
-                   .windowInsetsPadding(WindowInsets.statusBars),
-               colors = TopAppBarDefaults.topAppBarColors(
-                   containerColor = Color.Transparent,
-               ),
-               title = {
-                   Text(text = "Videos")
-               }
-           )
+    Column(
+        modifier = modifier.fillMaxSize(),
+    ) {
+        TopAppBar(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.statusBars),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+            ),
+            title = {
+                Text(text = "Videos")
+            }
+        )
 
 //    DebugVideo(url = state.videos.first())
-           val gridState = rememberLazyGridState()
+        val gridState = rememberLazyGridState()
 
-           LazyVerticalGrid(
-               modifier = Modifier.fillMaxSize(),
-               columns = GridCells.Adaptive(180.dp),
-               horizontalArrangement = Arrangement.spacedBy(8.dp),
-               verticalArrangement = Arrangement.spacedBy(8.dp),
-               contentPadding = PaddingValues(horizontal = 16.dp),
-               state = gridState,
-           ) {
-               items(
-                   items = state.videos,
-                   key = { it.key },
-                   itemContent = {
-                       Video(
-                           args = it.args,
-                           modifier = Modifier
-                               .aspectRatio(9f / 16)
-                               .clip(RoundedCornerShape(16.dp))
-                               .clickable {
-                                   playerManager.play(it.args.url)
-//                                   it.args.url?.let { it1 -> playerManager.play(it1) }
-//                                   actions(Action.TogglePlaying(url = it.args.url))
-                               }
-                       )
-                   }
-               )
-           }
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize(),
+            columns = GridCells.Adaptive(180.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            state = gridState,
+        ) {
+            items(
+                items = state.videos,
+                key = { it.key },
+                itemContent = {
+                    val videoState = playerManager.stateFor(url = it.args.url)
+                    Video(
+                        state = videoState,
+                        modifier = Modifier
+                            .aspectRatio(9f / 16)
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
+                                playerManager.play(it.args.url)
+                            }
+                    )
+                    Label(
+                        text = listOfNotNull(
+                            "STILL".takeIf { videoState.canShowStill },
+                            "VIDEO".takeIf { videoState.canShowVideo },
+                            "${videoState.videoSize}".takeIf { videoState.canShowVideo },
+                            "${videoState.renderedFirstFrame}",
+                            "${videoState.status}",
+                        ).joinToString(separator = "\n"),
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            )
+        }
 
-           val videos = state.videos
-           val index = gridState.visibleIndex(
-               itemsAvailable = state.videos.size
-           )
+        val videos = state.videos
+        val index = gridState.visibleIndex(
+            itemsAvailable = state.videos.size
+        )
 
-           LaunchedEffect(index,videos) {
-               if(index < 0) return@LaunchedEffect
-               playerManager.play(videos[index].args.url)
-           }
-       }
+        LaunchedEffect(index, videos) {
+            if (index < 0) return@LaunchedEffect
+            playerManager.play(videos[index].args.url)
+        }
+    }
+}
 
-   }
+@Composable
+private fun Label(text: String, modifier: Modifier) {
+    Box(modifier = modifier) {
+        Text(
+            text = text,
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .background(Color.Black.copy(alpha = 0.4f))
+        )
+        Text(
+            text = text,
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .background(Color.Black.copy(alpha = 0.4f))
+        )
+    }
 }
 
 @Composable
 private fun DebugVideo(
-    url: String,
+    state: VideoState,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -164,10 +177,7 @@ private fun DebugVideo(
                 .fillMaxHeight(heightRatio)
         ) {
             Video(
-                args = VideoArgs(
-                    url = url,
-                    contentScale = ContentScale.Crop,
-                ),
+                state = state,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -239,7 +249,6 @@ private fun DebugVideo(
                     }
             )
         }
-
     }
 }
 
@@ -288,7 +297,7 @@ internal inline fun <LazyState : ScrollableState, LazyStateItem> LazyState.inter
 fun LazyGridState.visibleIndex(
     itemsAvailable: Int,
     itemIndex: (LazyGridItemInfo) -> Int = LazyGridItemInfo::index,
-) : Int {
+): Int {
     var position by remember {
         mutableIntStateOf(-1)
     }

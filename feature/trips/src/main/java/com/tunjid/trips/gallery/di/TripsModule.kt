@@ -1,4 +1,4 @@
-package com.tunjid.trips.di
+package com.tunjid.trips.gallery.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -10,10 +10,10 @@ import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
-import com.tunjid.trips.State
-import com.tunjid.trips.TripsScreen
-import com.tunjid.trips.TripsViewModel
-import com.tunjid.trips.TripsViewModelFactory
+import com.tunjid.trips.gallery.State
+import com.tunjid.trips.gallery.TripsScreen
+import com.tunjid.trips.gallery.TripsViewModel
+import com.tunjid.trips.gallery.TripsViewModelFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
