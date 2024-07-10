@@ -47,6 +47,13 @@ sealed class PlayerStatus {
 class VideoState(
     url: String
 ) {
+    var url by mutableStateOf(url)
+    var alignment by mutableStateOf(Alignment.Center)
+    var contentScale by mutableStateOf(ContentScale.Crop)
+    var status by mutableStateOf<PlayerStatus>(PlayerStatus.Idle.Initial)
+    var renderedFirstFrame by mutableStateOf(false)
+    var videoSize by mutableStateOf(IntSize.Zero)
+    var playerPosition by mutableLongStateOf(0L)
     var player by mutableStateOf<Player?>(
         value = null,
         policy = referentialEqualityPolicy()
@@ -55,13 +62,6 @@ class VideoState(
         value = null,
         policy = referentialEqualityPolicy()
     )
-    var renderedFirstFrame by mutableStateOf(false)
-    var videoSize by mutableStateOf(IntSize.Zero)
-    var status by mutableStateOf<PlayerStatus>(PlayerStatus.Idle.Initial)
-    var playerPosition by mutableLongStateOf(0L)
-    var contentScale by mutableStateOf(ContentScale.Crop)
-    var alignment by mutableStateOf(Alignment.Center)
-    var url by mutableStateOf(url)
 
     internal val playerListener = object : Player.Listener {
         override fun onVideoSizeChanged(size: VideoSize) {

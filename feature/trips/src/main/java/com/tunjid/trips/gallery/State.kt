@@ -46,13 +46,15 @@ private val VideoUrls = listOf(
     "https://videos.pexels.com/video-files/5824033/5824033-sd_360_640_24fps.mp4",
     "https://videos.pexels.com/video-files/13658590/13658590-sd_360_640_24fps.mp4",
     "https://videos.pexels.com/video-files/7515918/7515918-sd_360_640_30fps.mp4",
+    "https://videos.pexels.com/video-files/7008030/7008030-sd_360_640_25fps.mp4",
+    "https://videos.pexels.com/video-files/6328336/6328336-sd_506_960_25fps.mp4",
+    "https://videos.pexels.com/video-files/4441055/4441055-sd_360_640_25fps.mp4",
+    "https://videos.pexels.com/video-files/5057524/5057524-sd_360_640_25fps.mp4",
+    "https://videos.pexels.com/video-files/5669810/5669810-sd_360_640_30fps.mp4",
+    "https://videos.pexels.com/video-files/6466668/6466668-sd_360_640_30fps.mp4",
 //    "https://videos.pexels.com/video-files/6514400/6514400-hd_1080_1920_30fps.mp4",
 //    "https://videos.pexels.com/video-files/6242776/6242776-hd_1080_1920_30fps.mp4",
 //    "https://videos.pexels.com/video-files/26746611/11999512_1440_2560_60fps.mp4",
-//    "",
-//    "",
-//    "",
-//    "",
 )
 
 
