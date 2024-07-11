@@ -42,7 +42,7 @@ fun Modifier.dragToDismiss(
     offset { offset.round() }
         .draggable2D(
             state = draggable2DState,
-            startDragImmediately = true,
+            startDragImmediately = false,
             onDragStopped = { velocity ->
                 if (shouldDismiss(offset, velocity)) onDismissed()
                 else resetJob = scope.launch {
