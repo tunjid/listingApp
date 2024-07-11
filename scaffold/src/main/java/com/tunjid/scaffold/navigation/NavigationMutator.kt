@@ -71,8 +71,6 @@ class PersistedNavigationStateHolder @Inject constructor(
             val savedState = savedStateRepository.savedState.first { !it.isEmpty }
             val multiStackNav = routeParser.parseMultiStackNav(savedState)
 
-            println("KEYS: ${routeMatcherMap.keys}")
-
             emit { multiStackNav }
             emitAll(
                 navMutations.map { navMutation ->

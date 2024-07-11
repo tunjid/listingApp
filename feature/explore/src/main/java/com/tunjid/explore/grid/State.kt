@@ -22,7 +22,7 @@ sealed class Action(val key: String) {
                     routeString(
                         path = "/explore/pager",
                         queryParams = mapOf(
-                            "url" to listOf(url).also { println("url: $url") }
+                            "url" to listOf(url)
                         )
                     ).toRoute
                 )

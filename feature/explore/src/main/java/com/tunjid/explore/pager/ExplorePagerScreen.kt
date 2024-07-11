@@ -54,7 +54,6 @@ fun FullscreenGalleryScreen(
             Modifier.fillMaxSize(),
         )
         LaunchedEffect(Unit) {
-            println("play ${item.url} from launch; state: ${state.items.map { it.url }}")
             playerManager.play(item.url)
         }
     }

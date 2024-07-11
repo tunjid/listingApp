@@ -187,6 +187,7 @@ private fun SavedStateAdaptiveContentState.Render(
             onDispose {
                 val routeId = targetPaneState.currentRoute?.id ?: return@onDispose
                 onAction(Action.RouteExitEnd(routeId))
+                targetPaneState.currentRoute?.let(viewModelDependencyManager::clearStoreFor)
             }
         }
     }
