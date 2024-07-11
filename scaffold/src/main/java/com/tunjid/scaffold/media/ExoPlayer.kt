@@ -22,6 +22,7 @@ import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
 @Stable
@@ -33,8 +34,8 @@ sealed class PlayerStatus {
     }
 
     sealed class Play : PlayerStatus() {
-        data object PlayRequested : Play()
-        data object Playing : Play()
+        data object Requested : Play()
+        data object Confirmed : Play()
     }
 
     sealed class Pause : PlayerStatus() {
@@ -70,8 +71,8 @@ class VideoState(
 
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             status = when {
-                playWhenReady && player?.playbackState == Player.STATE_READY -> PlayerStatus.Play.Playing.also { player?.play() }
-                playWhenReady -> PlayerStatus.Play.PlayRequested
+                playWhenReady && player?.playbackState == Player.STATE_READY -> PlayerStatus.Play.Confirmed.also { player?.play() }
+                playWhenReady -> PlayerStatus.Play.Requested
                 status == PlayerStatus.Idle.Initial -> status
                 else -> PlayerStatus.Pause.Confirmed
             }
@@ -80,8 +81,8 @@ class VideoState(
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             status = when {
-                playbackState == Player.STATE_READY && player?.playWhenReady == true -> PlayerStatus.Play.Playing
-                player?.playWhenReady == true -> PlayerStatus.Play.PlayRequested
+                playbackState == Player.STATE_READY && player?.playWhenReady == true -> PlayerStatus.Play.Confirmed
+                player?.playWhenReady == true -> PlayerStatus.Play.Requested
                 else -> status
             }
             player?.videoSize?.let(::updateVideoSize)
@@ -115,8 +116,8 @@ val VideoState.canShowStill
             || when (status) {
         is PlayerStatus.Idle -> true
         is PlayerStatus.Pause -> false
-        PlayerStatus.Play.PlayRequested -> true
-        PlayerStatus.Play.Playing -> false
+        PlayerStatus.Play.Requested -> true
+        PlayerStatus.Play.Confirmed -> false
     }
 
 interface PlayerManager {
@@ -152,6 +153,7 @@ object NoOpPlayerManager : PlayerManager {
 }
 
 @Stable
+@Singleton
 class ExoPlayerManager @Inject constructor(
     @ApplicationContext context: Context
 ) : PlayerManager {
@@ -210,10 +212,10 @@ class ExoPlayerManager @Inject constructor(
 
                 PlayerStatus.Idle.Initial,
                 PlayerStatus.Pause.Requested,
-                PlayerStatus.Pause.Confirmed -> PlayerStatus.Play.PlayRequested
+                PlayerStatus.Pause.Confirmed -> PlayerStatus.Play.Requested
 
-                PlayerStatus.Play.PlayRequested,
-                PlayerStatus.Play.Playing -> currentStatus
+                PlayerStatus.Play.Requested,
+                PlayerStatus.Play.Confirmed -> currentStatus
             }
             player = singletonPlayer.apply {
                 urlToStates[previousUrl]?.playerListener?.let(::removeListener)

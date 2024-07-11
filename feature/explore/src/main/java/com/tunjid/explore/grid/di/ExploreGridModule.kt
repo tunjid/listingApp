@@ -1,4 +1,4 @@
-package com.tunjid.trips.gallery.di
+package com.tunjid.explore.grid.di
 
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
@@ -10,10 +10,10 @@ import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
-import com.tunjid.trips.gallery.State
-import com.tunjid.trips.gallery.TripsScreen
-import com.tunjid.trips.gallery.TripsViewModel
-import com.tunjid.trips.gallery.TripsViewModelFactory
+import com.tunjid.explore.grid.State
+import com.tunjid.explore.grid.ExploreGridScreen
+import com.tunjid.explore.grid.ExploreGridViewModel
+import com.tunjid.explore.grid.ExploreGridModelFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,11 +24,11 @@ import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
 import kotlinx.serialization.modules.subclass
 
-private const val RoutePattern = "/trips"
+private const val RoutePattern = "/explore"
 
 @Module
 @InstallIn(SingletonComponent::class)
-object TripsModule {
+object ExploreGridModule {
 
     @IntoSet
     @Provides
@@ -49,8 +49,8 @@ object TripsModule {
     @Provides
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val viewModel = viewModel<TripsViewModel>()
-        TripsScreen(
+        val viewModel = viewModel<ExploreGridViewModel>()
+        ExploreGridScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
@@ -59,8 +59,8 @@ object TripsModule {
 
     @IntoMap
     @Provides
-    @ClassKey(TripsViewModel::class)
+    @ClassKey(ExploreGridViewModel::class)
     fun tripsStateHolderCreator(
-        factory: TripsViewModelFactory
+        factory: ExploreGridModelFactory
     ): ScreenStateHolderCreator = factory
 }

@@ -1,69 +1,64 @@
-package com.tunjid.trips.gallery
+package com.tunjid.explore.pager
 
 import androidx.lifecycle.ViewModel
+import com.tunjid.explore.pager.di.startingUrls
 import com.tunjid.mutator.ActionStateMutator
-import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
-import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
+import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.treenav.strings.Route
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-
-typealias TripStateHolder = ActionStateMutator<Action, StateFlow<State>>
-
+import kotlinx.coroutines.flow.map
 
 @AssistedFactory
-interface TripsViewModelFactory : ScreenStateHolderCreator {
+interface ExplorePagerStateHolderFactory : ScreenStateHolderCreator {
     override fun create(
         scope: CoroutineScope,
         route: Route,
-    ): TripsViewModel
+    ): ExplorePagerViewModel
 }
 
-class TripsViewModel @AssistedInject constructor(
+class ExplorePagerViewModel @AssistedInject constructor(
     playerManager: PlayerManager,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ActionStateMutator<Action, StateFlow<State>> by scope.listingFeedStateHolder(
+), ActionStateMutator<Action, StateFlow<State>> by scope.mutator(
     playerManager = playerManager,
     navigationActions = navigationActions,
     route = route
 )
 
-fun CoroutineScope.listingFeedStateHolder(
+private fun CoroutineScope.mutator(
     playerManager: PlayerManager,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
-): TripStateHolder = actionStateFlowMutator(
+) = actionStateFlowMutator<Action, State>(
     initialState = State(
         playerManager = playerManager,
+        items = route.preSeededNavigationItems()
     ),
-    started = SharingStarted.WhileSubscribed(3000),
-    inputs = listOf(
-    ),
-    actionTransform = stateHolder@{ actions ->
+    actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
-                is Action.TogglePlaying -> action.flow.toggleMutations()
+                is Action.Navigation -> action.flow
+                    .map(::navigationEdits)
+                    .consumeNavigationActions(
+                        navigationActions
+                    )
             }
         }
     }
 )
 
-private fun Flow<Action.TogglePlaying>.toggleMutations(): Flow<Mutation<State>> =
-    mapToMutation { (url) ->
-
-        this
-    }
+private fun Route.preSeededNavigationItems() =
+    routeParams.startingUrls.map(GalleryItem::Preview)

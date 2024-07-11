@@ -3,6 +3,8 @@ package com.tunjid.scaffold.media
 import androidx.annotation.OptIn
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,15 +58,16 @@ private fun VideoPlayer(
     val graphicsLayer = rememberGraphicsLayer()
     val contentScale = state.contentScale.interpolate()
 
-    // Note its important the embedded Surface is removed from the composition when it is scrolled
-    // off screen
-    if (state.canShowVideo) PlayingVideo(
-        player = state.player,
-        contentScale = contentScale,
-        alignment = state.alignment,
-        videoSize = state.videoSize,
-        modifier = remember(modifier) {
-            modifier
+    Box(modifier = modifier) {
+        // Note its important the embedded Surface is removed from the composition when it is scrolled
+        // off screen
+        if (state.canShowVideo) PlayingVideo(
+            player = state.player,
+            contentScale = contentScale,
+            alignment = state.alignment,
+            videoSize = state.videoSize,
+            modifier = Modifier
+                .fillMaxSize()
                 .drawWithContent {
                     // call record to capture the content in the graphics layer
                     graphicsLayer.record {
@@ -74,35 +77,33 @@ private fun VideoPlayer(
                     // draw the graphics layer on the visible canvas
                     drawLayer(graphicsLayer)
                 }
-        }
-    )
 
-    if (state.canShowStill) VideoStill(
-        lastBitmap = state.videoStill.takeIf {
-            state.status != PlayerStatus.Idle.Initial
-        },
-        url = state.url,
-        modifier = modifier,
-        contentScale = contentScale
-    )
+        )
+        if (state.canShowStill) VideoStill(
+            lastBitmap = state.videoStill.takeIf {
+                state.status != PlayerStatus.Idle.Initial
+            },
+            url = state.url,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = contentScale
+        )
 
-    // Capture a still frame from the video to use as a stand in when buffering playback
-    LaunchedEffect(state.status) {
-        if (state.status is PlayerStatus.Pause
-            && state.renderedFirstFrame
-            && graphicsLayer.size.height != 0
-            && graphicsLayer.size.width != 0
-        ) {
-            state.videoStill = graphicsLayer.toImageBitmap()
+        // Capture a still frame from the video to use as a stand in when buffering playback
+        LaunchedEffect(state.status) {
+            if (state.status is PlayerStatus.Pause
+                && state.renderedFirstFrame
+                && graphicsLayer.size.height != 0
+                && graphicsLayer.size.width != 0
+            ) {
+                state.videoStill = graphicsLayer.toImageBitmap()
+            }
         }
     }
-
-    DisposableEffect(Unit) {
+    DisposableEffect(graphicsLayer) {
         state.status = PlayerStatus.Idle.Initial
         onDispose {
             state.renderedFirstFrame = false
             state.status = PlayerStatus.Idle.Evicted
-            state.playerPosition = 0L
         }
     }
 }

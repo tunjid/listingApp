@@ -63,7 +63,7 @@ dependencies {
     implementation(project(":feature:listing:gallery"))
     implementation(project(":feature:messages"))
     implementation(project(":feature:profile"))
-    implementation(project(":feature:trips"))
+    implementation(project(":feature:explore"))
 
     implementation(project(":app:workmanager"))
 

@@ -1,4 +1,4 @@
-package com.tunjid.trips.gallery
+package com.tunjid.explore.grid
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,21 +43,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import com.tunjid.scaffold.adaptive.movableSharedElementOf
+import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
-import com.tunjid.scaffold.media.canShowStill
-import com.tunjid.scaffold.media.canShowVideo
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 @Composable
-fun TripsScreen(
+fun ExploreGridScreen(
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit,
@@ -86,7 +86,6 @@ fun TripsScreen(
             }
         )
 
-//    DebugVideo(url = state.videos.first())
         val gridState = rememberLazyGridState()
 
         LazyVerticalGrid(
@@ -100,27 +99,33 @@ fun TripsScreen(
             items(
                 items = state.videos,
                 key = { it.key },
-                itemContent = {
-                    val videoState = playerManager.stateFor(url = it.args.url)
-                    Video(
-                        state = videoState,
-                        modifier = Modifier
-                            .aspectRatio(9f / 16)
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable {
-                                playerManager.play(it.args.url)
-                            }
-                    )
-                    Label(
-                        text = listOfNotNull(
-                            "STILL".takeIf { videoState.canShowStill },
-                            "VIDEO".takeIf { videoState.canShowVideo },
-                            "${videoState.videoSize}".takeIf { videoState.canShowVideo },
-                            "${videoState.renderedFirstFrame}",
-                            "${videoState.status}",
-                        ).joinToString(separator = "\n"),
-                        modifier = Modifier.fillMaxSize()
-                    )
+                itemContent = { item ->
+                    // This box constraints the height of the container so the shared element does
+                    // not push other items out of the way when animating in.
+                    Box(
+                        modifier = Modifier.aspectRatio(9f / 16)
+                    ) {
+                        val video = movableSharedElementOf<VideoState>(
+                            thumbnailSharedElementKey(item.args.url)
+                        ) { videoState, innerModifier ->
+                            Video(
+                                modifier = innerModifier,
+                                state = videoState
+                            )
+                        }
+                        val videoState = playerManager.stateFor(url = item.args.url)
+                        video(
+                            videoState,
+                            Modifier
+                                .aspectRatio(9f / 16)
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable {
+                                    val url = item.args.url
+                                    playerManager.play(url)
+                                    actions(Action.Navigation.FullScreen(url))
+                                }
+                        )
+                    }
                 }
             )
         }
@@ -134,26 +139,6 @@ fun TripsScreen(
             if (index < 0) return@LaunchedEffect
             playerManager.play(videos[index].args.url)
         }
-    }
-}
-
-@Composable
-private fun Label(text: String, modifier: Modifier) {
-    Box(modifier = modifier) {
-        Text(
-            text = text,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .background(Color.Black.copy(alpha = 0.4f))
-        )
-        Text(
-            text = text,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .background(Color.Black.copy(alpha = 0.4f))
-        )
     }
 }
 
@@ -303,6 +288,7 @@ fun LazyGridState.visibleIndex(
     }
     LaunchedEffect(this, itemsAvailable) {
         snapshotFlow {
+            if (!isScrollInProgress) return@snapshotFlow -1
             if (itemsAvailable == 0) return@snapshotFlow -1
 
             val visibleItemsInfo = layoutInfo.visibleItemsInfo

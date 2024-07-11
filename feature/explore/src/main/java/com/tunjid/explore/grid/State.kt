@@ -1,17 +1,34 @@
-package com.tunjid.trips.gallery
+package com.tunjid.explore.grid
 
 import androidx.compose.ui.layout.ContentScale
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.media.NoOpPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.media.VideoArgs
+import com.tunjid.scaffold.navigation.NavigationAction
+import com.tunjid.scaffold.navigation.NavigationMutation
+import com.tunjid.treenav.push
+import com.tunjid.treenav.strings.routeString
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 sealed class Action(val key: String) {
-    data class TogglePlaying(
-        val url: String?,
-    ) : Action("TogglePlaying")
+    sealed class Navigation : Action("Navigation"), NavigationAction {
+        data class FullScreen(
+            val url: String,
+        ) : Navigation() {
+            override val navigationMutation: NavigationMutation = {
+                navState.push(
+                    routeString(
+                        path = "/explore/pager",
+                        queryParams = mapOf(
+                            "url" to listOf(url).also { println("url: $url") }
+                        )
+                    ).toRoute
+                )
+            }
+        }
+    }
 }
 
 @Serializable

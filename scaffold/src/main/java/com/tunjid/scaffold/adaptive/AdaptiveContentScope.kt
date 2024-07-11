@@ -49,7 +49,7 @@ internal class AnimatedAdaptiveContentScope(
         val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentRoute?.id
 
         // Do not use the shared element if this content is being animated out
-        if (!isCurrentlyAnimatingIn) return sharedElement
+        if (!isCurrentlyAnimatingIn) return { _, _ -> }
 
         return adaptiveContentHost.createOrUpdateSharedElement(
             key = key,
