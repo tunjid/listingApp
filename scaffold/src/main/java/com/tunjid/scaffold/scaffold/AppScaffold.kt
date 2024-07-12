@@ -97,7 +97,7 @@ fun Scaffold(
 // Previews back content as specified by the material motion spec for Android predictive back:
 // https://developer.android.com/design/ui/mobile/guides/patterns/predictive-back#motion-specs
 internal fun Modifier.backPreviewModifier(): Modifier =
-    this then Modifier.composed {
+    composed {
         val configuration = LocalConfiguration.current
         val globalUiStateHolder = LocalGlobalUiStateHolder.current
 
@@ -155,7 +155,7 @@ internal fun Modifier.backPreviewModifier(): Modifier =
             .pointerInput(Unit) {}
     }
 
-fun Modifier.backPreviewBackgroundModifier(): Modifier = this then composed {
+fun Modifier.backPreviewBackgroundModifier(): Modifier = composed {
     val scope = LocalAdaptiveContentScope.current
     if (scope?.paneState?.pane != Adaptive.Pane.TransientPrimary)
         return@composed this
