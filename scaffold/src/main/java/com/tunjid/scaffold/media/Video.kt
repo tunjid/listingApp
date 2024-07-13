@@ -26,17 +26,12 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.times
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toIntSize
-import androidx.compose.ui.unit.toSize
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.filterNotNull
-import kotlin.math.abs
 
 @Composable
 fun Video(
@@ -69,12 +64,9 @@ private fun VideoPlayer(
             modifier = Modifier
                 .fillMaxSize()
                 .drawWithContent {
-                    // call record to capture the content in the graphics layer
                     graphicsLayer.record {
-                        // draw the contents of the composable into the graphics layer
                         this@drawWithContent.drawContent()
                     }
-                    // draw the graphics layer on the visible canvas
                     drawLayer(graphicsLayer)
                 }
 
@@ -178,72 +170,14 @@ private fun PlayingVideo(
         }
         videoMatrix = Matrix()
             .removeFillBounds(
-                videoSize = videoSize,
-                surfaceSize = surfaceSize
+                srcSize = videoSize,
+                destSize = surfaceSize
             )
             .scaleAndAlignTo(
-                videoSize = videoSize,
-                surfaceSize = surfaceSize,
+                srcSize = videoSize,
+                destSize = surfaceSize,
                 contentScale = contentScale,
                 alignment = alignment,
             )
     }
 }
-
-private fun Matrix.removeFillBounds(
-    videoSize: IntSize,
-    surfaceSize: IntSize,
-) = apply {
-    // TextureView defaults to Fill bounds, remove that transform
-    val fillBounds = ContentScale.FillBounds.computeScaleFactor(
-        srcSize = videoSize.toSize(),
-        dstSize = surfaceSize.toSize()
-    )
-    scale(
-        x = fillBounds.scaleX,
-        y = fillBounds.scaleY
-    )
-    invert()
-}
-
-private fun Matrix.scaleAndAlignTo(
-    videoSize: IntSize,
-    surfaceSize: IntSize,
-    contentScale: ContentScale,
-    alignment: Alignment,
-) = apply {
-    val scaleFactor = contentScale.computeScaleFactor(
-        srcSize = videoSize.toSize(),
-        dstSize = surfaceSize.toSize()
-    )
-    scale(
-        x = scaleFactor.scaleX,
-        y = scaleFactor.scaleY
-    )
-
-    val scaledVideoSize = videoSize.toSize() * scaleFactor
-
-    val alignmentOffset = alignment.align(
-        size = scaledVideoSize.toIntSize(),
-        space = surfaceSize,
-        layoutDirection = LayoutDirection.Ltr,
-    )
-
-    val threshold = 4f
-
-    when {
-        abs(scaledVideoSize.width - surfaceSize.width) > threshold -> translate(
-            x = alignmentOffset.x / 2f,
-        )
-
-        else -> translate(
-            y = alignmentOffset.y / 2f,
-        )
-    }
-}
-
-data class VideoArgs(
-    val url: String,
-    val contentScale: ContentScale,
-    val alignment: Alignment = Alignment.Center,
-)
