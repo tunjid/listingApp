@@ -30,6 +30,17 @@ import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface PlayerManager {
+
+    fun enqueue(url: String)
+
+    fun play(url: String)
+
+    fun pause()
+
+    fun stateFor(url: String): VideoState
+}
+
 
 @Stable
 sealed class PlayerStatus {
@@ -64,6 +75,7 @@ class VideoState(
         value = null,
         policy = referentialEqualityPolicy()
     )
+
     var videoStill by mutableStateOf<ImageBitmap?>(
         value = null,
         policy = referentialEqualityPolicy()
@@ -98,7 +110,6 @@ class VideoState(
             player?.videoSize?.let(::updateVideoSize)
         }
     }
-
     private fun updateVideoSize(size: VideoSize) {
         videoSize = when (val intSize = size.toIntSize()) {
             IntSize.Zero -> videoSize
@@ -124,17 +135,6 @@ val VideoState.canShowStill
         PlayerStatus.Play.Requested -> true
         PlayerStatus.Play.Confirmed -> false
     }
-
-interface PlayerManager {
-
-    fun enqueue(url: String)
-
-    fun play(url: String)
-
-    fun pause()
-
-    fun stateFor(url: String): VideoState
-}
 
 @Stable
 @Singleton
