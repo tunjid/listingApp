@@ -236,8 +236,9 @@ class ExoPlayerManager @Inject constructor(
 
     override fun stateFor(
         url: String
-    ): VideoState = urlToStates.getOrPut(url) {
-        VideoState(url)
+    ): VideoState {
+        enqueue(url)
+        return urlToStates.getValue(url)
     }
 }
 
