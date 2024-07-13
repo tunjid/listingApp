@@ -5,9 +5,11 @@ import android.content.Context
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -19,6 +21,12 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -131,7 +139,8 @@ interface PlayerManager {
 @Stable
 @Singleton
 class ExoPlayerManager @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
+    appScope: CoroutineScope,
 ) : PlayerManager {
     @SuppressLint("UnsafeOptInUsageError")
     private val singletonPlayer = ExoPlayer.Builder(context)
@@ -144,7 +153,26 @@ class ExoPlayerManager @Inject constructor(
 
     private var currentUrl: String? by mutableStateOf(null)
 
-    private val urlToStates = mutableMapOf<String?, VideoState>()
+    // TODO: Make this a snapshot observable LRU cache
+    private val urlToStates = mutableStateMapOf<String?, VideoState>()
+
+    init {
+        // Pause playback when nothing is visible to play
+        snapshotFlow { urlToStates.values }
+            .flatMapLatest { states ->
+                combine(
+                    flows = states.map {
+                        snapshotFlow(it::status)
+                    },
+                    transform = { allStatuses ->
+                        allStatuses.all { it is PlayerStatus.Idle }
+                    }
+                )
+            }
+            .filter(true::equals)
+            .onEach { pause() }
+            .launchIn(appScope)
+    }
 
     override fun enqueue(url: String) {
         if (urlToStates.contains(url)) return
