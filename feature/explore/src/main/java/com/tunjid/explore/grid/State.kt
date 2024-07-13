@@ -5,6 +5,7 @@ import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.media.NoOpPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.media.VideoArgs
+import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.treenav.push
@@ -40,10 +41,7 @@ data class State(
     @Transient
     val videos: List<VideoItem> = VideoUrls.map { url ->
         VideoItem(
-            args = VideoArgs(
-                url = url,
-                contentScale = ContentScale.Crop,
-            ),
+            state = playerManager.stateFor(url = url),
         )
     }
 ) : ByteSerializable
@@ -76,7 +74,7 @@ private val VideoUrls = listOf(
 
 
 data class VideoItem(
-    val args: VideoArgs,
+    val state: VideoState,
 )
 
-val VideoItem.key get() = args.url
+val VideoItem.key get() = state.url

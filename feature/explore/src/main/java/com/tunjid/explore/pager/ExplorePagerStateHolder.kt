@@ -45,7 +45,7 @@ private fun CoroutineScope.mutator(
 ) = actionStateFlowMutator<Action, State>(
     initialState = State(
         playerManager = playerManager,
-        items = route.preSeededNavigationItems()
+        items = route.preSeededNavigationItems(playerManager)
     ),
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
@@ -60,5 +60,5 @@ private fun CoroutineScope.mutator(
     }
 )
 
-private fun Route.preSeededNavigationItems() =
-    routeParams.startingUrls.map(GalleryItem::Preview)
+private fun Route.preSeededNavigationItems(playerManager: PlayerManager) =
+    routeParams.startingUrls.map { GalleryItem.Preview(playerManager.stateFor(it)) }

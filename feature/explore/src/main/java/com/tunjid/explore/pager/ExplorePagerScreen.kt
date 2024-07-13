@@ -42,23 +42,24 @@ fun FullscreenGalleryScreen(
             },
         userScrollEnabled = pagerState.canScrollForward || pagerState.canScrollBackward,
         state = pagerState,
-        key = { index -> state.items[index].url }
+        key = { index -> state.items[index].state.url }
     ) { index ->
         val item = state.items[index]
         val video = movableSharedElementOf<VideoState>(
-            thumbnailSharedElementKey(item.url)
-        ) { videoState, innerModifier ->
-            Video(
-                modifier = innerModifier,
-                state = videoState
-            )
-        }
+            key = thumbnailSharedElementKey(item.state.url),
+            sharedElement = { videoState, innerModifier ->
+                Video(
+                    state = videoState,
+                    modifier = innerModifier
+                )
+            }
+        )
         video(
-            playerManager.stateFor(url = item.url),
+            item.state,
             Modifier.fillMaxSize(),
         )
         LaunchedEffect(Unit) {
-            playerManager.play(item.url)
+            playerManager.play(item.state.url)
         }
     }
 }

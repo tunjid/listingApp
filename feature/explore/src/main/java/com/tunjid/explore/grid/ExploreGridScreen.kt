@@ -106,21 +106,21 @@ fun ExploreGridScreen(
                         modifier = Modifier.aspectRatio(9f / 16)
                     ) {
                         val video = movableSharedElementOf<VideoState>(
-                            thumbnailSharedElementKey(item.args.url)
-                        ) { videoState, innerModifier ->
-                            Video(
-                                modifier = innerModifier,
-                                state = videoState
-                            )
-                        }
-                        val videoState = playerManager.stateFor(url = item.args.url)
+                            key = thumbnailSharedElementKey(item.state.url),
+                            sharedElement = { videoState, innerModifier ->
+                                Video(
+                                    state = videoState,
+                                    modifier = innerModifier
+                                )
+                            }
+                        )
                         video(
-                            videoState,
+                            item.state,
                             Modifier
                                 .aspectRatio(9f / 16)
                                 .clip(RoundedCornerShape(16.dp))
                                 .clickable {
-                                    val url = item.args.url
+                                    val url = item.state.url
                                     playerManager.play(url)
                                     actions(Action.Navigation.FullScreen(url))
                                 }
@@ -137,7 +137,7 @@ fun ExploreGridScreen(
 
         LaunchedEffect(index, videos) {
             if (index < 0) return@LaunchedEffect
-            playerManager.play(videos[index].args.url)
+            playerManager.play(videos[index].state.url)
         }
     }
 }

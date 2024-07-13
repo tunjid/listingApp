@@ -2,11 +2,9 @@ package com.tunjid.scaffold.media
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.setValue
@@ -46,9 +44,8 @@ sealed class PlayerStatus {
 
 @Stable
 class VideoState(
-    url: String
+    val url: String
 ) {
-    var url by mutableStateOf(url)
     var alignment by mutableStateOf(Alignment.Center)
     var contentScale by mutableStateOf(ContentScale.Crop)
     var status by mutableStateOf<PlayerStatus>(PlayerStatus.Idle.Initial)
@@ -128,7 +125,6 @@ interface PlayerManager {
 
     fun pause()
 
-    @Composable
     fun stateFor(url: String): VideoState
 }
 
@@ -146,7 +142,6 @@ object NoOpPlayerManager : PlayerManager {
         TODO("Not yet implemented")
     }
 
-    @Composable
     override fun stateFor(url: String): VideoState {
         TODO("Not yet implemented")
     }
@@ -168,13 +163,11 @@ class ExoPlayerManager @Inject constructor(
 
     private var currentUrl: String? by mutableStateOf(null)
 
-    private val items = mutableSetOf<String>()
-
-    private val urlToStates = mutableStateMapOf<String?, VideoState>()
+    private val urlToStates = mutableMapOf<String?, VideoState>()
 
     override fun enqueue(url: String) {
-        if (items.contains(url)) return
-        items.add(url)
+        if (urlToStates.contains(url)) return
+        urlToStates[url] = VideoState(url)
         singletonPlayer.addMediaItem(
             MediaItem.Builder()
                 .setUri(url)
@@ -241,7 +234,6 @@ class ExoPlayerManager @Inject constructor(
         singletonPlayer.pause()
     }
 
-    @Composable
     override fun stateFor(
         url: String
     ): VideoState = urlToStates.getOrPut(url) {

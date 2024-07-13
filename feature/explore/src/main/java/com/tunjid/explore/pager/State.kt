@@ -4,6 +4,7 @@ import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.media.NoOpPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
+import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.editCurrentIfRoute
@@ -27,7 +28,7 @@ internal suspend fun SuspendingStateHolder<State>.navigationEdits(
     navigationAction: Action.Navigation
 ) = when (navigationAction) {
     is Action.Navigation.Pop -> {
-        val urls = state().items.map { it.url }
+        val urls = state().items.map { it.state.url }
         navigationAction.copy(
             navigationMutation = navigationAction.navigationMutation + {
                 editCurrentIfRoute("url" to urls)
@@ -47,11 +48,11 @@ data class State(
 sealed class GalleryItem {
 
     data class Preview(
-        val url: String,
+        val state: VideoState,
     ) : GalleryItem()
 }
 
-val GalleryItem.url
+val GalleryItem.state
     get() = when (this) {
-        is GalleryItem.Preview -> url
+        is GalleryItem.Preview -> state
     }
