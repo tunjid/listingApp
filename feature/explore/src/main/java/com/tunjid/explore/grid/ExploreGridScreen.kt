@@ -70,8 +70,6 @@ fun ExploreGridScreen(
         )
     )
 
-    val playerManager = state.playerManager
-
     Column(
         modifier = modifier.fillMaxSize(),
     ) {
@@ -97,7 +95,7 @@ fun ExploreGridScreen(
             state = gridState,
         ) {
             items(
-                items = state.videos,
+                items = state.items,
                 key = { it.key },
                 itemContent = { item ->
                     // This box constraints the height of the container so the shared element does
@@ -121,7 +119,7 @@ fun ExploreGridScreen(
                                 .clip(RoundedCornerShape(16.dp))
                                 .clickable {
                                     val url = item.state.url
-                                    playerManager.play(url)
+                                    actions(Action.Play(url))
                                     actions(Action.Navigation.FullScreen(url))
                                 }
                         )
@@ -130,14 +128,14 @@ fun ExploreGridScreen(
             )
         }
 
-        val videos = state.videos
+        val videos = state.items
         val index = gridState.visibleIndex(
-            itemsAvailable = state.videos.size
+            itemsAvailable = state.items.size
         )
 
         LaunchedEffect(index, videos) {
             if (index < 0) return@LaunchedEffect
-            playerManager.play(videos[index].state.url)
+            actions(Action.Play(videos[index].state.url))
         }
     }
 }

@@ -2,8 +2,6 @@ package com.tunjid.explore.pager
 
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.media.NoOpPlayerManager
-import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -14,6 +12,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 sealed class Action(val key: String) {
+
+    data class Play(
+        val url: String
+    ) : Action("Play")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class Pop(
@@ -39,8 +41,6 @@ internal suspend fun SuspendingStateHolder<State>.navigationEdits(
 
 @Serializable
 data class State(
-    @Transient
-    val playerManager: PlayerManager = NoOpPlayerManager,
     @Transient
     val items: List<GalleryItem> = emptyList(),
 ) : ByteSerializable

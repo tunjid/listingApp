@@ -31,7 +31,6 @@ fun FullscreenGalleryScreen(
         )
     )
     val pagerState = rememberPagerState(pageCount = state.items::size)
-    val playerManager = state.playerManager
 
     VerticalPager(
         modifier = modifier
@@ -59,7 +58,7 @@ fun FullscreenGalleryScreen(
             Modifier.fillMaxSize(),
         )
         LaunchedEffect(Unit) {
-            playerManager.play(item.state.url)
+            actions(Action.Play(item.state.url))
         }
     }
 }

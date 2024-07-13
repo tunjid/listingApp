@@ -129,25 +129,6 @@ interface PlayerManager {
 }
 
 @Stable
-object NoOpPlayerManager : PlayerManager {
-    override fun enqueue(url: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun play(url: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun pause() {
-        TODO("Not yet implemented")
-    }
-
-    override fun stateFor(url: String): VideoState {
-        TODO("Not yet implemented")
-    }
-}
-
-@Stable
 @Singleton
 class ExoPlayerManager @Inject constructor(
     @ApplicationContext context: Context

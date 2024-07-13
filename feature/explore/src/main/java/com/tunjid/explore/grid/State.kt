@@ -1,10 +1,6 @@
 package com.tunjid.explore.grid
 
-import androidx.compose.ui.layout.ContentScale
 import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.media.NoOpPlayerManager
-import com.tunjid.scaffold.media.PlayerManager
-import com.tunjid.scaffold.media.VideoArgs
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -14,6 +10,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 sealed class Action(val key: String) {
+
+    data class Play(
+        val url: String
+    ): Action("Play")
+
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class FullScreen(
             val url: String,
@@ -35,18 +36,12 @@ sealed class Action(val key: String) {
 @Serializable
 data class State(
     @Transient
-    val playerManager: PlayerManager = NoOpPlayerManager,
-    @Transient
     val currentlyPlayingKey: Any? = null,
     @Transient
-    val videos: List<VideoItem> = VideoUrls.map { url ->
-        VideoItem(
-            state = playerManager.stateFor(url = url),
-        )
-    }
+    val items: List<VideoItem> = emptyList(),
 ) : ByteSerializable
 
-private val VideoUrls = listOf(
+internal val VideoUrls = listOf(
     "https://videos.pexels.com/video-files/8419938/8419938-sd_360_640_30fps.mp4",
     "https://videos.pexels.com/video-files/6092617/6092617-sd_360_640_30fps.mp4",
     "https://videos.pexels.com/video-files/10452187/10452187-sd_360_640_30fps.mp4",
