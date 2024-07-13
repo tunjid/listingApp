@@ -1,5 +1,6 @@
 package com.tunjid.explore.pager
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -35,7 +36,10 @@ fun FullscreenGalleryScreen(
     VerticalPager(
         modifier = modifier
             .fillMaxSize()
-            .dragToPop(),
+            .dragToPop()
+            .clickable {
+                actions(Action.Navigation.Pop())
+            },
         userScrollEnabled = pagerState.canScrollForward || pagerState.canScrollBackward,
         state = pagerState,
         key = { index -> state.items[index].url }
