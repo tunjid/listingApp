@@ -121,7 +121,7 @@ class PersistedListingApp @Inject constructor(
                 element = stackNav.children
                     .filterIsInstance<Route>()
                     .fold(listOf()) { stackList, route ->
-                        stackList + route.id
+                        stackList + route.routeParams.pathAndQueries
                     }
             )
         },
