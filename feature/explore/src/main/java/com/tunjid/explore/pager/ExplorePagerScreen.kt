@@ -12,6 +12,7 @@ import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.globalui.dragToPop
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 
@@ -34,9 +35,8 @@ fun FullscreenGalleryScreen(
     VerticalPager(
         modifier = modifier
             .fillMaxSize()
-            .dragToDismiss(
-                onDismissed = { actions(Action.Navigation.Pop()) }
-            ),
+            .dragToPop(),
+        userScrollEnabled = pagerState.canScrollForward || pagerState.canScrollBackward,
         state = pagerState,
         key = { index -> state.items[index].url }
     ) { index ->

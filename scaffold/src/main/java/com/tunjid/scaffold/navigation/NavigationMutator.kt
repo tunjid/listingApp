@@ -1,11 +1,14 @@
 package com.tunjid.scaffold.navigation
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
+import com.tunjid.mutator.coroutines.asNoOpStateFlowMutator
 import com.tunjid.mutator.mutationOf
 import com.tunjid.scaffold.adaptive.routeOf
+import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.treenav.MultiStackNav
@@ -31,6 +34,10 @@ import com.tunjid.treenav.Node
 
 typealias NavigationStateHolder = ActionStateMutator<@JvmSuppressWildcards NavigationMutation, @JvmSuppressWildcards StateFlow<MultiStackNav>>
 typealias NavigationMutation = NavigationContext.() -> MultiStackNav
+
+internal val LocalNavigationStateHolder = staticCompositionLocalOf<NavigationStateHolder> {
+    throw IllegalStateException("No NavigationStateHolder provided ")
+}
 
 /**
  * An action that causes mutations to navigation
@@ -93,6 +100,7 @@ operator fun NavigationMutation.plus(
 ): NavigationMutation = {
     edit(this@plus.invoke(this))
 }
+
 /**
  * A helper function for generic state producers to consume navigation actions
  */

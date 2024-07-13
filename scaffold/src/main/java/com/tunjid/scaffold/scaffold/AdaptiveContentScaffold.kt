@@ -38,6 +38,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.PrimaryToSecondary
@@ -55,10 +57,13 @@ import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.SecondaryToPri
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
+import com.tunjid.scaffold.globalui.DragToPopState
+import com.tunjid.scaffold.globalui.LocalDragToPopState
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.WindowSizeClass.COMPACT
 import com.tunjid.scaffold.globalui.bottomNavSize
+import com.tunjid.scaffold.globalui.dragToPopInternal
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
@@ -84,9 +89,11 @@ internal fun AdaptiveContentScaffold(
 
     val density = LocalDensity.current
     val paneSplitState = remember { PaneAnchorState(density) }
+    val dragToPopState = remember { DragToPopState() }
 
     CompositionLocalProvider(
         LocalPaneAnchorState provides paneSplitState,
+        LocalDragToPopState provides dragToPopState,
     ) {
         Box(
             modifier = Modifier
@@ -120,8 +127,20 @@ internal fun AdaptiveContentScaffold(
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() }
                     ),
                     content = {
-                        contentState.RouteIn(pane = Adaptive.Pane.Primary)
-                        contentState.RouteIn(pane = Adaptive.Pane.TransientPrimary)
+                        Box(
+                            modifier = Modifier
+                                .dragToPopInternal(dragToPopState)
+                        ) {
+                            contentState.RouteIn(pane = Adaptive.Pane.Primary)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(dragToPopState.clipRadius))
+                                .scale(dragToPopState.scale)
+                                .offset { dragToPopState.offset.value.round() }
+                        ) {
+                            contentState.RouteIn(pane = Adaptive.Pane.TransientPrimary)
+                        }
                     }
                 )
                 // Pane separator

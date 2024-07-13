@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 interface BackStatus {
     data object None: BackStatus
+    data object DragDismiss: BackStatus
 }
 
 data class PreviewBackStatus(
@@ -123,4 +124,8 @@ val BackStatus.isFromLeft: Boolean
 
 val BackStatus.isPreviewing: Boolean
     get() =
-        if (this is PreviewBackStatus) isPreviewing else false
+        when (this) {
+            is PreviewBackStatus -> isPreviewing
+            is BackStatus.DragDismiss -> true
+            else -> false
+        }
