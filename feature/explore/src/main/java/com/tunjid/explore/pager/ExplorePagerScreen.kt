@@ -32,10 +32,10 @@ fun FullscreenGalleryScreen(
             insetFlags = InsetFlags.NONE
         )
     )
-
+    val updatedItems by rememberUpdatedState(newValue = state.items)
     val pagerState = rememberPagerState(
         initialPage = state.initialPage,
-        pageCount = state.items::size
+        pageCount = updatedItems::size
     )
 
     VerticalPager(
@@ -46,9 +46,9 @@ fun FullscreenGalleryScreen(
                 actions(Action.Navigation.Pop())
             },
         state = pagerState,
-        key = { index -> state.items[index].state.url }
+        key = { index -> updatedItems[index].state.url },
     ) { index ->
-        val item = state.items[index]
+        val item = updatedItems[index]
         val video = movableSharedElementOf<VideoState>(
             key = thumbnailSharedElementKey(item.state.url),
             sharedElement = { videoState, innerModifier ->
@@ -64,7 +64,6 @@ fun FullscreenGalleryScreen(
         )
     }
 
-    val updatedItems by rememberUpdatedState(newValue = state.items)
     LaunchedEffect(pagerState.currentPage) {
         actions(Action.Play(updatedItems[pagerState.currentPage].state.url))
     }
