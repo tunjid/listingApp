@@ -32,6 +32,8 @@ import javax.inject.Singleton
 
 interface PlayerManager {
 
+    val currentUrl: String?
+
     fun enqueue(url: String)
 
     fun play(url: String)
@@ -110,6 +112,7 @@ class VideoState(
             player?.videoSize?.let(::updateVideoSize)
         }
     }
+
     private fun updateVideoSize(size: VideoSize) {
         videoSize = when (val intSize = size.toIntSize()) {
             IntSize.Zero -> videoSize
@@ -151,7 +154,7 @@ class ExoPlayerManager @Inject constructor(
             playWhenReady = true
         }
 
-    private var currentUrl: String? by mutableStateOf(null)
+    override var currentUrl: String? by mutableStateOf(null)
 
     // TODO: Make this a snapshot observable LRU cache
     private val urlToStates = mutableStateMapOf<String?, VideoState>()
@@ -208,16 +211,11 @@ class ExoPlayerManager @Inject constructor(
             }
             renderedFirstFrame = false
             status = when (val currentStatus = status) {
-                PlayerStatus.Idle.Evicted -> throw IllegalStateException(
-                    "Attempt to play evicted player"
-                )
-
                 PlayerStatus.Idle.Initial,
-                PlayerStatus.Pause.Requested,
-                PlayerStatus.Pause.Confirmed -> PlayerStatus.Play.Requested
+                is PlayerStatus.Pause -> PlayerStatus.Play.Requested
 
-                PlayerStatus.Play.Requested,
-                PlayerStatus.Play.Confirmed -> currentStatus
+                PlayerStatus.Idle.Evicted,
+                is PlayerStatus.Play -> currentStatus
             }
             player = singletonPlayer.apply {
                 urlToStates[previousUrl]?.playerListener?.let(::removeListener)

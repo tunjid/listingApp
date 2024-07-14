@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -52,6 +53,7 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -85,6 +87,7 @@ fun ExploreGridScreen(
         )
 
         val gridState = rememberLazyGridState()
+        val updatedItems by rememberUpdatedState(state.items)
 
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
@@ -95,7 +98,7 @@ fun ExploreGridScreen(
             state = gridState,
         ) {
             items(
-                items = state.items,
+                items = updatedItems,
                 key = { it.key },
                 itemContent = { item ->
                     // This box constraints the height of the container so the shared element does
@@ -123,7 +126,7 @@ fun ExploreGridScreen(
                                     actions(
                                         Action.Navigation.FullScreen(
                                             startingUrl = url,
-                                            urls = state.items.map { it.state.url }
+                                            urls = updatedItems.map { it.state.url }
                                         )
                                     )
                                 }
@@ -133,14 +136,30 @@ fun ExploreGridScreen(
             )
         }
 
-        val videos = state.items
         val index = gridState.visibleIndex(
-            itemsAvailable = state.items.size
+            itemsAvailable = updatedItems.size
         )
 
-        LaunchedEffect(index, videos) {
+        LaunchedEffect(index) {
             if (index < 0) return@LaunchedEffect
-            actions(Action.Play(videos[index].state.url))
+            actions(Action.Play(updatedItems[index].state.url))
+        }
+
+        // Scroll to the playing item when entering the screen for the first time
+        LaunchedEffect(gridState, state.playingUrlAtEntrance) {
+            val currentlyPlaying = state.playingUrlAtEntrance ?: return@LaunchedEffect
+            val indexToScrollTo = snapshotFlow {
+                when {
+                    gridState.layoutInfo.visibleItemsInfo.any {
+                        it.key == currentlyPlaying
+                    } -> -1
+
+                    else -> updatedItems.indexOfFirst {
+                        it.state.url == currentlyPlaying
+                    }
+                }
+            }.first()
+            if (indexToScrollTo >= 0) gridState.animateScrollToItem(indexToScrollTo)
         }
     }
 }

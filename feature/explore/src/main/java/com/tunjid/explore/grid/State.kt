@@ -38,7 +38,7 @@ sealed class Action(val key: String) {
 @Serializable
 data class State(
     @Transient
-    val currentlyPlayingKey: Any? = null,
+    val playingUrlAtEntrance: String? = null,
     @Transient
     val items: List<VideoItem> = emptyList(),
 ) : ByteSerializable
