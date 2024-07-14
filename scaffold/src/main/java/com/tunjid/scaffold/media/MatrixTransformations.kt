@@ -39,7 +39,6 @@ internal fun Matrix.scaleAndAlignTo(
         y = desiredScaleFactor.scaleY
     )
 
-
     // Finally apply the desired alignment
     val scaledSrcSize = srcSize.toSize() * desiredScaleFactor
 
@@ -50,18 +49,9 @@ internal fun Matrix.scaleAndAlignTo(
     )
 
     val translationOffset = Offset(
-        x = alignmentOffset.x.div(desiredScaleFactor.scaleX) * min(
-            a = 1f,
-            b = fillBoundsScaleFactor.scaleX
-        ),
-        y = alignmentOffset.y.div(desiredScaleFactor.scaleY) * min(
-            a = 1f,
-            b = fillBoundsScaleFactor.scaleY
-        ),
+        x = alignmentOffset.x / desiredScaleFactor.scaleX * fillBoundsScaleFactor.scaleX,
+        y = alignmentOffset.y / desiredScaleFactor.scaleY * fillBoundsScaleFactor.scaleY,
     )
-    println("d: $destSize; s: $scaledSrcSize; a: $alignmentOffset; o: $translationOffset; c: $desiredScaleFactor; f: $fillBoundsScaleFactor")
-    val srcAspectRatio = scaledSrcSize.width / scaledSrcSize.height.toFloat()
-    val destAspectRatio = destSize.width / destSize.height.toFloat()
 
     translate(
         x = translationOffset.x,
