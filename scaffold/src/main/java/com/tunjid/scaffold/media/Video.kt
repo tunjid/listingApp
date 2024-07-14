@@ -51,6 +51,7 @@ private fun VideoPlayer(
     modifier: Modifier = Modifier,
 ) {
     val graphicsLayer = rememberGraphicsLayer()
+    val alignment = state.alignment.interpolate()
     val contentScale = state.contentScale.interpolate()
 
     Box(modifier = modifier) {
@@ -59,7 +60,7 @@ private fun VideoPlayer(
         if (state.canShowVideo) PlayingVideo(
             player = state.player,
             contentScale = contentScale,
-            alignment = state.alignment,
+            alignment = alignment,
             videoSize = state.videoSize,
             modifier = Modifier
                 .fillMaxSize()
@@ -77,7 +78,8 @@ private fun VideoPlayer(
             },
             url = state.url,
             modifier = Modifier.fillMaxSize(),
-            contentScale = contentScale
+            alignment = alignment,
+            contentScale = contentScale,
         )
 
         // Capture a still frame from the video to use as a stand in when buffering playback
@@ -105,6 +107,7 @@ private fun VideoStill(
     lastBitmap: ImageBitmap?,
     url: String?,
     modifier: Modifier,
+    alignment: Alignment,
     contentScale: ContentScale
 ) {
     when (lastBitmap) {
@@ -112,13 +115,15 @@ private fun VideoStill(
             modifier = modifier,
             model = url,
             contentDescription = null,
-            contentScale = contentScale
+            alignment = alignment,
+            contentScale = contentScale,
         )
 
         else -> Image(
             modifier = modifier,
             bitmap = lastBitmap,
             contentDescription = null,
+            alignment = alignment,
             contentScale = contentScale
         )
     }
