@@ -173,16 +173,11 @@ private fun PlayingVideo(
         if (surfaceSize.height == 0 || surfaceSize.width == 0) {
             return@LaunchedEffect
         }
-        videoMatrix = Matrix()
-            .removeFillBounds(
-                srcSize = videoSize,
-                destSize = surfaceSize
-            )
-            .scaleAndAlignTo(
-                srcSize = videoSize,
-                destSize = surfaceSize,
-                contentScale = contentScale,
-                alignment = alignment,
-            )
+        videoMatrix = Matrix().scaleAndAlignTo(
+            srcSize = videoSize,
+            destSize = surfaceSize,
+            contentScale = contentScale,
+            alignment = alignment,
+        )
     }
 }
