@@ -41,6 +41,7 @@ internal suspend fun SuspendingStateHolder<State>.navigationEdits(
 
 @Serializable
 data class State(
+    val initialPage: Int = 0,
     @Transient
     val items: List<GalleryItem> = emptyList(),
 ) : ByteSerializable

@@ -1,6 +1,7 @@
 package com.tunjid.explore.pager
 
 import androidx.lifecycle.ViewModel
+import com.tunjid.explore.pager.di.initialPage
 import com.tunjid.explore.pager.di.startingUrls
 import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
@@ -47,6 +48,7 @@ private fun CoroutineScope.mutator(
     route: Route,
 ) = actionStateFlowMutator<Action, State>(
     initialState = State(
+        initialPage = route.routeParams.initialPage,
         items = route.preSeededNavigationItems(playerManager)
     ),
     actionTransform = { actions ->

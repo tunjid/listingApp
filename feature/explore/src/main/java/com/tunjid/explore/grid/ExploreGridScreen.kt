@@ -120,7 +120,12 @@ fun ExploreGridScreen(
                                 .clickable {
                                     val url = item.state.url
                                     actions(Action.Play(url))
-                                    actions(Action.Navigation.FullScreen(url))
+                                    actions(
+                                        Action.Navigation.FullScreen(
+                                            startingUrl = url,
+                                            urls = state.items.map { it.state.url }
+                                        )
+                                    )
                                 }
                         )
                     }

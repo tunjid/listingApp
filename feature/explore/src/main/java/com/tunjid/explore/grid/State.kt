@@ -13,18 +13,20 @@ sealed class Action(val key: String) {
 
     data class Play(
         val url: String
-    ): Action("Play")
+    ) : Action("Play")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class FullScreen(
-            val url: String,
+            val startingUrl: String,
+            val urls: List<String>,
         ) : Navigation() {
             override val navigationMutation: NavigationMutation = {
                 navState.push(
                     routeString(
                         path = "/explore/pager",
                         queryParams = mapOf(
-                            "url" to listOf(url)
+                            "url" to urls,
+                            "startingUrl" to listOf(startingUrl),
                         )
                     ).toRoute
                 )

@@ -27,6 +27,11 @@ import kotlinx.serialization.modules.subclass
 private const val RoutePattern = "/explore/pager"
 
 internal val RouteParams.startingUrls get() = queryParams["url"] ?: emptyList()
+internal val RouteParams.initialPage
+    get() = queryParams["startingUrl"]
+        ?.firstOrNull()
+        ?.let(startingUrls::indexOf)
+        ?: 0
 
 
 @Module

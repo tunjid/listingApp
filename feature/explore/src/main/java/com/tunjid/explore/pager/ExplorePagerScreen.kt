@@ -6,6 +6,8 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.adaptive.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
@@ -30,7 +32,11 @@ fun FullscreenGalleryScreen(
             insetFlags = InsetFlags.NONE
         )
     )
-    val pagerState = rememberPagerState(pageCount = state.items::size)
+
+    val pagerState = rememberPagerState(
+        initialPage = state.initialPage,
+        pageCount = state.items::size
+    )
 
     VerticalPager(
         modifier = modifier
@@ -39,7 +45,6 @@ fun FullscreenGalleryScreen(
             .clickable {
                 actions(Action.Navigation.Pop())
             },
-        userScrollEnabled = pagerState.canScrollForward || pagerState.canScrollBackward,
         state = pagerState,
         key = { index -> state.items[index].state.url }
     ) { index ->
@@ -57,8 +62,10 @@ fun FullscreenGalleryScreen(
             item.state,
             Modifier.fillMaxSize(),
         )
-        LaunchedEffect(Unit) {
-            actions(Action.Play(item.state.url))
-        }
+    }
+
+    val updatedItems by rememberUpdatedState(newValue = state.items)
+    LaunchedEffect(pagerState.currentPage) {
+        actions(Action.Play(updatedItems[pagerState.currentPage].state.url))
     }
 }
