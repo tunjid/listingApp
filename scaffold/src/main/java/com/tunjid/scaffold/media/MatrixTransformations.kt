@@ -9,8 +9,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.roundToIntSize
 import androidx.compose.ui.unit.toSize
-import kotlin.math.min
-
 
 internal fun Matrix.scaleAndAlignTo(
     srcSize: IntSize,
@@ -48,6 +46,8 @@ internal fun Matrix.scaleAndAlignTo(
         layoutDirection = LayoutDirection.Ltr,
     )
 
+    // Translate by the alignment, taking into account the desired scale factor and
+    // the implicit fill bounds.
     val translationOffset = Offset(
         x = alignmentOffset.x / desiredScaleFactor.scaleX * fillBoundsScaleFactor.scaleX,
         y = alignmentOffset.y / desiredScaleFactor.scaleY * fillBoundsScaleFactor.scaleY,
@@ -55,6 +55,6 @@ internal fun Matrix.scaleAndAlignTo(
 
     translate(
         x = translationOffset.x,
-        y = translationOffset.y ,
+        y = translationOffset.y,
     )
 }

@@ -159,7 +159,8 @@ fun ExploreGridScreen(
                     }
                 }
             }.first()
-            if (indexToScrollTo >= 0) gridState.animateScrollToItem(indexToScrollTo)
+            if (indexToScrollTo >= 0) gridState.scrollToItem(indexToScrollTo)
+            actions(Action.PlayerEntranceConsumed)
         }
     }
 }

@@ -66,6 +66,7 @@ fun CoroutineScope.listingFeedStateHolder(
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.Play -> action.flow.playMutations(playerManager)
+                is Action.PlayerEntranceConsumed -> action.flow.playerEntranceConsumedMutations()
                 is Action.Navigation -> action.flow.consumeNavigationActions(
                     navigationActions
                 )
@@ -84,4 +85,9 @@ private fun Flow<Action.Play>.playMutations(
     playerManager: PlayerManager
 ): Flow<Mutation<State>> = mapLatestToManyMutations {
     playerManager.play(it.url)
+}
+
+private fun Flow<Action.PlayerEntranceConsumed>.playerEntranceConsumedMutations(
+): Flow<Mutation<State>> = mapLatestToManyMutations {
+    emit { copy(playingUrlAtEntrance = null) }
 }
