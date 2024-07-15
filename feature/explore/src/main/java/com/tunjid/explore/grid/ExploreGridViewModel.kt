@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.take
 
 typealias ExploreGridStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
-
 @AssistedFactory
 interface ExploreGridModelFactory : ScreenStateHolderCreator {
     override fun create(
@@ -40,13 +39,13 @@ class ExploreGridViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ActionStateMutator<Action, StateFlow<State>> by scope.listingFeedStateHolder(
+), ExploreGridStateHolder by scope.mutator(
     playerManager = playerManager,
     navigationActions = navigationActions,
     route = route
 )
 
-fun CoroutineScope.listingFeedStateHolder(
+fun CoroutineScope.mutator(
     playerManager: PlayerManager,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
