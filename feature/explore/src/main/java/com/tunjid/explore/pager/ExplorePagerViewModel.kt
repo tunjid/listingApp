@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
+typealias ExplorePageStateHolder = ActionStateMutator<Action, StateFlow<State>>
+
 @AssistedFactory
 interface ExplorePagerStateHolderFactory : ScreenStateHolderCreator {
     override fun create(
@@ -36,7 +38,7 @@ class ExplorePagerViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ActionStateMutator<Action, StateFlow<State>> by scope.mutator(
+), ExplorePageStateHolder by scope.mutator(
     playerManager = playerManager,
     navigationActions = navigationActions,
     route = route
@@ -46,7 +48,7 @@ private fun CoroutineScope.mutator(
     playerManager: PlayerManager,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
-) = actionStateFlowMutator<Action, State>(
+): ExplorePageStateHolder = actionStateFlowMutator(
     initialState = State(
         initialPage = route.routeParams.initialPage,
         items = route.preSeededNavigationItems(playerManager)

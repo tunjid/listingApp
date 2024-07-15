@@ -18,7 +18,6 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.mutator.identity
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
@@ -45,7 +44,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.scan
@@ -70,7 +68,7 @@ class ListingFeedViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ActionStateMutator<Action, StateFlow<State>> by scope.listingFeedStateHolder(
+), ListingFeedStateHolder by scope.mutator(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     favoriteRepository = favoriteRepository,
@@ -79,7 +77,7 @@ class ListingFeedViewModel @AssistedInject constructor(
     route = route
 )
 
-fun CoroutineScope.listingFeedStateHolder(
+fun CoroutineScope.mutator(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     favoriteRepository: FavoriteRepository,
@@ -149,19 +147,15 @@ private fun Flow<Action.Refresh>.refreshMutations(
 ): Flow<Mutation<State>> = mapLatestToManyMutations {
     val isRefreshing = state().isRefreshing
     if (!isRefreshing) syncManager.requestSync()
-
-    // Don't change the state, emit itself
-    emit { this }
 }
 
 private fun Flow<Action.SetFavorite>.favoriteMutations(
     favoriteRepository: FavoriteRepository
-): Flow<Mutation<State>> = mapLatest { action ->
+): Flow<Mutation<State>> = mapLatestToManyMutations { action ->
     favoriteRepository.setListingFavorited(
         listingId = action.listingId,
         isFavorite = action.isFavorite
     )
-    identity()
 }
 
 /**

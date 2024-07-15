@@ -53,17 +53,17 @@ class GridGalleryViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), GridGalleryStateHolder by scope.gridGalleryMutator(
+), GridGalleryStateHolder by scope.mutator(
     mediaRepository = mediaRepository,
     navigationActions = navigationActions,
     route = route
 )
 
-private fun CoroutineScope.gridGalleryMutator(
+private fun CoroutineScope.mutator(
     mediaRepository: MediaRepository,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
-) = actionStateFlowMutator<Action, State>(
+): GridGalleryStateHolder = actionStateFlowMutator(
     initialState = State(
         currentQuery = route.routeParams.initialQuery,
         items = route.preSeededNavigationItems()

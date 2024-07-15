@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
+typealias PagerGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
+
 @AssistedFactory
 interface PagerGalleryStateHolderFactory : ScreenStateHolderCreator {
     override fun create(
@@ -43,17 +45,17 @@ class PagerGalleryViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ActionStateMutator<Action, StateFlow<State>> by scope.pagerGalleryMutator(
+), PagerGalleryStateHolder by scope.mutator(
     mediaRepository = mediaRepository,
     navigationActions = navigationActions,
     route = route
 )
 
-private fun CoroutineScope.pagerGalleryMutator(
+private fun CoroutineScope.mutator(
     mediaRepository: MediaRepository,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
-) = actionStateFlowMutator<Action, State>(
+): PagerGalleryStateHolder = actionStateFlowMutator(
     initialState = State(
         currentQuery = route.routeParams.initialQuery,
         items = route.preSeededNavigationItems()
