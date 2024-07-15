@@ -56,8 +56,8 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.media.Media
-import com.tunjid.scaffold.media.MediaArgs
+import com.tunjid.scaffold.media.Photo
+import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.SecondaryPaneCloseBackHandler
 import com.tunjid.tiler.compose.PivotedTilingEffect
 
@@ -153,17 +153,17 @@ private fun ListingMediaPager(
             key = { index -> listingItems[index].url }
         ) { index ->
             val item = listingItems[index]
-            val thumbnail = movableSharedElementOf<MediaArgs>(
+            val thumbnail = movableSharedElementOf<PhotoArgs>(
                 thumbnailSharedElementKey(item.url)
             ) { args, innerModifier ->
-                Media(
+                Photo(
                     modifier = innerModifier,
-                    mediaArgs = args
+                    args = args
                 )
             }
 
             thumbnail(
-                MediaArgs(
+                PhotoArgs(
                     url = item.url,
                     contentScale = ContentScale.Crop
                 ),

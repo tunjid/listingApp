@@ -32,7 +32,7 @@ val MultiStackNav.navItems
                 icon = when {
                     "listings" in name -> Icons.Filled.Apartment
                     "favorites" in name -> Icons.Filled.FavoriteBorder
-                    "trips" in name -> Icons.AutoMirrored.Filled.AirplaneTicket
+                    "explore" in name -> Icons.AutoMirrored.Filled.AirplaneTicket
                     "messages" in name -> Icons.Filled.ChatBubbleOutline
                     "profile" in name -> Icons.Filled.AccountCircle
                     else -> Icons.Filled.MoreVert

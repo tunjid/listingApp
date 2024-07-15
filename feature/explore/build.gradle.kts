@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tunjid.feature.trips"
+    namespace = "com.tunjid.feature.exploregrid"
 }
 
 dependencies {

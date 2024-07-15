@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.protobuf)
@@ -37,6 +38,7 @@ dependencies {
     implementation(libs.squareup.okio)
 
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.video)
 
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)

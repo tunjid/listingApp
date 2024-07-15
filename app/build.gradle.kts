@@ -63,7 +63,7 @@ dependencies {
     implementation(project(":feature:listing:gallery"))
     implementation(project(":feature:messages"))
     implementation(project(":feature:profile"))
-    implementation(project(":feature:trips"))
+    implementation(project(":feature:explore"))
 
     implementation(project(":app:workmanager"))
 
@@ -76,6 +76,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.window.window)
+
+    implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.video)
 
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)

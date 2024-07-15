@@ -17,7 +17,7 @@ com-android-desugar-JdkLibs = "2.0.4"
 org-jetbrains-kotlin-android = "2.0.0-RC3"
 lifecycle-runtime-ktx = "2.8.0"
 activity-compose = "1.9.0"
-compose-bom = "2024.05.00-alpha02"
+compose-bom = "2024.06.00-alpha01"
 hilt = "2.51"
 hiltExt = "1.2.0"
 kotlinxCoroutines = "1.8.1"
@@ -76,6 +76,7 @@ androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", versio
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-kt-video = { group = "io.coil-kt", name = "coil-video", version.ref = "coil" }
 com-android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "com-android-desugar-JdkLibs" }
 app-cash-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "app-cash-turbine" }
 app-cash-sqldelight-gradle-plugin = { group = "app.cash.sqldelight", name = "gradle-plugin", version.ref = "app-cash-sqldelight" }

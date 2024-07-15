@@ -33,7 +33,7 @@ private val defaultSavedState = SavedState(
     navigation = listOf(
         listOf("/listings"),
         listOf("/favorites"),
-        listOf("/trips"),
+        listOf("/explore"),
         listOf("/messages"),
         listOf("/profile"),
     ),

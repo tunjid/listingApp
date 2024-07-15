@@ -73,8 +73,8 @@ import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.media.Media
-import com.tunjid.scaffold.media.MediaArgs
+import com.tunjid.scaffold.media.Photo
+import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.tiler.compose.PivotedTilingEffect
 import com.tunjid.ui.FastScrollbar
 import kotlinx.coroutines.flow.first
@@ -284,16 +284,16 @@ private fun FeedMediaPager(
         key = { index -> feedItem.media[index].url }
     ) { index ->
         val media = feedItem.media[index]
-        val thumbnail = movableSharedElementOf<MediaArgs>(
+        val thumbnail = movableSharedElementOf<PhotoArgs>(
             thumbnailSharedElementKey(media.url)
         ) { args, innerModifier ->
-            Media(
+            Photo(
                 modifier = innerModifier,
-                mediaArgs = args
+                args = args
             )
         }
         thumbnail(
-            MediaArgs(
+            PhotoArgs(
                 url = media.url,
                 contentScale = ContentScale.Crop
             ),
