@@ -15,8 +15,6 @@ sealed class Action(val key: String) {
         val url: String
     ) : Action("Play")
 
-    data object PlayerEntranceConsumed:  Action("PlayerEntranceConsumed")
-
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class FullScreen(
             val startingUrl: String,
@@ -39,8 +37,6 @@ sealed class Action(val key: String) {
 
 @Serializable
 data class State(
-    @Transient
-    val playingUrlAtEntrance: String? = null,
     @Transient
     val items: List<VideoItem> = emptyList(),
 ) : ByteSerializable

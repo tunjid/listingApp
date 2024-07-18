@@ -1,12 +1,10 @@
 package com.tunjid.explore.grid
 
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
-import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.media.PlayerManager
@@ -20,7 +18,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.take
 
 typealias ExploreGridStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
@@ -58,14 +55,11 @@ fun CoroutineScope.mutator(
         }
     ),
     started = SharingStarted.WhileSubscribed(3000),
-    inputs = listOf(
-        playerManager.playingUrlAtEntranceMutations(),
-    ),
+
     actionTransform = stateHolder@{ actions ->
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.Play -> action.flow.playMutations(playerManager)
-                is Action.PlayerEntranceConsumed -> action.flow.playerEntranceConsumedMutations()
                 is Action.Navigation -> action.flow.consumeNavigationActions(
                     navigationActions
                 )
@@ -74,19 +68,8 @@ fun CoroutineScope.mutator(
     }
 )
 
-private fun PlayerManager.playingUrlAtEntranceMutations(): Flow<Mutation<State>> =
-    snapshotFlow { currentUrl }
-        // Only want to see the url playing at screen entrance
-        .take(1)
-        .mapToMutation { copy(playingUrlAtEntrance = it) }
-
 private fun Flow<Action.Play>.playMutations(
     playerManager: PlayerManager
 ): Flow<Mutation<State>> = mapLatestToManyMutations {
     playerManager.play(it.url)
-}
-
-private fun Flow<Action.PlayerEntranceConsumed>.playerEntranceConsumedMutations(
-): Flow<Mutation<State>> = mapLatestToManyMutations {
-    emit { copy(playingUrlAtEntrance = null) }
 }

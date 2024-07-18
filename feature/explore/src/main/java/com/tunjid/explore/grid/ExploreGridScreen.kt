@@ -50,10 +50,10 @@ import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -146,21 +146,12 @@ fun ExploreGridScreen(
         }
 
         // Scroll to the playing item when entering the screen for the first time
-        LaunchedEffect(gridState, state.playingUrlAtEntrance) {
-            val currentlyPlaying = state.playingUrlAtEntrance ?: return@LaunchedEffect
-            val indexToScrollTo = snapshotFlow {
-                when {
-                    gridState.layoutInfo.visibleItemsInfo.any {
-                        it.key == currentlyPlaying
-                    } -> -1
+        LaunchedEffect(gridState) {
+            val playingIndex = updatedItems.indexOfFirst { it.state.status is PlayerStatus.Play }
+            val indexToScrollTo = if (playingIndex >= 0) playingIndex else 0
 
-                    else -> updatedItems.indexOfFirst {
-                        it.state.url == currentlyPlaying
-                    }
-                }
-            }.first()
-            if (indexToScrollTo >= 0) gridState.scrollToItem(indexToScrollTo)
-            actions(Action.PlayerEntranceConsumed)
+            gridState.scrollToItem(indexToScrollTo)
+            actions(Action.Play(updatedItems[indexToScrollTo].state.url))
         }
     }
 }
