@@ -23,7 +23,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -43,7 +42,7 @@ interface SharedElementOverlay {
     fun ContentDrawScope.drawInOverlay()
 }
 
-internal interface SharedElementScope {
+internal interface MovableSharedElementScope {
     fun isCurrentlyShared(key: Any): Boolean
 
     @Composable
@@ -59,7 +58,7 @@ fun thumbnailSharedElementKey(
 
 @Stable
 @OptIn(ExperimentalAnimatableApi::class)
-internal class SharedElementData<T>(
+internal class MovableSharedElementData<T>(
     sharedElement: @Composable (T, Modifier) -> Unit,
     onRemoved: () -> Unit
 ) : SharedElementOverlay {
@@ -89,7 +88,7 @@ internal class SharedElementData<T>(
                 state as T,
                 Modifier
                     .movableSharedElement(
-                        sharedElementData = this,
+                        movableSharedElementData = this,
                     ) then modifier,
             )
 
@@ -128,46 +127,48 @@ internal class SharedElementData<T>(
             ExperimentalSharedTransitionApi::class
         )
         internal fun Modifier.movableSharedElement(
-            sharedElementData: SharedElementData<*>,
+            movableSharedElementData: MovableSharedElementData<*>,
         ): Modifier = composed {
             val sharedTransitionScope = LocalSharedTransitionScope.current
             val coroutineScope = rememberCoroutineScope()
 
-            val sizeAnimInProgress = sharedElementData.isInProgress(
-                SharedElementData<*>::sizeAnimation
+            val sizeAnimInProgress = movableSharedElementData.isInProgress(
+                MovableSharedElementData<*>::sizeAnimation
             )
-                .also { sharedElementData.sizeAnimInProgress = it }
+                .also { movableSharedElementData.sizeAnimInProgress = it }
 
-            val offsetAnimInProgress = sharedElementData.isInProgress(
-                SharedElementData<*>::offsetAnimation
+            val offsetAnimInProgress = movableSharedElementData.isInProgress(
+                MovableSharedElementData<*>::offsetAnimation
             )
-                .also { sharedElementData.offsetAnimInProgress = it }
+                .also { movableSharedElementData.offsetAnimInProgress = it }
 
             val layer = rememberGraphicsLayer().also {
-                sharedElementData.layer = it
+                movableSharedElementData.layer = it
             }
             approachLayout(
-                isMeasurementApproachInProgress = {
-                    sharedElementData.sizeAnimation.updateTarget(
-                        target = it,
+                isMeasurementApproachInProgress = { lookaheadSize ->
+                    movableSharedElementData.sizeAnimation.updateTarget(
+                        target = lookaheadSize,
                         coroutineScope = coroutineScope,
                         animationSpec = sizeSpec
                     )
                     sizeAnimInProgress
                 },
-                isPlacementApproachInProgress = {
-                    val target = with(sharedTransitionScope) {
-                        lookaheadScopeCoordinates.localLookaheadPositionOf(it)
+                isPlacementApproachInProgress = { lookaheadCoordinates ->
+                    val lookaheadOffset = with(sharedTransitionScope) {
+                        lookaheadScopeCoordinates.localLookaheadPositionOf(
+                            sourceCoordinates = lookaheadCoordinates
+                        ).round()
                     }
-                    sharedElementData.offsetAnimation.updateTarget(
-                        target = target.round(),
+                    movableSharedElementData.offsetAnimation.updateTarget(
+                        target = lookaheadOffset,
                         coroutineScope = coroutineScope,
                         animationSpec = offsetSpec,
                     )
                     offsetAnimInProgress
                 },
                 approachMeasure = { measurable, _ ->
-                    val (width, height) = sharedElementData.sizeAnimation.updateTarget(
+                    val (width, height) = movableSharedElementData.sizeAnimation.updateTarget(
                         target = lookaheadSize,
                         coroutineScope = coroutineScope,
                         animationSpec = sizeSpec
@@ -180,26 +181,21 @@ internal class SharedElementData<T>(
                             x = 0,
                             y = 0
                         )
-                        val targetOffset = with(sharedTransitionScope) {
+                        val lookaheadOffset = with(sharedTransitionScope) {
                             lookaheadScopeCoordinates.localLookaheadPositionOf(
-                                currentCoordinates
-                            )
-                        }
-
-                        sharedElementData.targetOffset = sharedElementData.offsetAnimation.updateTarget(
-                            target = targetOffset.round(),
-                            coroutineScope = coroutineScope,
-                            animationSpec = offsetSpec
-                        )
-
-                        val currentOffset = with(sharedTransitionScope) {
-                            lookaheadScopeCoordinates.localPositionOf(
-                                sourceCoordinates = currentCoordinates,
-                                relativeToSource = Offset.Zero
+                                sourceCoordinates = currentCoordinates
                             ).round()
                         }
 
-                        val (x, y) = sharedElementData.targetOffset - currentOffset
+                        movableSharedElementData.apply {
+                            targetOffset = offsetAnimation.updateTarget(
+                                target = lookaheadOffset,
+                                coroutineScope = coroutineScope,
+                                animationSpec = offsetSpec
+                            )
+                        }
+
+                        val (x, y) = movableSharedElementData.targetOffset - lookaheadOffset
                         placeable.place(
                             x = x,
                             y = y
@@ -211,7 +207,7 @@ internal class SharedElementData<T>(
                     layer.record {
                         this@drawWithContent.drawContent()
                     }
-                    if (!sharedElementData.canDrawInOverlay) {
+                    if (!movableSharedElementData.canDrawInOverlay) {
                         drawLayer(layer)
                     }
                 }
@@ -220,8 +216,8 @@ internal class SharedElementData<T>(
 
         @OptIn(ExperimentalAnimatableApi::class)
         @Composable
-        private fun SharedElementData<*>.isInProgress(
-            animationMapper: (SharedElementData<*>) -> DeferredTargetAnimation<*, *>
+        private fun MovableSharedElementData<*>.isInProgress(
+            animationMapper: (MovableSharedElementData<*>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
             val paneState = LocalAdaptiveContentScope.current
@@ -245,10 +241,9 @@ internal class SharedElementData<T>(
                     .let { value.first to false }
             }.value
 
-            return when(laggingScopeKey == paneState?.key) {
-                true -> animationInProgressTillFirstIdle && hasBeenShared()
-                false -> paneState.canAnimateOnStartingFrames()
-            }
+            return if (laggingScopeKey == paneState?.key) animationInProgressTillFirstIdle
+                    && hasBeenShared()
+            else paneState.canAnimateOnStartingFrames()
         }
 
         private fun Adaptive.PaneState?.canAnimateOnStartingFrames() =
