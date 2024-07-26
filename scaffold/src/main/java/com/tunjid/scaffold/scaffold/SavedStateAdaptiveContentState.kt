@@ -32,7 +32,7 @@ import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.AnimatedAdaptiveContentScope
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
-import com.tunjid.scaffold.adaptive.SharedElementData
+import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
@@ -91,9 +91,9 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
         }
 
     override val overlays: Collection<SharedElementOverlay>
-        get() = keysToSharedElements.values
+        get() = keysToMovableSharedElements.values
 
-    private val keysToSharedElements = mutableStateMapOf<Any, SharedElementData<*>>()
+    private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
 
     @Composable
     override fun RouteIn(pane: Adaptive.Pane) {
@@ -102,20 +102,20 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
     }
 
     fun isCurrentlyShared(key: Any): Boolean =
-        keysToSharedElements.contains(key)
+        keysToMovableSharedElements.contains(key)
 
     fun <T> createOrUpdateSharedElement(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit {
-        val sharedElementData = keysToSharedElements.getOrPut(key) {
-            SharedElementData(
+        val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
+            MovableSharedElementData(
                 sharedElement = sharedElement,
-                onRemoved = { keysToSharedElements.remove(key) }
+                onRemoved = { keysToMovableSharedElements.remove(key) }
             )
         }
         // Can't really guarantee that the caller will use the same key for the right type
-        return sharedElementData.moveableSharedElement
+        return movableSharedElementData.moveableSharedElement
     }
 }
 

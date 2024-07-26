@@ -16,7 +16,7 @@ object Adaptive {
      * Scope for adaptive content that can show up in an arbitrary [Pane]
      */
     @Stable
-    internal interface PaneScope : AnimatedVisibilityScope, SharedElementScope {
+    internal interface PaneScope : AnimatedVisibilityScope, MovableSharedElementScope {
 
         /**
          * Unique key to identify this scope
