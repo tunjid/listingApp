@@ -44,12 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +61,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tunjid.composables.scrollbars.scrollbarState
+import com.tunjid.composables.scrollbars.scrollable.grid.rememberScrollbarThumbMover
+import com.tunjid.composables.scrollbars.scrollable.grid.scrollbarState
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.adaptive.movableSharedElementOf
@@ -165,7 +163,7 @@ fun ListingFeedScreen(
             state = scrollbarState,
             scrollInProgress = gridState.isScrollInProgress,
             orientation = Orientation.Vertical,
-            onThumbMoved = gridState.scrollbarThumbPositionFunction(
+            onThumbMoved = gridState.rememberScrollbarThumbMover(
                 state = state,
                 actions = actions
             ),
@@ -408,18 +406,15 @@ private fun FavoriteButton(
 }
 
 @Composable
-private fun LazyGridState.scrollbarThumbPositionFunction(
+private fun LazyGridState.rememberScrollbarThumbMover(
     state: State,
     actions: (Action) -> Unit,
 ): (Float) -> Unit {
-
-    var percentage by remember { mutableStateOf<Float?>(null) }
-    val updatedState by rememberUpdatedState(state)
-
-    // Trigger the load to fetch the data required
-    LaunchedEffect(percentage) {
-        val currentPercentage = percentage ?: return@LaunchedEffect
-        val indexToFind = (state.listingsAvailable * currentPercentage).toInt()
+    val updatedListings by rememberUpdatedState(state.listings)
+    return rememberScrollbarThumbMover(
+        itemsAvailable = state.listingsAvailable.toInt()
+    ) mover@{ indexToFind ->
+        // Trigger the load to fetch the data required
         actions(
             Action.LoadFeed.LoadAround(
                 state.currentQuery.scrollTo(index = indexToFind)
@@ -427,19 +422,15 @@ private fun LazyGridState.scrollbarThumbPositionFunction(
         )
 
         // Fast path
-        val fastIndex = updatedState.listings.indexOfFirst { it.index == indexToFind }
+        val fastIndex = updatedListings.indexOfFirst { it.index == indexToFind }
             .takeIf { it > -1 }
-        if (fastIndex != null) return@LaunchedEffect scrollToItem(fastIndex)
+        if (fastIndex != null) return@mover animateScrollToItem(fastIndex)
 
         // Slow path
         scrollToItem(
-            snapshotFlow { updatedState.listings.indexOfFirst { it.index == indexToFind } }
+            snapshotFlow { updatedListings.indexOfFirst { it.index == indexToFind } }
                 .first { it > -1 }
         )
-
-    }
-    return remember {
-        { percentage = it }
     }
 }
 

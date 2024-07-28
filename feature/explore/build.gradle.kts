@@ -21,6 +21,8 @@ dependencies {
     implementation(libs.coil.kt.compose)
     implementation(libs.tunjid.tiler.compose)
     implementation(libs.tunjid.tiler.tiler)
+    implementation(libs.tunjid.composables)
+
     implementation(project(":data:model:media"))
 
     testImplementation(project(":data:test"))
