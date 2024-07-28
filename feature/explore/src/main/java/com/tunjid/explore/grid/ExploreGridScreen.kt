@@ -2,8 +2,6 @@ package com.tunjid.explore.grid
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +18,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -44,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import com.tunjid.composables.lazy.grid.interpolatedFirstItemIndex
 import com.tunjid.scaffold.adaptive.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
@@ -54,7 +52,6 @@ import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -147,7 +144,13 @@ fun ExploreGridScreen(
 
         // Scroll to the playing item when entering the screen for the first time
         LaunchedEffect(gridState) {
+            val visibleItems = gridState.layoutInfo.visibleItemsInfo
+            if (visibleItems.isEmpty()) return@LaunchedEffect
+
             val playingIndex = updatedItems.indexOfFirst { it.state.status is PlayerStatus.Play }
+            if (playingIndex in visibleItems.first().index..visibleItems.last().index) {
+                return@LaunchedEffect
+            }
             val indexToScrollTo = if (playingIndex >= 0) playingIndex else 0
 
             gridState.scrollToItem(indexToScrollTo)
@@ -251,51 +254,10 @@ private fun DebugVideo(
     }
 }
 
-/**
- * Linearly interpolates the index for the first item in [visibleItems] for smooth scrollbar
- * progression.
- * @param visibleItems a list of items currently visible in the layout.
- * @param itemSize a lookup function for the size of an item in the layout.
- * @param offset a lookup function for the offset of an item relative to the start of the view port.
- * @param nextItemOnMainAxis a lookup function for the next item on the main axis in the direction
- * of the scroll.
- * @param itemIndex a lookup function for index of an item in the layout relative to
- * the total amount of items available.
- *
- * @return a [Float] in the range [firstItemPosition..nextItemPosition) where nextItemPosition
- * is the index of the consecutive item along the major axis.
- * */
-internal inline fun <LazyState : ScrollableState, LazyStateItem> LazyState.interpolateFirstItemIndex(
-    visibleItems: List<LazyStateItem>,
-    crossinline itemSize: LazyState.(LazyStateItem) -> Int,
-    crossinline offset: LazyState.(LazyStateItem) -> Int,
-    crossinline nextItemOnMainAxis: LazyState.(LazyStateItem) -> LazyStateItem?,
-    crossinline itemIndex: (LazyStateItem) -> Int,
-): Float {
-    if (visibleItems.isEmpty()) return 0f
-
-    val firstItem = visibleItems.first()
-    val firstItemIndex = itemIndex(firstItem)
-
-    if (firstItemIndex < 0) return Float.NaN
-
-    val firstItemSize = itemSize(firstItem)
-    if (firstItemSize == 0) return Float.NaN
-
-    val itemOffset = offset(firstItem).toFloat()
-    val offsetPercentage = abs(itemOffset) / firstItemSize
-
-    val nextItem = nextItemOnMainAxis(firstItem) ?: return firstItemIndex + offsetPercentage
-
-    val nextItemIndex = itemIndex(nextItem)
-
-    return firstItemIndex + ((nextItemIndex - firstItemIndex) * offsetPercentage)
-}
 
 @Composable
 fun LazyGridState.visibleIndex(
     itemsAvailable: Int,
-    itemIndex: (LazyGridItemInfo) -> Int = LazyGridItemInfo::index,
 ): Int {
     var position by remember {
         mutableIntStateOf(-1)
@@ -309,23 +271,7 @@ fun LazyGridState.visibleIndex(
             if (visibleItemsInfo.isEmpty()) return@snapshotFlow -1
 
             val firstIndex = min(
-                a = interpolateFirstItemIndex(
-                    visibleItems = visibleItemsInfo,
-                    itemSize = { it.size.height },
-                    offset = { it.offset.y },
-                    nextItemOnMainAxis = { first ->
-                        when (layoutInfo.orientation) {
-                            Orientation.Vertical -> visibleItemsInfo.find {
-                                it != first && it.row != first.row
-                            }
-
-                            Orientation.Horizontal -> visibleItemsInfo.find {
-                                it != first && it.column != first.column
-                            }
-                        }
-                    },
-                    itemIndex = itemIndex,
-                ),
+                a = interpolatedFirstItemIndex(),
                 b = itemsAvailable.toFloat(),
             )
 
