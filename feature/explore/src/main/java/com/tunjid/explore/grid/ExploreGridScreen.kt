@@ -101,7 +101,9 @@ fun ExploreGridScreen(
                     // This box constraints the height of the container so the shared element does
                     // not push other items out of the way when animating in.
                     Box(
-                        modifier = Modifier.aspectRatio(9f / 16)
+                        modifier = Modifier
+                            .aspectRatio(9f / 16)
+                            .animateItem()
                     ) {
                         val video = movableSharedElementOf<VideoState>(
                             key = thumbnailSharedElementKey(item.state.url),

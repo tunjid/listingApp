@@ -66,7 +66,7 @@ internal fun Modifier.dragToPopInternal(state: DragToPopState): Modifier = compo
     LaunchedEffect(started) {
         scaleAnimatable.animateTo(
             animationSpec = spring(
-                stiffness = Spring.StiffnessMediumLow
+                stiffness = Spring.StiffnessLow
             ),
             targetValue = if (started) 0.8f else 1f
         ) {
