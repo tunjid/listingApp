@@ -120,11 +120,11 @@ fun AdaptiveContentRoot(
     SharedTransitionLayout(
         modifier = Modifier.drawWithContent {
             drawContent()
-            adaptiveContentState.overlays.forEach { overlay ->
-                with(overlay) {
-                    drawInOverlay()
-                }
-            }
+//            adaptiveContentState.overlays.forEach { overlay ->
+//                with(overlay) {
+//                    drawInOverlay()
+//                }
+//            }
         }
     ) {
         CompositionLocalProvider(LocalSharedTransitionScope provides this) {
