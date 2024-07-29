@@ -23,6 +23,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -129,88 +130,88 @@ internal class MovableSharedElementData<T>(
         internal fun Modifier.movableSharedElement(
             movableSharedElementData: MovableSharedElementData<*>,
         ): Modifier = composed {
-            val sharedTransitionScope = LocalSharedTransitionScope.current
-            val coroutineScope = rememberCoroutineScope()
+            with(LocalSharedTransitionScope.current) {
+                val coroutineScope = rememberCoroutineScope()
 
-            val sizeAnimInProgress = movableSharedElementData.isInProgress(
-                MovableSharedElementData<*>::sizeAnimation
-            )
-                .also { movableSharedElementData.sizeAnimInProgress = it }
+                val sizeAnimInProgress = movableSharedElementData.isInProgress(
+                    MovableSharedElementData<*>::sizeAnimation
+                )
+                    .also { movableSharedElementData.sizeAnimInProgress = it }
 
-            val offsetAnimInProgress = movableSharedElementData.isInProgress(
-                MovableSharedElementData<*>::offsetAnimation
-            )
-                .also { movableSharedElementData.offsetAnimInProgress = it }
+                val offsetAnimInProgress = movableSharedElementData.isInProgress(
+                    MovableSharedElementData<*>::offsetAnimation
+                )
+                    .also { movableSharedElementData.offsetAnimInProgress = it }
 
-            val layer = rememberGraphicsLayer().also {
-                movableSharedElementData.layer = it
-            }
-            approachLayout(
-                isMeasurementApproachInProgress = { lookaheadSize ->
-                    movableSharedElementData.sizeAnimation.updateTarget(
-                        target = lookaheadSize,
-                        coroutineScope = coroutineScope,
-                        animationSpec = sizeSpec
-                    )
-                    sizeAnimInProgress
-                },
-                isPlacementApproachInProgress = { lookaheadCoordinates ->
-                    val lookaheadOffset = with(sharedTransitionScope) {
-                        lookaheadScopeCoordinates.localLookaheadPositionOf(
+                val layer = rememberGraphicsLayer().also {
+                    movableSharedElementData.layer = it
+                }
+                approachLayout(
+                    isMeasurementApproachInProgress = { lookaheadSize ->
+                        movableSharedElementData.sizeAnimation.updateTarget(
+                            target = lookaheadSize,
+                            coroutineScope = coroutineScope,
+                            animationSpec = sizeSpec
+                        )
+                        sizeAnimInProgress
+                    },
+                    isPlacementApproachInProgress = { lookaheadCoordinates ->
+                        val lookaheadOffset = lookaheadScopeCoordinates.localLookaheadPositionOf(
                             sourceCoordinates = lookaheadCoordinates
                         ).round()
-                    }
-                    movableSharedElementData.offsetAnimation.updateTarget(
-                        target = lookaheadOffset,
-                        coroutineScope = coroutineScope,
-                        animationSpec = offsetSpec,
-                    )
-                    offsetAnimInProgress
-                },
-                approachMeasure = { measurable, _ ->
-                    val (width, height) = movableSharedElementData.sizeAnimation.updateTarget(
-                        target = lookaheadSize,
-                        coroutineScope = coroutineScope,
-                        animationSpec = sizeSpec
-                    )
-                    val animatedConstraints = Constraints.fixed(width, height)
-                    val placeable = measurable.measure(animatedConstraints)
 
-                    layout(placeable.width, placeable.height) layout@{
-                        val currentCoordinates = coordinates ?: return@layout placeable.place(
-                            x = 0,
-                            y = 0
+                        movableSharedElementData.offsetAnimation.updateTarget(
+                            target = lookaheadOffset,
+                            coroutineScope = coroutineScope,
+                            animationSpec = offsetSpec,
                         )
-                        val lookaheadOffset = with(sharedTransitionScope) {
-                            lookaheadScopeCoordinates.localLookaheadPositionOf(
-                                sourceCoordinates = currentCoordinates
-                            ).round()
-                        }
+                        offsetAnimInProgress
+                    },
+                    approachMeasure = { measurable, _ ->
+                        val (width, height) = movableSharedElementData.sizeAnimation.updateTarget(
+                            target = lookaheadSize,
+                            coroutineScope = coroutineScope,
+                            animationSpec = sizeSpec
+                        )
+                        val animatedConstraints = Constraints.fixed(width, height)
+                        val placeable = measurable.measure(animatedConstraints)
 
-                        movableSharedElementData.apply {
-                            targetOffset = offsetAnimation.updateTarget(
-                                target = lookaheadOffset,
-                                coroutineScope = coroutineScope,
-                                animationSpec = offsetSpec
+                        layout(placeable.width, placeable.height) layout@{
+                            val currentCoordinates = coordinates ?: return@layout placeable.place(
+                                x = 0,
+                                y = 0
+                            )
+                            movableSharedElementData.apply {
+                                targetOffset = offsetAnimation.updateTarget(
+                                    target = lookaheadScopeCoordinates.localLookaheadPositionOf(
+                                        sourceCoordinates = currentCoordinates
+                                    ).round(),
+                                    coroutineScope = coroutineScope,
+                                    animationSpec = offsetSpec
+                                )
+                            }
+
+                            val currentOffset = lookaheadScopeCoordinates.localPositionOf(
+                                sourceCoordinates = currentCoordinates,
+                            ).round()
+
+                            val (x, y) = movableSharedElementData.targetOffset - currentOffset
+                            placeable.place(
+                                x = x,
+                                y = y
                             )
                         }
-
-                        val (x, y) = movableSharedElementData.targetOffset - lookaheadOffset
-                        placeable.place(
-                            x = x,
-                            y = y
-                        )
                     }
-                }
-            )
-                .drawWithContent {
-                    layer.record {
-                        this@drawWithContent.drawContent()
+                )
+                    .drawWithContent {
+                        layer.record {
+                            this@drawWithContent.drawContent()
+                        }
+                        if (!movableSharedElementData.canDrawInOverlay) {
+                            drawLayer(layer)
+                        }
                     }
-                    if (!movableSharedElementData.canDrawInOverlay) {
-                        drawLayer(layer)
-                    }
-                }
+            }
         }
 
 
