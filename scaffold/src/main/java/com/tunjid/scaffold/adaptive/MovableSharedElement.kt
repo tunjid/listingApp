@@ -250,12 +250,12 @@ internal class MovableSharedElementData<T>(
             this?.pane != Adaptive.Pane.TransientPrimary
 
         private val sizeSpec = spring(
-            stiffness = Spring.StiffnessMediumLow,
+            stiffness = Spring.StiffnessLow,
             visibilityThreshold = IntSize.VisibilityThreshold
         )
 
         private val offsetSpec = spring(
-            stiffness = Spring.StiffnessMediumLow,
+            stiffness = Spring.StiffnessLow,
             dampingRatio = 0.9f,
             visibilityThreshold = IntOffset.VisibilityThreshold
         )
