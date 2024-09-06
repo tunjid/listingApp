@@ -38,7 +38,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
@@ -135,9 +134,7 @@ internal fun AdaptiveContentScaffold(
                         }
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(dragToPopState.clipRadius))
-                                .scale(dragToPopState.scale)
-                                .offset { dragToPopState.offset.value.round() }
+                                .offset { dragToPopState.offset.round() }
                         ) {
                             contentState.RouteIn(pane = Adaptive.Pane.TransientPrimary)
                         }

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
+import com.tunjid.composables.ui.interpolate
 import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
