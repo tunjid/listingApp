@@ -40,6 +40,8 @@ dependencies {
     implementation(libs.coil.kt.compose)
     implementation(libs.coil.kt.video)
 
+    implementation(libs.tunjid.composables)
+
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)
 

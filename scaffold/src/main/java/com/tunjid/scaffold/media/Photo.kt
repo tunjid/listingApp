@@ -40,6 +40,7 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.AsyncImage
+import com.tunjid.composables.ui.interpolate
 import kotlin.math.abs
 
 

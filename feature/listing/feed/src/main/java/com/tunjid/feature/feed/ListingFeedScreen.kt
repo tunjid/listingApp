@@ -61,7 +61,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tunjid.composables.scrollbars.scrollable.grid.rememberScrollbarThumbMover
 import com.tunjid.composables.scrollbars.scrollable.grid.scrollbarState
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
@@ -139,7 +138,7 @@ fun ListingFeedScreen(
                         FeedItemCard(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItem(),
+                                .animateItem(fadeInSpec = null),
                             feedItem = feedItem,
                             actions = actions,
                         )
@@ -411,7 +410,7 @@ private fun LazyGridState.rememberScrollbarThumbMover(
     actions: (Action) -> Unit,
 ): (Float) -> Unit {
     val updatedListings by rememberUpdatedState(state.listings)
-    return rememberScrollbarThumbMover(
+    return com.tunjid.composables.scrollbars.scrollable.rememberScrollbarThumbMover(
         itemsAvailable = state.listingsAvailable.toInt()
     ) mover@{ indexToFind ->
         // Trigger the load to fetch the data required
@@ -424,7 +423,7 @@ private fun LazyGridState.rememberScrollbarThumbMover(
         // Fast path
         val fastIndex = updatedListings.indexOfFirst { it.index == indexToFind }
             .takeIf { it > -1 }
-        if (fastIndex != null) return@mover animateScrollToItem(fastIndex)
+        if (fastIndex != null) return@mover scrollToItem(fastIndex)
 
         // Slow path
         scrollToItem(
