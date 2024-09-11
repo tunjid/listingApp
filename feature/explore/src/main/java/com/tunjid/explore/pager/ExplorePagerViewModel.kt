@@ -7,6 +7,7 @@ import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
+import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.media.PlayerManager
@@ -57,6 +58,7 @@ private fun CoroutineScope.mutator(
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.Play -> action.flow.playMutations(playerManager)
+                is Action.ToggleDebug -> action.flow.debugMutations()
                 is Action.Navigation -> action.flow
                     .map(::navigationEdits)
                     .consumeNavigationActions(
@@ -71,6 +73,11 @@ private fun Flow<Action.Play>.playMutations(
     playerManager: PlayerManager
 ): Flow<Mutation<State>> = mapLatestToManyMutations {
     playerManager.play(it.url)
+}
+
+private fun Flow<Action.ToggleDebug>.debugMutations(
+): Flow<Mutation<State>> = mapLatestToMutation {
+    copy(isDebugging = !isDebugging)
 }
 
 private fun Route.preSeededNavigationItems(playerManager: PlayerManager) =

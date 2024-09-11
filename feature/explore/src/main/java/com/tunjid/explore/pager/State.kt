@@ -17,6 +17,8 @@ sealed class Action(val key: String) {
         val url: String
     ) : Action("Play")
 
+    data object ToggleDebug: Action("ToggleDebug")
+
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class Pop(
             override val navigationMutation: NavigationMutation = {
@@ -42,6 +44,8 @@ internal suspend fun SuspendingStateHolder<State>.navigationEdits(
 @Serializable
 data class State(
     val initialPage: Int = 0,
+    @Transient
+    val isDebugging: Boolean = false,
     @Transient
     val items: List<GalleryItem> = emptyList(),
 ) : ByteSerializable
