@@ -2,7 +2,6 @@ package com.tunjid.scaffold.globalui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -13,31 +12,25 @@ import com.tunjid.composables.dragtodismiss.dragToDismiss
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.treenav.pop
 
-@Stable
-internal class DragToPopState {
-    val dragToDismissState = DragToDismissState()
-    val offset get() = dragToDismissState.offset
-}
-
 @Composable
 fun Modifier.dragToPop(): Modifier {
-    val state = LocalDragToPopState.current
+    val state = LocalDragToDismissState.current
     DisposableEffect(state) {
-        state.dragToDismissState.enabled = true
-        onDispose { state.dragToDismissState.enabled = false }
+        state.enabled = true
+        onDispose { state.enabled = false }
     }
     return this
 }
 
 @Composable
-internal fun Modifier.dragToPopInternal(state: DragToPopState): Modifier {
+internal fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
     val globalUiStateHolder = LocalGlobalUiStateHolder.current
     val navigationStateHolder = LocalNavigationStateHolder.current
     val density = LocalDensity.current
     val dismissThreshold = remember { with(density) { 200.dp.toPx().let { it * it } } }
 
     return this then Modifier.dragToDismiss(
-        state = state.dragToDismissState,
+        state = state,
         dragThresholdCheck = { offset, _ ->
             offset.getDistanceSquared() > dismissThreshold
         },
@@ -64,6 +57,6 @@ internal fun Modifier.dragToPopInternal(state: DragToPopState): Modifier {
     )
 }
 
-internal val LocalDragToPopState = staticCompositionLocalOf {
-    DragToPopState()
+internal val LocalDragToDismissState = staticCompositionLocalOf {
+    DragToDismissState()
 }

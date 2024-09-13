@@ -50,14 +50,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
+import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.PrimaryToSecondary
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.SecondaryToPrimary
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
-import com.tunjid.scaffold.globalui.DragToPopState
-import com.tunjid.scaffold.globalui.LocalDragToPopState
+import com.tunjid.scaffold.globalui.LocalDragToDismissState
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.WindowSizeClass.COMPACT
@@ -88,11 +88,11 @@ internal fun AdaptiveContentScaffold(
 
     val density = LocalDensity.current
     val paneSplitState = remember { PaneAnchorState(density) }
-    val dragToPopState = remember { DragToPopState() }
+    val dragToDismissState = remember { DragToDismissState() }
 
     CompositionLocalProvider(
         LocalPaneAnchorState provides paneSplitState,
-        LocalDragToPopState provides dragToPopState,
+        LocalDragToDismissState provides dragToDismissState,
     ) {
         Box(
             modifier = Modifier
@@ -128,13 +128,13 @@ internal fun AdaptiveContentScaffold(
                     content = {
                         Box(
                             modifier = Modifier
-                                .dragToPopInternal(dragToPopState)
+                                .dragToPopInternal(dragToDismissState)
                         ) {
                             contentState.RouteIn(pane = Adaptive.Pane.Primary)
                         }
                         Box(
                             modifier = Modifier
-                                .offset { dragToPopState.offset.round() }
+                                .offset { dragToDismissState.offset.round() }
                         ) {
                             contentState.RouteIn(pane = Adaptive.Pane.TransientPrimary)
                         }
