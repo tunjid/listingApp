@@ -92,7 +92,9 @@ inline fun <reified T : ByteSerializable> ByteSerializer.restoreState(savedState
 object ScaffoldModule {
     @Provides
     @Singleton
-    fun appScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    fun appScope(): CoroutineScope = CoroutineScope(
+        context = SupervisorJob() + Dispatchers.Main.immediate
+    )
 
     @Provides
     @Singleton
