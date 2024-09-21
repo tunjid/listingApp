@@ -22,11 +22,13 @@ import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -174,7 +176,7 @@ class ExoPlayerManager @Inject constructor(
             }
             .filter(true::equals)
             .onEach { pause() }
-            .launchIn(appScope)
+            .launchIn(appScope + Dispatchers.Main)
     }
 
     override fun enqueue(url: String) {
