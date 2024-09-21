@@ -38,7 +38,8 @@ import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
-import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
+import com.tunjid.scaffold.lifecycle.NodeViewModelStoreCreator
+import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
 import com.tunjid.treenav.MultiStackNav
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -57,7 +58,7 @@ interface AdaptiveContentStateFactory {
 @Stable
 class SavedStateAdaptiveContentState @AssistedInject constructor(
     val adaptiveRouter: AdaptiveRouter,
-    val viewModelDependencyManager: ViewModelDependencyManager,
+    val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
     navStateFlow: StateFlow<MultiStackNav>,
     uiStateFlow: StateFlow<UiState>,
     @Assisted coroutineScope: CoroutineScope,
@@ -94,6 +95,9 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
+    internal val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
+        rootNodeProvider = navStateFlow::value
+    )
 
     @Composable
     override fun RouteIn(pane: Adaptive.Pane) {
@@ -159,8 +163,8 @@ private fun SavedStateAdaptiveContentState.Render(
             ) {
                 CompositionLocalProvider(
                     LocalAdaptiveContentScope provides scope,
-                    LocalViewModelFactory provides viewModelDependencyManager.viewModelFactoryFor(route),
-                    LocalViewModelStoreOwner provides viewModelDependencyManager.viewModelStoreOwnerFor(route),
+                    LocalViewModelFactory provides nodeViewModelFactoryProvider.viewModelFactoryFor(route),
+                    LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(route),
                 ) {
                     SaveableStateProvider(route.id) {
                         adaptiveRouter.destination(route).invoke()
@@ -187,7 +191,7 @@ private fun SavedStateAdaptiveContentState.Render(
             onDispose {
                 val routeId = targetPaneState.currentNode?.id ?: return@onDispose
                 onAction(Action.RouteExitEnd(routeId))
-                targetPaneState.currentNode?.let(viewModelDependencyManager::clearStoreFor)
+                targetPaneState.currentNode?.let(nodeViewModelStoreCreator::clearStoreFor)
             }
         }
     }
