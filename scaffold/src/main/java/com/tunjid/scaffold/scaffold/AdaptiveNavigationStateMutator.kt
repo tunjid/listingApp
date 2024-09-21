@@ -101,7 +101,7 @@ private fun adaptiveNavigationStateMutations(
     )
     .mapToMutation { newState ->
         // Replace the entire state except the knowledge of routes animating in and out
-        newState.copy(routeIdsAnimatingOut = routeIdsAnimatingOut)
+        newState.copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut)
     }
 
 private fun adaptiveNavigationState(
@@ -116,10 +116,10 @@ private fun adaptiveNavigationState(
     } ?: multiStackNav.primaryRoute
 
     // Parse the secondary route from the primary route
-    val secondaryRoute = adaptiveRouter.secondaryRouteFor(primaryRoute)
+    val secondaryRoute = adaptiveRouter.secondaryNodeFor(primaryRoute)
 
     return SlotBasedAdaptiveNavigationState(
-        panesToRoutes = mapOf(
+        panesToNodes = mapOf(
             Primary to primaryRoute,
             Secondary to secondaryRoute.takeIf { route ->
                 route?.id != primaryRoute.id
@@ -138,9 +138,9 @@ private fun adaptiveNavigationState(
             multiStackNav.traverse(Order.DepthFirst) { add(it.id) }
         },
         // Tentative, decide downstream
-        routeIdsAnimatingOut = emptySet(),
+        nodeIdsAnimatingOut = emptySet(),
         // Tentative, decide downstream
-        routeIdsToAdaptiveSlots = emptyMap(),
+        nodeIdsToAdaptiveSlots = emptyMap(),
         // Tentative, decide downstream
         previousPanesToRoutes = emptyMap(),
         routePanePositionalState = uiState.routePaneState,
@@ -157,14 +157,14 @@ private fun SlotBasedAdaptiveNavigationState.adaptTo(
     val old = this
 
     val availableSlots = Adaptive.Pane.slots.toMutableSet()
-    val unplacedRouteIds = new.panesToRoutes.values.mapNotNull { it?.id }.toMutableSet()
+    val unplacedRouteIds = new.panesToNodes.values.mapNotNull { it?.id }.toMutableSet()
 
     val routeIdsToAdaptiveSlots = mutableMapOf<String?, Adaptive.Slot>()
     val swapAdaptations = mutableSetOf<Adaptive.Adaptation.Swap>()
 
-    for ((toPane, toRoute) in new.panesToRoutes.entries) {
+    for ((toPane, toRoute) in new.panesToNodes.entries) {
         if (toRoute == null) continue
-        for ((fromPane, fromRoute) in old.panesToRoutes.entries) {
+        for ((fromPane, fromRoute) in old.panesToNodes.entries) {
             if (toRoute.id != fromRoute?.id) continue
             val swap = Adaptive.Adaptation.Swap(
                 from = fromPane,
@@ -174,11 +174,11 @@ private fun SlotBasedAdaptiveNavigationState.adaptTo(
                 swapAdaptations.add(swap)
             }
 
-            val fromRouteId = old.routeFor(swap.from)?.id
+            val fromRouteId = old.nodeFor(swap.from)?.id
                 ?.also(unplacedRouteIds::remove)
                 ?: throw IllegalArgumentException("A swap cannot occur from a null route")
 
-            val movedSlot = old.routeIdsToAdaptiveSlots[old.routeFor(swap.from)?.id]
+            val movedSlot = old.nodeIdsToAdaptiveSlots[old.nodeFor(swap.from)?.id]
                 ?.also(availableSlots::remove)
                 ?: throw IllegalArgumentException("A swap cannot occur from a null slot")
 
@@ -192,49 +192,49 @@ private fun SlotBasedAdaptiveNavigationState.adaptTo(
     }
 
     return new.copy(
-        swapAdaptations = when (old.panesToRoutes.mapValues { it.value?.id }) {
-            new.panesToRoutes.mapValues { it.value?.id } -> old.swapAdaptations
+        swapAdaptations = when (old.panesToNodes.mapValues { it.value?.id }) {
+            new.panesToNodes.mapValues { it.value?.id } -> old.swapAdaptations
             else -> swapAdaptations
         },
         previousPanesToRoutes = Adaptive.Pane.entries.associateWith(
-            valueSelector = old::routeFor
+            valueSelector = old::nodeFor
         ),
-        routeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots,
+        nodeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots,
     )
 }
 
 private fun Flow<Action.RouteExitStart>.routeExitStartMutations(): Flow<Mutation<SlotBasedAdaptiveNavigationState>> =
     mapToMutation { exitStart ->
-        copy(routeIdsAnimatingOut = routeIdsAnimatingOut + exitStart.routeId)
+        copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut + exitStart.routeId)
     }
 
 private fun Flow<Action.RouteExitEnd>.routeExitEndMutations(): Flow<Mutation<SlotBasedAdaptiveNavigationState>> =
     mapToMutation { exitEnd ->
-        copy(routeIdsAnimatingOut = routeIdsAnimatingOut - exitEnd.routeId).prune()
+        copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut - exitEnd.routeId).prune()
     }
 
 /**
  * Checks if any of the new routes coming in has any conflicts with those animating out.
  */
 private fun SlotBasedAdaptiveNavigationState.hasConflictingRoutes() =
-    routeIdsAnimatingOut.contains(routeFor(Primary)?.id)
-            || routeFor(Secondary)?.id?.let(routeIdsAnimatingOut::contains) == true
-            || routeFor(TransientPrimary)?.id?.let(routeIdsAnimatingOut::contains) == true
+    nodeIdsAnimatingOut.contains(nodeFor(Primary)?.id)
+            || nodeFor(Secondary)?.id?.let(nodeIdsAnimatingOut::contains) == true
+            || nodeFor(TransientPrimary)?.id?.let(nodeIdsAnimatingOut::contains) == true
 
 /**
  * Trims unneeded metadata from the [Adaptive.NavigationState]
  */
 private fun SlotBasedAdaptiveNavigationState.prune(): SlotBasedAdaptiveNavigationState = copy(
-    routeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots.filter { (routeId) ->
+    nodeIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots.filter { (routeId) ->
         if (routeId == null) return@filter false
         backStackIds.contains(routeId)
-                || routeIdsAnimatingOut.contains(routeId)
+                || nodeIdsAnimatingOut.contains(routeId)
                 || previousPanesToRoutes.values.map { it?.id }.toSet().contains(routeId)
     },
     previousPanesToRoutes = previousPanesToRoutes.filter { (_, route) ->
         if (route == null) return@filter false
         backStackIds.contains(route.id)
-                || routeIdsAnimatingOut.contains(route.id)
+                || nodeIdsAnimatingOut.contains(route.id)
                 || previousPanesToRoutes.values.map { it?.id }.toSet().contains(route.id)
     }
 )

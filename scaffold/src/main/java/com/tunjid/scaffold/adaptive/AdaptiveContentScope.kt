@@ -44,9 +44,9 @@ internal class AnimatedAdaptiveContentScope(
         val currentNavigationState = adaptiveContentHost.navigationState
         // This pane state may be animating out. Look up the actual current route
         val currentRouteInPane = paneState.pane?.let(
-            currentNavigationState::routeFor
+            currentNavigationState::nodeFor
         )
-        val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentRoute?.id
+        val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentNode?.id
 
         // Do not use the shared element if this content is being animated out
         if (!isCurrentlyAnimatingIn) return { _, _ -> }

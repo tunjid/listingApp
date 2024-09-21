@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.flatten
 import com.tunjid.treenav.strings.Route
@@ -23,17 +24,17 @@ import javax.inject.Inject
 @Stable
 interface ViewModelDependencyManager {
     /**
-     * Creates a [ViewModelStoreOwner] for a given [Route]
+     * Creates a [ViewModelStoreOwner] for a given [Node]
      */
-    fun viewModelStoreOwnerFor(route: Route): ViewModelStoreOwner
+    fun viewModelStoreOwnerFor(node: Node): ViewModelStoreOwner
 
     /**
      * Creates a [ViewModelProvider.Factory] capable of injecting the route it was created for
      * into the [ViewModel]
      */
-    fun viewModelFactoryFor(route: Route): ViewModelProvider.Factory
+    fun viewModelFactoryFor(node: Node): ViewModelProvider.Factory
 
-    fun clearStoreFor(route: Route)
+    fun clearStoreFor(node: Node)
 }
 
 val LocalViewModelFactory: ProvidableCompositionLocal<ViewModelProvider.Factory> =
@@ -57,9 +58,9 @@ class AppViewModelDependencyManager @Inject constructor(
     private val routeToViewModelStoreOwner = mutableMapOf<String, ViewModelStoreOwner>()
 
     override fun viewModelStoreOwnerFor(
-        route: Route
+        node: Node
     ): ViewModelStoreOwner = routeToViewModelStoreOwner.getOrPut(
-        route.id
+        node.id
     ) {
         object : ViewModelStoreOwner {
             override val viewModelStore: ViewModelStore = ViewModelStore()
@@ -68,7 +69,7 @@ class AppViewModelDependencyManager @Inject constructor(
 
 
     override fun viewModelFactoryFor(
-        route: Route
+        node: Node
     ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(
@@ -77,16 +78,16 @@ class AppViewModelDependencyManager @Inject constructor(
             scope = CoroutineScope(
                 context = SupervisorJob() + Dispatchers.Main.immediate
             ),
-            route = route
+            route = node as Route
         ) as T
     }
 
-    override fun clearStoreFor(route: Route) {
-        if (navigationStateStream.value.flatten(Order.BreadthFirst).contains(route)) {
+    override fun clearStoreFor(node: Node) {
+        if (navigationStateStream.value.flatten(Order.BreadthFirst).contains(node)) {
             return
         }
-        println("Clearing VM for $route")
-        val owner = routeToViewModelStoreOwner.remove(route.id)
+        println("Clearing VM for $node")
+        val owner = routeToViewModelStoreOwner.remove(node.id)
         owner?.viewModelStore?.clear()
     }
 }

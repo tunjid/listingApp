@@ -132,7 +132,7 @@ private fun SavedStateAdaptiveContentState.Render(
         label = "$slot-PaneTransition",
     )
     paneTransition.AnimatedContent(
-        contentKey = { it.currentRoute?.id },
+        contentKey = { it.currentNode?.id },
         transitionSpec = {
             EnterTransition.None togetherWith ExitTransition.None
         }
@@ -148,7 +148,7 @@ private fun SavedStateAdaptiveContentState.Render(
         // correct at first composition
         scope.paneState = targetPaneState
 
-        when (val route = targetPaneState.currentRoute) {
+        when (val route = targetPaneState.currentNode) {
             null -> Unit
             else -> Box(
                 modifier = modifierFor(
@@ -166,7 +166,7 @@ private fun SavedStateAdaptiveContentState.Render(
                         adaptiveRouter.destination(route).invoke()
                         DisposableEffect(Unit) {
                             onDispose {
-                                val routeIds = slotBasedAdaptiveNavigationState.routeIds
+                                val routeIds = slotBasedAdaptiveNavigationState.nodeIds
                                 if (!routeIds.contains(route.id)) removeState(route.id)
                             }
                         }
@@ -178,16 +178,16 @@ private fun SavedStateAdaptiveContentState.Render(
         // Add routes ids that are animating out
         LaunchedEffect(transition.isRunning) {
             if (transition.targetState == EnterExitState.PostExit) {
-                val routeId = targetPaneState.currentRoute?.id ?: return@LaunchedEffect
+                val routeId = targetPaneState.currentNode?.id ?: return@LaunchedEffect
                 onAction(Action.RouteExitStart(routeId))
             }
         }
         // Remove route ids that have animated out
         DisposableEffect(Unit) {
             onDispose {
-                val routeId = targetPaneState.currentRoute?.id ?: return@onDispose
+                val routeId = targetPaneState.currentNode?.id ?: return@onDispose
                 onAction(Action.RouteExitEnd(routeId))
-                targetPaneState.currentRoute?.let(viewModelDependencyManager::clearStoreFor)
+                targetPaneState.currentNode?.let(viewModelDependencyManager::clearStoreFor)
             }
         }
     }

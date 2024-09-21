@@ -16,10 +16,10 @@ import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.ActualLifecycleStateHolder
+import com.tunjid.scaffold.lifecycle.AppViewModelDependencyManager
 import com.tunjid.scaffold.lifecycle.Lifecycle
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
-import com.tunjid.scaffold.lifecycle.AppViewModelDependencyManager
 import com.tunjid.scaffold.media.ExoPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -30,6 +30,7 @@ import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.Node
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -58,7 +59,7 @@ import javax.inject.Singleton
 interface ScreenStateHolderCreator {
     fun create(
         scope: CoroutineScope,
-        route: Route
+        route: Route,
     ): ViewModel
 }
 
@@ -69,9 +70,9 @@ data class SavedStateType(
 )
 
 interface AdaptiveRouter {
-    fun destination(route: Route): @Composable () -> Unit
+    fun destination(node: Node): @Composable () -> Unit
 
-    fun secondaryRouteFor(route: Route): Route?
+    fun secondaryNodeFor(route: Route): Node?
 
     fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions?
 }
@@ -140,15 +141,16 @@ object ScaffoldModule {
         }
 
         return object : AdaptiveRouter {
-            override fun secondaryRouteFor(route: Route): Route? =
+            override fun secondaryNodeFor(route: Route): Node? =
                 configurationTrie[route]?.secondaryRoute(route)
 
             override fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions? =
-                state.currentRoute?.let(configurationTrie::get)?.transitionsFor(state)
+                (state.currentNode as? Route)
+                    ?.let(configurationTrie::get)?.transitionsFor(state)
 
 
-            override fun destination(route: Route): @Composable () -> Unit = {
-                configurationTrie[route]?.Render(route) ?: RouteNotFound()
+            override fun destination(node: Node): @Composable () -> Unit = {
+                (node as? Route)?.let(configurationTrie::get)?.Render(node) ?: RouteNotFound()
             }
         }
     }

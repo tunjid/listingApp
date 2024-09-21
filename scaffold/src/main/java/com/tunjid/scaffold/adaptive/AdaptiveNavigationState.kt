@@ -5,7 +5,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Stable
 import com.tunjid.scaffold.globalui.WindowSizeClass
-import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.Node
 
 /**
  * Namespace for adaptive layout changes in an app
@@ -48,16 +48,16 @@ object Adaptive {
      */
     @Stable
     sealed interface PaneState {
-        val currentRoute: Route?
-        val previousRoute: Route?
+        val currentNode: Node?
+        val previousNode: Node?
         val pane: Pane?
         val adaptation: Adaptation
     }
 
-    internal val PaneState.key get() = "${currentRoute?.id}-$pane"
+    internal val PaneState.key get() = "${currentNode?.id}-$pane"
 
     /**
-     * Describes how a route transitions after an adaptive change
+     * Describes how a node transitions after an adaptive change
      */
     data class Transitions(
         val enter: EnterTransition,
@@ -69,8 +69,8 @@ object Adaptive {
      */
     internal data class SlotPaneState(
         val slot: Slot?,
-        override val currentRoute: Route?,
-        override val previousRoute: Route?,
+        override val currentNode: Node?,
+        override val previousNode: Node?,
         override val pane: Pane?,
         override val adaptation: Adaptation,
     ) : PaneState
@@ -116,9 +116,9 @@ object Adaptive {
 
         val windowSizeClass: WindowSizeClass
 
-        fun routeFor(
+        fun nodeFor(
             pane: Pane
-        ): Route?
+        ): Node?
 
         fun adaptationIn(
             pane: Pane

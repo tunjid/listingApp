@@ -8,7 +8,7 @@ import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
 import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.navigation.unknownRoute
-import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.Node
 
 /**
  * Data structure for managing navigation as it adapts to various layout configurations
@@ -20,25 +20,25 @@ internal data class SlotBasedAdaptiveNavigationState(
      */
     val swapAdaptations: Set<Adaptive.Adaptation.Swap>,
     /**
-     * A mapping of [Pane] to the routes in them
+     * A mapping of [Adaptive.Pane] to the nodes in them
      */
-    val panesToRoutes: Map<Adaptive.Pane, Route?>,
+    val panesToNodes: Map<Adaptive.Pane, Node?>,
     /**
-     * A mapping of route ids to the adaptive slots they are currently in.
+     * A mapping of node ids to the adaptive slots they are currently in.
      */
-    val routeIdsToAdaptiveSlots: Map<String?, Adaptive.Slot>,
+    val nodeIdsToAdaptiveSlots: Map<String?, Adaptive.Slot>,
     /**
-     * A mapping of adaptive pane to the routes that were last in them.
+     * A mapping of adaptive pane to the nodes that were last in them.
      */
-    val previousPanesToRoutes: Map<Adaptive.Pane, Route?>,
+    val previousPanesToRoutes: Map<Adaptive.Pane, Node?>,
     /**
-     * A set of route ids that may be returned to.
+     * A set of node ids that may be returned to.
      */
     val backStackIds: Set<String>,
     /**
-     * A set of route ids that are animating out.
+     * A set of node ids that are animating out.
      */
-    val routeIdsAnimatingOut: Set<String>,
+    val nodeIdsAnimatingOut: Set<String>,
     /**
      * The window size class of the current screen configuration
      */
@@ -52,31 +52,31 @@ internal data class SlotBasedAdaptiveNavigationState(
         internal val Initial = SlotBasedAdaptiveNavigationState(
             swapAdaptations = emptySet(),
             windowSizeClass = WindowSizeClass.COMPACT,
-            panesToRoutes = mapOf(
+            panesToNodes = mapOf(
                 Adaptive.Pane.Primary to unknownRoute(
                     Adaptive.Pane.slots.first().toString()
                 )
             ),
-            routeIdsToAdaptiveSlots = Adaptive.Pane.slots.associateBy(Adaptive.Slot::toString),
+            nodeIdsToAdaptiveSlots = Adaptive.Pane.slots.associateBy(Adaptive.Slot::toString),
             backStackIds = emptySet(),
-            routeIdsAnimatingOut = emptySet(),
+            nodeIdsAnimatingOut = emptySet(),
             previousPanesToRoutes = emptyMap(),
             routePanePositionalState = UiState().routePaneState,
         )
     }
 
-    internal val routeIds: Collection<String>
+    internal val nodeIds: Collection<String>
         get() = backStackIds
 
     internal fun paneStateFor(
         slot: Adaptive.Slot
     ): Adaptive.PaneState {
-        val route = routeFor(slot)
+        val route = nodeFor(slot)
         val pane = route?.let(::paneFor)
         return Adaptive.SlotPaneState(
             slot = slot,
-            currentRoute = route,
-            previousRoute = previousPanesToRoutes[pane],
+            currentNode = route,
+            previousNode = previousPanesToRoutes[pane],
             pane = pane,
             adaptation = swapAdaptations.firstOrNull { pane in it }
                 ?: Adaptive.Adaptation.Change,
@@ -85,30 +85,30 @@ internal data class SlotBasedAdaptiveNavigationState(
 
     internal fun slotFor(
         pane: Adaptive.Pane
-    ): Adaptive.Slot? = routeIdsToAdaptiveSlots[
-        panesToRoutes[pane]?.id
+    ): Adaptive.Slot? = nodeIdsToAdaptiveSlots[
+        panesToNodes[pane]?.id
     ]
 
     private fun paneFor(
-        route: Route
+        node: Node
     ): Adaptive.Pane? =
-        panesToRoutes.firstNotNullOfOrNull { (pane, paneRoute) ->
-            if (paneRoute?.id == route.id) pane else null
+        panesToNodes.firstNotNullOfOrNull { (pane, paneRoute) ->
+            if (paneRoute?.id == node.id) pane else null
         }
 
-    private fun routeFor(
+    private fun nodeFor(
         slot: Adaptive.Slot
-    ): Route? = routeIdsToAdaptiveSlots.firstNotNullOfOrNull { (routeId, routeSlot) ->
-        if (routeSlot == slot) panesToRoutes.firstNotNullOfOrNull { (_, route) ->
-            if (route?.id == routeId) route
+    ): Node? = nodeIdsToAdaptiveSlots.firstNotNullOfOrNull { (nodeId, nodeSlot) ->
+        if (nodeSlot == slot) panesToNodes.firstNotNullOfOrNull { (_, node) ->
+            if (node?.id == nodeId) node
             else null
         }
         else null
     }
 
-    override fun routeFor(
+    override fun nodeFor(
         pane: Adaptive.Pane
-    ): Route? = panesToRoutes[pane]
+    ): Node? = panesToNodes[pane]
 
     override fun adaptationIn(
         pane: Adaptive.Pane

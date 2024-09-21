@@ -83,7 +83,7 @@ internal fun AdaptiveContentScaffold(
     val paddingValues = routePanePadding(positionalState)
     val (startClearance, topClearance, _, bottomClearance) = paddingValues
 
-    val hasSecondaryContent = navigationState.routeFor(Adaptive.Pane.Secondary) != null
+    val hasSecondaryContent = navigationState.nodeFor(Adaptive.Pane.Secondary) != null
     val windowSizeClass = navigationState.windowSizeClass
 
     val density = LocalDensity.current
