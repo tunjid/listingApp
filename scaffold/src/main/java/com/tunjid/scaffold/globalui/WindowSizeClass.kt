@@ -10,18 +10,13 @@ val WindowSizeClass.Companion.MEDIUM get() = WINDOW_SIZE_CLASS_MEDIUM
 val WindowSizeClass.Companion.EXPANDED get() = WINDOW_SIZE_CLASS_EXPANDED
 
 fun WindowSizeClass.navRailWidth() =
-    if (containsWidthDp(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) 0.dp
-    else 72.dp
-
-fun WindowSizeClass.toolbarSize() =
-    if (containsWidthDp(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) 56.dp
-    else 72.dp
+    when (minWidthDp) {
+        in WindowSizeClass.MEDIUM.minWidthDp..Int.MAX_VALUE -> 72.dp
+        else -> 0.dp
+    }
 
 @Suppress("UnusedReceiverParameter")
 fun WindowSizeClass.bottomNavSize() = 80.dp
-
-operator fun WindowSizeClass.compareTo(other: WindowSizeClass) =
-    minWidthDp.compareTo(other.minWidthDp)
 
 private val WINDOW_SIZE_CLASS_COMPACT = WindowSizeClass(
     minWidthDp = 0,

@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +36,7 @@ import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isFromLeft
 import com.tunjid.scaffold.globalui.progress
-import com.tunjid.scaffold.globalui.slices.routePaneState
+import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
@@ -72,7 +71,7 @@ fun Scaffold(
                     AdaptiveContentScaffold(
                         contentState = adaptiveContentState,
                         positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-                            mapper = UiState::routePaneState
+                            mapper = UiState::uiChromeState
                         ).value,
                         onPaneAnchorChanged = remember {
                             { paneAnchor: PaneAnchor ->

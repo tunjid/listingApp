@@ -13,7 +13,7 @@ import com.tunjid.scaffold.globalui.UiState
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.isPreviewing
-import com.tunjid.scaffold.globalui.slices.routePaneState
+import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
@@ -79,7 +79,7 @@ private fun adaptiveNavigationStateMutations(
 ): Flow<Mutation<SlotBasedAdaptiveNavigationState>> = combine(
     flow = navStateFlow,
     flow2 = uiStateFlow.distinctUntilChangedBy {
-        listOf(it.backStatus.isPreviewing, it.routePaneState)
+        listOf(it.backStatus.isPreviewing, it.uiChromeState)
     },
     transform = { navState, uiState ->
         adaptiveNavigationState(
@@ -144,7 +144,6 @@ private fun adaptiveNavigationState(
         nodeIdsToAdaptiveSlots = emptyMap(),
         // Tentative, decide downstream
         previousPanesToRoutes = emptyMap(),
-        routePanePositionalState = uiState.routePaneState,
     )
 }
 

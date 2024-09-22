@@ -1,13 +1,10 @@
 package com.tunjid.scaffold.scaffold
 
 import androidx.compose.runtime.Immutable
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Change.contains
-import com.tunjid.scaffold.globalui.UiState
-import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.COMPACT
-import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
-import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.Node
 
@@ -44,10 +41,6 @@ internal data class SlotBasedAdaptiveNavigationState(
      * The window size class of the current screen configuration
      */
     override val windowSizeClass: WindowSizeClass,
-    /**
-     * The positionalState of route panes
-     */
-    val routePanePositionalState: RoutePanePositionalState,
 ) : Adaptive.NavigationState {
     companion object {
         internal val Initial = SlotBasedAdaptiveNavigationState(
@@ -62,7 +55,6 @@ internal data class SlotBasedAdaptiveNavigationState(
             backStackIds = emptySet(),
             nodeIdsAnimatingOut = emptySet(),
             previousPanesToRoutes = emptyMap(),
-            routePanePositionalState = UiState().routePaneState,
         )
     }
 

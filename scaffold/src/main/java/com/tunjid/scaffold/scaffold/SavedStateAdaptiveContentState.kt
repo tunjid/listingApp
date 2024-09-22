@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.AnimatedAdaptiveContentScope
@@ -35,13 +36,11 @@ import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.di.AdaptiveRouter
-import com.tunjid.scaffold.globalui.UiState
-import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.COMPACT
-import com.tunjid.scaffold.globalui.compareTo
+import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
-import com.tunjid.scaffold.lifecycle.NodeViewModelStoreCreator
 import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
+import com.tunjid.scaffold.lifecycle.NodeViewModelStoreCreator
 import com.tunjid.treenav.MultiStackNav
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -165,8 +164,12 @@ private fun SavedStateAdaptiveContentState.Render(
             ) {
                 CompositionLocalProvider(
                     LocalAdaptiveContentScope provides scope,
-                    LocalViewModelFactory provides nodeViewModelFactoryProvider.viewModelFactoryFor(route),
-                    LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(route),
+                    LocalViewModelFactory provides nodeViewModelFactoryProvider.viewModelFactoryFor(
+                        route
+                    ),
+                    LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(
+                        route
+                    ),
                 ) {
                     SaveableStateProvider(route.id) {
                         adaptiveRouter.destination(route).invoke()
@@ -209,7 +212,7 @@ private fun AnimatedVisibilityScope.modifierFor(
         .background(color = MaterialTheme.colorScheme.surface)
         .then(
             when {
-                windowSizeClass > WindowSizeClass.COMPACT -> Modifier.clip(
+                windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp -> Modifier.clip(
                     RoundedCornerShape(16.dp)
                 )
 

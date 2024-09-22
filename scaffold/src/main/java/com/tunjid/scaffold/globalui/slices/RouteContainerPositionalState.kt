@@ -8,7 +8,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.bottomNavVisible
 import com.tunjid.scaffold.globalui.navRailVisible
 
-internal data class RoutePanePositionalState(
+internal data class UiChromeState(
     val statusBarSize: Int,
     val navRailVisible: Boolean,
     val bottomNavVisible: Boolean,
@@ -18,8 +18,8 @@ internal data class RoutePanePositionalState(
     override val insetDescriptor: InsetDescriptor
 ) : KeyboardAware
 
-internal val UiState.routePaneState
-    get() = RoutePanePositionalState(
+internal val UiState.uiChromeState
+    get() = UiChromeState(
         statusBarSize = systemUI.static.statusBarSize,
         insetDescriptor = insetFlags,
         bottomNavVisible = bottomNavVisible,

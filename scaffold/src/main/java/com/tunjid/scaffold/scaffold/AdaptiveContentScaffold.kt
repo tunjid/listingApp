@@ -59,6 +59,7 @@ import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.COMPACT
+import com.tunjid.scaffold.globalui.EXPANDED
 import com.tunjid.scaffold.globalui.LocalDragToDismissState
 import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.PaneAnchor
@@ -66,7 +67,7 @@ import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.dragToPopInternal
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
-import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
+import com.tunjid.scaffold.globalui.slices.UiChromeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -77,7 +78,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun AdaptiveContentScaffold(
     contentState: AdaptiveContentState,
-    positionalState: RoutePanePositionalState,
+    positionalState: UiChromeState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
 ) {
     val navigationState = contentState.navigationState
@@ -160,9 +161,9 @@ internal fun AdaptiveContentScaffold(
         delay(5)
         paneSplitState.moveTo(
             if (hasSecondaryContent) when (windowSizeClass.minWidthDp) {
-                in 0..<WindowSizeClass.COMPACT.minWidthDp -> PaneAnchor.Zero
-                in WindowSizeClass.COMPACT.minWidthDp..<WindowSizeClass.MEDIUM.minWidthDp -> PaneAnchor.OneThirds
-                else -> PaneAnchor.Half
+                in WindowSizeClass.EXPANDED.minWidthDp..Int.MAX_VALUE -> PaneAnchor.Half
+                in WindowSizeClass.MEDIUM.minWidthDp..<WindowSizeClass.EXPANDED.minWidthDp -> PaneAnchor.OneThirds
+                else -> PaneAnchor.Zero
             }
             else PaneAnchor.Zero
         )
@@ -328,7 +329,7 @@ private fun Modifier.secondaryPaneModifier(
 
 @Composable
 private fun routePanePadding(
-    state: RoutePanePositionalState,
+    state: UiChromeState,
 ): SnapshotStateList<Dp> {
     val paddingValues = remember {
         mutableStateListOf(0.dp, 0.dp, 0.dp, 0.dp)

@@ -21,8 +21,7 @@ import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.navRailWidth
-import com.tunjid.scaffold.globalui.slices.routePaneState
-import com.tunjid.scaffold.globalui.toolbarSize
+import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.NavItem
 import com.tunjid.scaffold.navigation.NavigationStateHolder
@@ -39,7 +38,7 @@ internal fun AppNavRail(
     navStateHolder: NavigationStateHolder,
 ) {
     val paneState by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::routePaneState
+        mapper = UiState::uiChromeState
     )
     val windowSizeClass by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
         mapper = UiState::windowSizeClass

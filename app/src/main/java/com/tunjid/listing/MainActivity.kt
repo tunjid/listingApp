@@ -14,6 +14,7 @@ import com.tunjid.listing.ui.theme.ListingAppTheme
 import com.tunjid.mutator.mutationOf
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
+import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.NavMode
 import com.tunjid.scaffold.globalui.insetMutations
 import com.tunjid.scaffold.globalui.integrateBackActions
@@ -74,8 +75,8 @@ private fun AdaptNavigation(globalUiStateHolder: GlobalUiStateHolder) {
             copy(
                 windowSizeClass = windowSizeClass,
                 navMode = when (windowSizeClass.minWidthDp) {
-                    in 0..<WindowSizeClass.COMPACT.minWidthDp -> NavMode.BottomNav
-                    else -> NavMode.NavRail
+                    in WindowSizeClass.MEDIUM.minWidthDp..Int.MAX_VALUE -> NavMode.NavRail
+                    else -> NavMode.BottomNav
                 }
             )
         })
