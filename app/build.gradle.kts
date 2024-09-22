@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.material3.adaptive)
     coreLibraryDesugaring(libs.com.android.desugarJdkLibs)
 
     implementation(project(":scaffold"))

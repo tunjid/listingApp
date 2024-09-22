@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.PrimaryToSecondary
@@ -57,10 +58,10 @@ import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.SecondaryToPri
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
+import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.LocalDragToDismissState
+import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.PaneAnchor
-import com.tunjid.scaffold.globalui.WindowSizeClass
-import com.tunjid.scaffold.globalui.WindowSizeClass.COMPACT
 import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.dragToPopInternal
 import com.tunjid.scaffold.globalui.keyboardSize
@@ -143,7 +144,8 @@ internal fun AdaptiveContentScaffold(
                 // Pane separator
                 AnimatedVisibility(
                     modifier = Modifier.align(Alignment.CenterStart),
-                    visible = hasSecondaryContent && windowSizeClass > COMPACT
+                    visible = hasSecondaryContent
+                            && windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp
                 ) {
                     DraggableThumb(
                         paneAnchorState = paneSplitState
@@ -157,10 +159,10 @@ internal fun AdaptiveContentScaffold(
         // Delay briefly so the animation runs
         delay(5)
         paneSplitState.moveTo(
-            if (hasSecondaryContent) when (windowSizeClass) {
-                COMPACT -> PaneAnchor.Zero
-                WindowSizeClass.MEDIUM -> PaneAnchor.OneThirds
-                WindowSizeClass.EXPANDED -> PaneAnchor.Half
+            if (hasSecondaryContent) when (windowSizeClass.minWidthDp) {
+                in 0..<WindowSizeClass.COMPACT.minWidthDp -> PaneAnchor.Zero
+                in WindowSizeClass.COMPACT.minWidthDp..<WindowSizeClass.MEDIUM.minWidthDp -> PaneAnchor.OneThirds
+                else -> PaneAnchor.Half
             }
             else PaneAnchor.Zero
         )
@@ -245,7 +247,8 @@ private fun Modifier.primaryPaneModifier(
     LaunchedEffect(windowSizeClass, adaptation) {
         try {
             // Maintain max width on smaller devices
-            if (windowSizeClass == COMPACT || adaptation != SecondaryToPrimary
+            if (windowSizeClass.minWidthDp <= WindowSizeClass.COMPACT.minWidthDp
+                || adaptation != SecondaryToPrimary
             ) {
                 complete = true
                 return@LaunchedEffect
@@ -267,7 +270,8 @@ private fun Modifier.primaryPaneModifier(
         .width(if (complete) maxWidth else widthAnimatable.value)
         .padding(
             start = updatedSecondaryContentWidth.countIf(
-                condition = adaptation != SecondaryToPrimary && windowSizeClass != COMPACT
+                condition = adaptation != SecondaryToPrimary
+                        && windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp
             )
         )
         .restrictedSizePlacement(

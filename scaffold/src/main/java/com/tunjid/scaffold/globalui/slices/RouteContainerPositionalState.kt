@@ -4,7 +4,7 @@ import com.tunjid.scaffold.globalui.Ingress
 import com.tunjid.scaffold.globalui.InsetDescriptor
 import com.tunjid.scaffold.globalui.KeyboardAware
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.bottomNavVisible
 import com.tunjid.scaffold.globalui.navRailVisible
 

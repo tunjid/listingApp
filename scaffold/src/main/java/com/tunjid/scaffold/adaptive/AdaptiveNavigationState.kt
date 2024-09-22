@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Stable
-import com.tunjid.scaffold.globalui.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.treenav.Node
 
 /**

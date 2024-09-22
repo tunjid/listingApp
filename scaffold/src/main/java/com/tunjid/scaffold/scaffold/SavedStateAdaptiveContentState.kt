@@ -36,7 +36,9 @@ import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import com.tunjid.scaffold.globalui.COMPACT
+import com.tunjid.scaffold.globalui.compareTo
 import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
 import com.tunjid.scaffold.lifecycle.NodeViewModelStoreCreator
 import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider

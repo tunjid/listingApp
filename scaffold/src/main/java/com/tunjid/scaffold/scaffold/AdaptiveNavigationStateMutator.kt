@@ -10,7 +10,8 @@ import com.tunjid.scaffold.adaptive.Adaptive.Pane.Secondary
 import com.tunjid.scaffold.adaptive.Adaptive.Pane.TransientPrimary
 import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.isPreviewing
 import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.navigation.unknownRoute
@@ -47,7 +48,7 @@ internal fun CoroutineScope.adaptiveNavigationStateMutator(
     started = SharingStarted.Eagerly,
     inputs = listOf(
         adaptiveNavigationStateMutations(
-            adaptiveRouter= adaptiveRouter,
+            adaptiveRouter = adaptiveRouter,
             navStateFlow = navStateFlow,
             uiStateFlow = uiStateFlow
         )
@@ -123,7 +124,7 @@ private fun adaptiveNavigationState(
             Primary to primaryRoute,
             Secondary to secondaryRoute.takeIf { route ->
                 route?.id != primaryRoute.id
-                        && uiState.windowSizeClass > WindowSizeClass.COMPACT
+                        && uiState.windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp
             },
             TransientPrimary to multiStackNav.primaryRoute.takeIf { route ->
                 uiState.backStatus.isPreviewing

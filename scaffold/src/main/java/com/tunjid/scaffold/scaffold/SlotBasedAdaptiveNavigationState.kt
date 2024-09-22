@@ -4,7 +4,8 @@ import androidx.compose.runtime.Immutable
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Change.contains
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
 import com.tunjid.scaffold.globalui.slices.routePaneState
 import com.tunjid.scaffold.navigation.unknownRoute
