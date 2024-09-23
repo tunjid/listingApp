@@ -1,19 +1,20 @@
 package com.tunjid.explore.grid.di
 
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
+import com.tunjid.explore.grid.ExploreGridModelFactory
+import com.tunjid.explore.grid.ExploreGridScreen
+import com.tunjid.explore.grid.ExploreGridViewModel
+import com.tunjid.explore.grid.State
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
-import com.tunjid.explore.grid.State
-import com.tunjid.explore.grid.ExploreGridScreen
-import com.tunjid.explore.grid.ExploreGridViewModel
-import com.tunjid.explore.grid.ExploreGridModelFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,7 +49,7 @@ object ExploreGridModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
+    fun routeAdaptiveConfiguration() = threePaneAdaptiveConfiguration<Route> {
         val viewModel = viewModel<ExploreGridViewModel>()
         ExploreGridScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),

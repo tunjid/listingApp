@@ -1,10 +1,5 @@
 package com.tunjid.scaffold.scaffold
 
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -16,14 +11,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
-import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
@@ -31,15 +22,16 @@ import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.adaptive.AdaptiveConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveHostScope
-import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.AdaptiveRouteConfiguration
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
-import com.tunjid.treenav.adaptive.adaptiveRouteConfiguration
+import com.tunjid.treenav.adaptive.adaptiveConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.adaptFor
 import com.tunjid.treenav.current
+import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteTrie
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -57,11 +49,17 @@ interface AdaptiveContentStateFactory {
 
 private class InnerAdaptiveHostRouter(
     navStateFlow: StateFlow<MultiStackNav>,
-    val adaptiveRouter: AdaptiveRouter,
+    val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveConfiguration<ThreePane, Route>>,
     val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
 ) : NewAdaptiveRouter<ThreePane, Route> {
 
     var multiStackNav by mutableStateOf(navStateFlow.value)
+
+    private val configurationTrie = RouteTrie<AdaptiveConfiguration<ThreePane, Route>>().apply {
+        routeConfigurationMap
+            .mapKeys { (template) -> PathPattern(template) }
+            .forEach(::set)
+    }
 
     override val navigationState: Node
         get() = multiStackNav
@@ -71,32 +69,29 @@ private class InnerAdaptiveHostRouter(
 
     override fun configuration(
         node: Route
-    ): AdaptiveRouteConfiguration<ThreePane, Route> = adaptiveRouteConfiguration(
-        paneMapping = { primary ->
-            mapOf(
-                ThreePane.Primary to primary,
-                ThreePane.Secondary to adaptiveRouter.secondaryNodeFor(node) as? Route?,
-            )
-        },
-        render = { paneNode ->
-            val factory =
-                remember(paneNode) { nodeViewModelFactoryProvider.viewModelFactoryFor(paneNode) }
-            CompositionLocalProvider(
-                LocalViewModelFactory provides factory
-            ) {
-                adaptiveRouter.destination(paneNode).invoke()
+    ): AdaptiveConfiguration<ThreePane, Route> {
+        val configuration = configurationTrie[node]!!
+        return adaptiveConfiguration(
+            transitions = configuration.transitions,
+            paneMapping = configuration.paneMapper,
+            render = { paneNode ->
+                val factory =
+                    remember(paneNode) { nodeViewModelFactoryProvider.viewModelFactoryFor(paneNode) }
+                CompositionLocalProvider(
+                    LocalViewModelFactory provides factory
+                ) {
+                    with(configuration) {
+                        render(paneNode)
+                    }
+                }
             }
-        }
-    )
-
-    override fun transitionsFor(state: AdaptivePaneState<ThreePane, Route>): com.tunjid.treenav.adaptive.Adaptive.Transitions? {
-        return null
+        )
     }
 }
 
 @Stable
 class SavedStateAdaptiveContentState @AssistedInject constructor(
-    private val adaptiveRouter: AdaptiveRouter,
+    private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveConfiguration<ThreePane, Route>>,
     private val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
     private val navStateFlow: StateFlow<MultiStackNav>,
     private val uiStateFlow: StateFlow<UiState>,
@@ -111,7 +106,7 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
         val inner = remember {
             InnerAdaptiveHostRouter(
                 navStateFlow = navStateFlow,
-                adaptiveRouter = adaptiveRouter,
+                routeConfigurationMap = routeConfigurationMap,
                 nodeViewModelFactoryProvider = nodeViewModelFactoryProvider
             )
         }
@@ -134,7 +129,6 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
         LaunchedEffect(ui) {
             ui.collect {
                 windowSizeClass.value = it.windowSizeClass
-                println("WINDOW SIZE CLASS: ${windowSizeClass.value}")
             }
         }
 
@@ -166,37 +160,37 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
 }
 
 
-@Composable
-private fun AnimatedVisibilityScope.modifierFor(
-    adaptiveRouter: AdaptiveRouter,
-    paneState: Adaptive.PaneState,
-    windowSizeClass: WindowSizeClass,
-) = when (paneState.pane) {
-    Adaptive.Pane.Primary, Adaptive.Pane.Secondary -> FillSizeModifier
-        .background(color = MaterialTheme.colorScheme.surface)
-        .then(
-            when {
-                windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp -> Modifier.clip(
-                    RoundedCornerShape(16.dp)
-                )
-
-                else -> Modifier
-            }
-        )
-        .then(
-            when (val enterAndExit = adaptiveRouter.transitionsFor(paneState)) {
-                null -> Modifier
-                else -> Modifier.animateEnterExit(
-                    enter = enterAndExit.enter,
-                    exit = enterAndExit.exit
-                )
-            }
-        )
-
-    Adaptive.Pane.TransientPrimary -> FillSizeModifier
-        .backPreviewModifier()
-
-    null -> FillSizeModifier
-}
-
-private val FillSizeModifier = Modifier.fillMaxSize()
+//@Composable
+//private fun AnimatedVisibilityScope.modifierFor(
+//    adaptiveRouter: AdaptiveRouter,
+//    paneState: Adaptive.PaneState,
+//    windowSizeClass: WindowSizeClass,
+//): Modifier = when (paneState.pane) {
+//    Adaptive.Pane.Primary, Adaptive.Pane.Secondary -> FillSizeModifier
+//        .background(color = MaterialTheme.colorScheme.surface)
+//        .then(
+//            when {
+//                windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp -> Modifier.clip(
+//                    RoundedCornerShape(16.dp)
+//                )
+//
+//                else -> Modifier
+//            }
+//        )
+//        .then(
+//            when (val enterAndExit = adaptiveRouter.transitionsFor(paneState)) {
+//                null -> Modifier
+//                else -> Modifier.animateEnterExit(
+//                    enter = enterAndExit.enter,
+//                    exit = enterAndExit.exit
+//                )
+//            }
+//        )
+//
+//    Adaptive.Pane.TransientPrimary -> FillSizeModifier
+//        .backPreviewModifier()
+//
+//    null -> FillSizeModifier
+//}
+//
+//private val FillSizeModifier = Modifier.fillMaxSize()

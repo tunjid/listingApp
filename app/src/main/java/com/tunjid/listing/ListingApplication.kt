@@ -11,7 +11,6 @@ import coil.ImageLoaderFactory
 import coil.decode.VideoFrameDecoder
 import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
-import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
@@ -62,7 +61,6 @@ class ListingApplication : Application(), ImageLoaderFactory {
 }
 
 interface ListingApp {
-    val adaptiveRouter: AdaptiveRouter
     val adaptiveContentStateCreator: (CoroutineScope, SaveableStateHolder) -> AdaptiveContentState
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
@@ -87,7 +85,6 @@ class PersistedListingApp @Inject constructor(
     appScope: CoroutineScope,
     navigationStateStream: StateFlow<MultiStackNav>,
     savedStateRepository: SavedStateRepository,
-    override val adaptiveRouter: AdaptiveRouter,
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,

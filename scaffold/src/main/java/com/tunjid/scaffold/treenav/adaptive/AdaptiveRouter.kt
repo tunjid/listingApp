@@ -28,9 +28,7 @@ interface AdaptiveRouter<T, R : Node> {
 
     val currentNode: R
 
-    fun configuration(node: R): AdaptiveRouteConfiguration<T, R>
-
-    fun transitionsFor(state: AdaptivePaneState<T, R>): Adaptive.Transitions?
+    fun configuration(node: R): AdaptiveConfiguration<T, R>
 }
 
 @Composable

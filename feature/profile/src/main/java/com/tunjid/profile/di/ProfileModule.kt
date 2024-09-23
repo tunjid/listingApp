@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.adaptive.routeOf
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -33,7 +34,7 @@ object ProfileModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
+    fun routeAdaptiveConfiguration() = threePaneAdaptiveConfiguration<Route> { route ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {

@@ -5,12 +5,13 @@ import com.tunjid.explore.pager.ExplorePagerStateHolderFactory
 import com.tunjid.explore.pager.ExplorePagerViewModel
 import com.tunjid.explore.pager.FullscreenGalleryScreen
 import com.tunjid.explore.pager.State
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModel
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -56,7 +57,7 @@ object ExplorePagerModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration {
+    fun routeAdaptiveConfiguration() = threePaneAdaptiveConfiguration<Route> {
         val viewModel = viewModel<ExplorePagerViewModel>()
         FullscreenGalleryScreen(
             modifier = Modifier,

@@ -6,13 +6,14 @@ import com.tunjid.feature.feed.ListingFeedStateHolderFactory
 import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.feature.feed.State
 import com.tunjid.listing.data.model.ListingQuery
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -25,7 +26,6 @@ import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
 import kotlinx.serialization.modules.subclass
-import kotlin.reflect.KClass
 
 internal const val FeedPattern = "/listings"
 internal const val FavoritesPattern = "/favorites"
@@ -81,7 +81,7 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
-    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration {
+    fun feedAdaptiveConfiguration() = threePaneAdaptiveConfiguration<Route> {
         val viewModel = viewModel<ListingFeedViewModel>()
         ListingFeedScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),

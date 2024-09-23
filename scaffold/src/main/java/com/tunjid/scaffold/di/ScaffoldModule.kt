@@ -1,16 +1,13 @@
 package com.tunjid.scaffold.di
 
 import android.content.Context
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.DelegatingByteSerializer
-import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
-import com.tunjid.scaffold.adaptive.AdaptiveRouteConfiguration
 import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
@@ -25,17 +22,13 @@ import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
-import com.tunjid.scaffold.navigation.RouteNotFound
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.Node
-import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParser
-import com.tunjid.treenav.strings.RouteTrie
 import com.tunjid.treenav.strings.routeParserFrom
 import dagger.Binds
 import dagger.Module
@@ -68,14 +61,6 @@ typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 data class SavedStateType(
     val apply: PolymorphicModuleBuilder<ByteSerializable>.() -> Unit
 )
-
-interface AdaptiveRouter {
-    fun destination(node: Node): @Composable () -> Unit
-
-    fun secondaryNodeFor(route: Route): Node?
-
-    fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions?
-}
 
 inline fun <reified T : ByteSerializable> ByteSerializer.restoreState(savedState: ByteArray?): T? {
     return try {
@@ -127,32 +112,6 @@ object ScaffoldModule {
             .sortedWith(routeMatchingComparator())
             .map(Pair<String, @kotlin.jvm.JvmSuppressWildcards RouteMatcher>::second)
         return routeParserFrom(*(routeMatchers).toTypedArray())
-    }
-
-    @Provides
-    @Singleton
-    fun router(
-        routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveRouteConfiguration>,
-    ): AdaptiveRouter {
-        val configurationTrie = RouteTrie<AdaptiveRouteConfiguration>().apply {
-            routeConfigurationMap
-                .mapKeys { (template) -> PathPattern(template) }
-                .forEach(::set)
-        }
-
-        return object : AdaptiveRouter {
-            override fun secondaryNodeFor(route: Route): Node? =
-                configurationTrie[route]?.secondaryRoute(route)
-
-            override fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions? =
-                (state.currentNode as? Route)
-                    ?.let(configurationTrie::get)?.transitionsFor(state)
-
-
-            override fun destination(node: Node): @Composable () -> Unit = {
-                (node as? Route)?.let(configurationTrie::get)?.Render(node) ?: RouteNotFound()
-            }
-        }
     }
 
     @Provides

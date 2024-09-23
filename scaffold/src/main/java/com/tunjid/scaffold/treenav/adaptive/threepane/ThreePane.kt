@@ -16,17 +16,26 @@
 
 package com.tunjid.treenav.adaptive.threepane
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptation.Swap
-import com.tunjid.treenav.adaptive.AdaptiveRouteConfiguration
+import com.tunjid.treenav.adaptive.Adaptive
+import com.tunjid.treenav.adaptive.AdaptiveConfiguration
+import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptiveRouter
 
 /**
- * A layout in the hierarchy that hosts an [AdaptiveRouteConfiguration]
+ * A layout in the hierarchy that hosts an [AdaptiveConfiguration]
  */
 enum class ThreePane {
     Primary,
@@ -56,9 +65,9 @@ enum class ThreePane {
 fun <R : Node> AdaptiveRouter<ThreePane, R>.adaptFor(
     windowSizeClassState: State<WindowSizeClass>,
 ) = object : AdaptiveRouter<ThreePane, R> by this {
-    override fun configuration(node: R): AdaptiveRouteConfiguration<ThreePane, R> {
+    override fun configuration(node: R): AdaptiveConfiguration<ThreePane, R> {
         val original = this@adaptFor.configuration(node)
-        return AdaptiveRouteConfiguration(
+        return AdaptiveConfiguration(
             render = original.render,
             transitions = original.transitions,
             paneMapper = { inner ->
@@ -77,3 +86,58 @@ fun <R : Node> AdaptiveRouter<ThreePane, R>.adaptFor(
         )
     }
 }
+
+fun <R : Node> threePaneAdaptiveConfiguration(
+    transitions: AdaptivePaneScope<ThreePane, R>.() -> Adaptive.Transitions = {
+        val state = paneState
+        when (state.pane) {
+            ThreePane.Primary,
+            ThreePane.Secondary -> when (state.adaptation) {
+                ThreePane.PrimaryToSecondary,
+                ThreePane.SecondaryToPrimary -> NoTransition
+
+                else -> DefaultTransition
+            }
+
+            ThreePane.TransientPrimary -> when (state.adaptation) {
+                ThreePane.PrimaryToTransient -> when (state.pane) {
+                    ThreePane.Secondary -> DefaultTransition
+                    else -> NoTransition
+                }
+
+                else -> DefaultTransition
+            }
+
+            else -> NoTransition
+        }
+    },
+    paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
+        mapOf(ThreePane.Primary to it)
+    },
+    render: @Composable AdaptivePaneScope<ThreePane, R>.(R) -> Unit
+) = AdaptiveConfiguration(
+    paneMapper = paneMapping,
+    transitions = transitions,
+    render = render
+)
+
+private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
+    durationMillis = 700
+)
+
+private val DefaultTransition = Adaptive.Transitions(
+    enter = fadeIn(
+        animationSpec = RouteTransitionAnimationSpec,
+        // This is needed because I can't exclude shared elements from transitions
+        // so to actually see them move, start fading in from 0.1f
+        initialAlpha = 0.1f
+    ),
+    exit = fadeOut(
+        animationSpec = RouteTransitionAnimationSpec
+    )
+)
+
+private val NoTransition = Adaptive.Transitions(
+    enter = EnterTransition.None,
+    exit = ExitTransition.None,
+)
