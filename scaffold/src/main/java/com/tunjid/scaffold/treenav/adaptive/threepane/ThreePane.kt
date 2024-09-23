@@ -30,12 +30,12 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptation.Swap
 import com.tunjid.treenav.adaptive.Adaptive
-import com.tunjid.treenav.adaptive.AdaptiveConfiguration
+import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.AdaptiveRouter
+import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 
 /**
- * A layout in the hierarchy that hosts an [AdaptiveConfiguration]
+ * A layout in the hierarchy that hosts an [AdaptiveNodeConfiguration]
  */
 enum class ThreePane {
     Primary,
@@ -62,12 +62,12 @@ enum class ThreePane {
     }
 }
 
-fun <S : Node, R : Node> AdaptiveRouter<ThreePane, S, R>.adaptFor(
+fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.windowSizeClassConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
-) = object : AdaptiveRouter<ThreePane, S, R> by this {
-    override fun configuration(node: R): AdaptiveConfiguration<ThreePane, R> {
-        val original = this@adaptFor.configuration(node)
-        return AdaptiveConfiguration(
+) = object : AdaptiveNavHostConfiguration<ThreePane, S, R> by this {
+    override fun configuration(node: R): AdaptiveNodeConfiguration<ThreePane, R> {
+        val original = this@windowSizeClassConfiguration.configuration(node)
+        return AdaptiveNodeConfiguration(
             render = original.render,
             transitions = original.transitions,
             paneMapper = { inner ->
@@ -115,7 +115,7 @@ fun <R : Node> threePaneAdaptiveConfiguration(
         mapOf(ThreePane.Primary to it)
     },
     render: @Composable AdaptivePaneScope<ThreePane, R>.(R) -> Unit
-) = AdaptiveConfiguration(
+) = AdaptiveNodeConfiguration(
     paneMapper = paneMapping,
     transitions = transitions,
     render = render

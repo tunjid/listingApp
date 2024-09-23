@@ -28,7 +28,7 @@ import com.tunjid.treenav.Node
 fun <T, R : Node> AdaptiveNavHost(
     state: AdaptiveNavHostState<T, R>,
     modifier: Modifier = Modifier,
-    content: @Composable AdaptiveHostScope<T, R>.() -> Unit
+    content: @Composable AdaptiveNavHostScope<T, R>.() -> Unit
 ) {
 
     LaunchedEffect(state) {

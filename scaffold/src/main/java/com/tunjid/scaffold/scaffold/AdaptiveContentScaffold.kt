@@ -65,7 +65,7 @@ import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.UiChromeState
 import com.tunjid.treenav.adaptive.Adaptation
-import com.tunjid.treenav.adaptive.AdaptiveHostScope
+import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.PrimaryToSecondary
 import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.SecondaryToPrimary
@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
  * Motionally intelligent, adaptive pane for the hosting the navigation routes
  */
 @Composable
-internal fun AdaptiveHostScope<ThreePane, Route>.AdaptiveContentScaffold(
+internal fun AdaptiveNavHostScope<ThreePane, Route>.AdaptiveContentScaffold(
     positionalState: UiChromeState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
 ) {

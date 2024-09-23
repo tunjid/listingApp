@@ -22,17 +22,17 @@ import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
 
 @Stable
-interface AdaptiveRouter<T, S : Node, R : Node> {
+interface AdaptiveNavHostConfiguration<T, S : Node, R : Node> {
 
     val navigationState: S
 
     val currentNode: R
 
-    fun configuration(node: R): AdaptiveConfiguration<T, R>
+    fun configuration(node: R): AdaptiveNodeConfiguration<T, R>
 }
 
 @Composable
-internal fun <T, R : Node> AdaptiveRouter<T, *, R>.Destination(
+internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
     paneScope: AdaptivePaneScope<T, R>
 ) {
     val current = remember(paneScope.paneState.currentNode) {
@@ -44,7 +44,7 @@ internal fun <T, R : Node> AdaptiveRouter<T, *, R>.Destination(
 }
 
 @Composable
-internal fun <T, R : Node> AdaptiveRouter<T, *, R>.paneMapping(): Map<T, R?> {
+internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.paneMapping(): Map<T, R?> {
     val current = remember(currentNode) { currentNode }
     return current.let {
         configuration(it).paneMapping(it)

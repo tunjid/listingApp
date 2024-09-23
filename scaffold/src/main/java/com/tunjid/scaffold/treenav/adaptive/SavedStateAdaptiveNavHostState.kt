@@ -1,11 +1,11 @@
 package com.tunjid.treenav.adaptive
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -33,11 +33,11 @@ import com.tunjid.treenav.traverse
 interface AdaptiveNavHostState<T, R : Node> {
 
     @Composable
-    fun scope(): AdaptiveHostScope<T, R>
+    fun scope(): AdaptiveNavHostScope<T, R>
 }
 
 @Stable
-interface AdaptiveHostScope<T, R : Node> {
+interface AdaptiveNavHostScope<T, R : Node> {
 
     @Composable
     fun Destination(pane: T)
@@ -55,20 +55,19 @@ interface AdaptiveHostScope<T, R : Node> {
 @Stable
 class SavedStateAdaptiveNavHostState<T, R : Node>(
     private val panes: List<T>,
-    private val adaptiveRouter: AdaptiveRouter<T, *, R>,
+    private val router: AdaptiveNavHostConfiguration<T, *, R>,
 ) : AdaptiveNavHostState<T, R> {
 
-
     @Composable
-    override fun scope(): AdaptiveHostScope<T, R> {
-        val navigationState = adaptiveRouter.navigationState
-        val panesToNodes = adaptiveRouter.paneMapping()
+    override fun scope(): AdaptiveNavHostScope<T, R> {
+        val navigationState = router.navigationState
+        val panesToNodes = router.paneMapping()
         val saveableStateHolder = rememberSaveableStateHolder()
 
         val adaptiveContentScope = remember {
-            SavedStateAdaptiveHostScope(
+            SavedStateAdaptiveNavHostScope(
                 panes = panes,
-                adaptiveRouter = adaptiveRouter,
+                router = router,
                 initialPanesToNodes = panesToNodes,
                 saveableStateHolder = saveableStateHolder,
             )
@@ -86,12 +85,16 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
 
     companion object {
         @Stable
-        private class SavedStateAdaptiveHostScope<T, R : Node>(
+        private class SavedStateAdaptiveNavHostScope<T, R : Node>(
             panes: List<T>,
             initialPanesToNodes: Map<T, R?>,
             saveableStateHolder: SaveableStateHolder,
-            val adaptiveRouter: AdaptiveRouter<T, *, R>,
-        ) : AdaptiveHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
+            val router: AdaptiveNavHostConfiguration<T, *, R>,
+        ) : AdaptiveNavHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
+
+            private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
+                rootNodeProvider = router::navigationState
+            )
 
             val slots = List(panes.size, Adaptive::Slot).toSet()
 
@@ -99,11 +102,8 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
                     slots = slots,
                     panesToNodes = initialPanesToNodes,
-                    backStackIds = adaptiveRouter.navigationState.backStackIds(),
+                    backStackIds = router.navigationState.backStackIds(),
                 )
-            )
-            private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
-                rootNodeProvider = adaptiveRouter::navigationState
             )
 
             private val slotsToRoutes =
@@ -156,7 +156,11 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 paneTransition.AnimatedContent(
                     contentKey = { it.currentNode?.id },
                     transitionSpec = {
-                        EnterTransition.None togetherWith ExitTransition.None
+                        ContentTransform(
+                            targetContentEnter = EnterTransition.None,
+                            initialContentExit = ExitTransition.None,
+                            sizeTransform = null,
+                        )
                     }
                 ) { targetPaneState ->
                     val scope = remember {
@@ -181,7 +185,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                                 ),
                             ) {
                                 SaveableStateProvider(node.id) {
-                                    adaptiveRouter.Destination(paneScope = scope)
+                                    router.Destination(paneScope = scope)
                                     DisposableEffect(Unit) {
                                         onDispose {
                                             val routeIds = adaptiveNavigationState.nodeIds

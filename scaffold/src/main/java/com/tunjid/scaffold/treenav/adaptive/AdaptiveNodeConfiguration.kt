@@ -8,7 +8,7 @@ import com.tunjid.treenav.Node
 /**
  * Route implementation with adaptive semantics
  */
-class AdaptiveConfiguration<T, R : Node> internal constructor(
+class AdaptiveNodeConfiguration<T, R : Node> internal constructor(
     val transitions: AdaptivePaneScope<T, R>.() -> Adaptive.Transitions,
     val paneMapper: @Composable (R) -> Map<T, R?>,
     val render: @Composable AdaptivePaneScope<T, R>.(R) -> Unit
@@ -35,7 +35,7 @@ fun <T, R : Node> adaptiveConfiguration(
     transitions: AdaptivePaneScope<T, R>.() -> Adaptive.Transitions = { NoTransition },
     paneMapping: @Composable (R) -> Map<T, R?> = { emptyMap() },
     render: @Composable AdaptivePaneScope<T, R>.(R) -> Unit
-) = AdaptiveConfiguration(
+) = AdaptiveNodeConfiguration(
     paneMapper = paneMapping,
     transitions = transitions,
     render = render

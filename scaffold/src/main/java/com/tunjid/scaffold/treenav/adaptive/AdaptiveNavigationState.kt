@@ -43,7 +43,7 @@ object Adaptive {
 
 
     /**
-     * A spot taken by an [AdaptiveConfiguration] that may be moved in from [Pane] to [Pane]
+     * A spot taken by an [AdaptiveNodeConfiguration] that may be moved in from [Pane] to [Pane]
      */
     @JvmInline
     value class Slot internal constructor(val index: Int)
