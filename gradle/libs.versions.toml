@@ -46,7 +46,7 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = 
 compose-compiler-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "org-jetbrains-kotlin-android" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
-androidx-compose-foundation-foundation = { group = "androidx.compose.foundation", name = "foundation"}
+androidx-compose-foundation-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
 androidx-compose-material-core = { group = "androidx.compose.material", name = "material" }
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }

@@ -26,7 +26,6 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.Adaptive
-import com.tunjid.scaffold.adaptive.AdaptiveContentRoot
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 import com.tunjid.scaffold.globalui.BackStatus
@@ -69,23 +68,23 @@ fun Scaffold(
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
 //                AdaptiveContentRoot(adaptiveContentState) {
-                    AdaptiveNavHost(
-                        state = adaptiveContentState,
-                        modifier = modifier.fillMaxSize()
-                    ) {
-                        AdaptiveContentScaffold(
-                            positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-                                mapper = UiState::uiChromeState
-                            ).value,
-                            onPaneAnchorChanged = remember {
-                                { paneAnchor: PaneAnchor ->
-                                    globalUiStateHolder.accept {
-                                        copy(paneAnchor = paneAnchor)
-                                    }
+                AdaptiveNavHost(
+                    state = adaptiveContentState,
+                    modifier = modifier.fillMaxSize()
+                ) {
+                    AdaptiveContentScaffold(
+                        positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
+                            mapper = UiState::uiChromeState
+                        ).value,
+                        onPaneAnchorChanged = remember {
+                            { paneAnchor: PaneAnchor ->
+                                globalUiStateHolder.accept {
+                                    copy(paneAnchor = paneAnchor)
                                 }
-                            },
-                        )
-                    }
+                            }
+                        },
+                    )
+                }
 //                }
                 AppFab(
                     globalUiStateHolder = globalUiStateHolder,

@@ -5,12 +5,12 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.tunjid.data.favorite.database.FavoriteDao
 import com.tunjid.data.favorite.database.model.FavoriteEntity
-import com.tunjid.data.media.database.MediaDao
-import com.tunjid.data.media.database.model.MediaEntity
 import com.tunjid.data.listing.database.ListingDao
 import com.tunjid.data.listing.database.UserDao
 import com.tunjid.data.listing.database.model.ListingEntity
 import com.tunjid.data.listing.database.model.UserEntity
+import com.tunjid.data.media.database.MediaDao
+import com.tunjid.data.media.database.model.MediaEntity
 
 @Database(
     entities = [

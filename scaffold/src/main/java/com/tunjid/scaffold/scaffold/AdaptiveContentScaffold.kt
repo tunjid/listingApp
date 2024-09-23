@@ -52,8 +52,6 @@ import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.composables.dragtodismiss.DragToDismissState
-
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.COMPACT
@@ -68,7 +66,6 @@ import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.UiChromeState
 import com.tunjid.treenav.adaptive.Adaptation
 import com.tunjid.treenav.adaptive.AdaptiveHostScope
-import com.tunjid.treenav.adaptive.AdaptiveNavigationState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.PrimaryToSecondary
 import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.SecondaryToPrimary

@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.listing.ui.theme.ListingAppTheme
 import com.tunjid.mutator.mutationOf
-import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.NavMode

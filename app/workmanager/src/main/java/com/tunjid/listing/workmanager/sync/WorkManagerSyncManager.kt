@@ -38,10 +38,11 @@ class WorkManagerSyncManager @Inject constructor(
     }
 }
 
-private fun List<WorkInfo>.status() = when(firstOrNull()?.state) {
+private fun List<WorkInfo>.status() = when (firstOrNull()?.state) {
     null,
     State.BLOCKED,
     State.ENQUEUED -> SyncStatus.Idle
+
     State.RUNNING -> SyncStatus.Running
     State.SUCCEEDED -> SyncStatus.Success
     State.FAILED -> SyncStatus.Failure

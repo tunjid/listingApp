@@ -18,7 +18,7 @@ import kotlinx.serialization.Transient
 
 sealed class Action(val key: String) {
 
-    sealed class LoadItems: Action("LoadItems") {
+    sealed class LoadItems : Action("LoadItems") {
         data class GridSize(
             val numOfColumns: Int
         ) : LoadItems()

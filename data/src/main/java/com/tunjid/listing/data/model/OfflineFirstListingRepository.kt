@@ -1,12 +1,12 @@
 package com.tunjid.listing.data.model
 
-import com.tunjid.data.media.database.MediaDao
-import com.tunjid.data.media.database.model.MediaEntity
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.database.ListingDao
 import com.tunjid.data.listing.database.UserDao
 import com.tunjid.data.listing.database.model.ListingEntity
 import com.tunjid.data.listing.database.model.UserEntity
+import com.tunjid.data.media.database.MediaDao
+import com.tunjid.data.media.database.model.MediaEntity
 import com.tunjid.listing.sync.Synchronizer
 import com.tunjid.network.ListingNetworkDataSource
 import com.tunjid.network.model.NetworkHost

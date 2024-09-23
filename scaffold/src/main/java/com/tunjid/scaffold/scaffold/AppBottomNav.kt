@@ -86,6 +86,6 @@ internal fun BoxScope.AppBottomNav(
                 .height(with(LocalDensity.current) {
                     state.navBarSize.toDp()
                 })
-        ){}
+        ) {}
     }
 }

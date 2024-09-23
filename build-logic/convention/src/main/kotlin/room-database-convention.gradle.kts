@@ -1,7 +1,5 @@
 import androidx.room.gradle.RoomExtension
 import ext.libs
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.dependencies
 
 plugins {
     id("androidx.room")

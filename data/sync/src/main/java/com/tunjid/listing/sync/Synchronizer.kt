@@ -5,8 +5,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.cancellation.CancellationException
 
 enum class SyncStatus {
-     Idle, Running, Cancelled, Success, Failure
+    Idle, Running, Cancelled, Success, Failure
 }
+
 interface SyncManager {
     val status: Flow<SyncStatus>
     fun requestSync()

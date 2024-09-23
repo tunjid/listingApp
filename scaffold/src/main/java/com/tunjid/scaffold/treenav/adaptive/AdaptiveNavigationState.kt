@@ -3,7 +3,6 @@ package com.tunjid.treenav.adaptive
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import com.tunjid.treenav.Node
-import kotlin.jvm.JvmInline
 
 interface AdaptiveNavigationState<T, R : Node> {
 
