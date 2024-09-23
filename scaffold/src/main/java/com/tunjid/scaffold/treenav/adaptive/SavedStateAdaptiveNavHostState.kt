@@ -60,7 +60,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
 
     @Composable
     override fun scope(): AdaptiveNavHostScope<T, R> {
-        val navigationState = router.navigationState
+        val navigationState by router.navigationState
         val panesToNodes = router.paneMapping()
         val saveableStateHolder = rememberSaveableStateHolder()
 
@@ -93,7 +93,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
         ) : AdaptiveNavHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
 
             private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
-                rootNodeProvider = router::navigationState
+                rootNodeProvider = router.navigationState::value
             )
 
             val slots = List(panes.size, Adaptive::Slot).toSet()
@@ -102,7 +102,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
                     slots = slots,
                     panesToNodes = initialPanesToNodes,
-                    backStackIds = router.navigationState.backStackIds(),
+                    backStackIds = router.navigationState.value.backStackIds(),
                 )
             )
 

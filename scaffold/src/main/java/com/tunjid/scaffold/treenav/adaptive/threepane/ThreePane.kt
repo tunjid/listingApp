@@ -30,9 +30,9 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptation.Swap
 import com.tunjid.treenav.adaptive.Adaptive
+import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 
 /**
  * A layout in the hierarchy that hosts an [AdaptiveNodeConfiguration]
@@ -64,27 +64,31 @@ enum class ThreePane {
 
 fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.windowSizeClassConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
-) = object : AdaptiveNavHostConfiguration<ThreePane, S, R> by this {
-    override fun configuration(node: R): AdaptiveNodeConfiguration<ThreePane, R> {
-        val original = this@windowSizeClassConfiguration.configuration(node)
-        return AdaptiveNodeConfiguration(
-            render = original.render,
-            transitions = original.transitions,
-            paneMapper = { inner ->
-                // Consider navigation state different if window size class changes
-                val windowSizeClass by windowSizeClassState
-                val originalMapping = original.paneMapper(inner)
-                val primaryNode = originalMapping[ThreePane.Primary]
-                mapOf(
-                    ThreePane.Primary to primaryNode,
-                    ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryNode ->
-                        secondaryNode?.id != primaryNode?.id
-                                && windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
-                    },
-                )
-            }
-        )
-    }
+): AdaptiveNavHostConfiguration<ThreePane, S, R> {
+    return AdaptiveNavHostConfiguration(
+        navigationState = navigationState,
+        currentNode = currentNode,
+        configuration = { node ->
+            val original = this@windowSizeClassConfiguration.configuration(node)
+            AdaptiveNodeConfiguration(
+                render = original.render,
+                transitions = original.transitions,
+                paneMapper = { inner ->
+                    // Consider navigation state different if window size class changes
+                    val windowSizeClass by windowSizeClassState
+                    val originalMapping = original.paneMapper(inner)
+                    val primaryNode = originalMapping[ThreePane.Primary]
+                    mapOf(
+                        ThreePane.Primary to primaryNode,
+                        ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryNode ->
+                            secondaryNode?.id != primaryNode?.id
+                                    && windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
+                        },
+                    )
+                }
+            )
+        }
+    )
 }
 
 fun <R : Node> threePaneAdaptiveConfiguration(

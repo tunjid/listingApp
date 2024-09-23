@@ -10,11 +10,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -61,17 +61,48 @@ class SavedStateAdaptiveContentState @Inject constructor(
 
     @Composable
     override fun scope(): AdaptiveNavHostScope<ThreePane, Route> {
-        val adaptiveHostRouter = remember {
-            AppAdaptiveNavHostConfiguration(
-                navStateFlow = navStateFlow,
-                routeConfigurationMap = routeConfigurationMap,
-                nodeViewModelFactoryProvider = nodeViewModelFactoryProvider
+
+        val multiStackNavState = remember {
+            mutableStateOf(navStateFlow.value)
+        }
+
+        val configurationTrie = remember {
+            RouteTrie<AdaptiveNodeConfiguration<ThreePane, Route>>().apply {
+                routeConfigurationMap
+                    .mapKeys { (template) -> PathPattern(template) }
+                    .forEach(::set)
+            }
+        }
+
+        val adaptiveNavHostConfiguration = remember {
+            AdaptiveNavHostConfiguration(
+                navigationState = multiStackNavState,
+                currentNode = derivedStateOf {
+                    multiStackNavState.value.current as? Route ?: unknownRoute("")
+                },
+                configuration = { node ->
+                    val configuration = configurationTrie[node]!!
+                    adaptiveNodeConfiguration(
+                        transitions = configuration.transitions,
+                        paneMapping = configuration.paneMapper,
+                        render = { paneNode ->
+                            val factory = remember(paneNode) {
+                                nodeViewModelFactoryProvider.viewModelFactoryFor(paneNode)
+                            }
+                            CompositionLocalProvider(
+                                LocalViewModelFactory provides factory
+                            ) {
+                                with(configuration) { render(paneNode) }
+                            }
+                        }
+                    )
+                }
             )
         }
         val adaptiveNavHostState = remember {
-            SavedStateAdaptiveNavHostState(
+            SavedStateAdaptiveNavHostState<ThreePane, Route>(
                 panes = ThreePane.entries.toList(),
-                router = adaptiveHostRouter
+                router = adaptiveNavHostConfiguration
                     .windowSizeClassConfiguration(
                         windowSizeClassState = windowSizeClass
                     )
@@ -85,9 +116,9 @@ class SavedStateAdaptiveContentState @Inject constructor(
         val rememberedNavStateFlow = remember { navStateFlow }
         val rememberedUiStateFlow = remember { uiStateFlow }
 
-        LaunchedEffect(rememberedNavStateFlow, adaptiveHostRouter) {
+        LaunchedEffect(rememberedNavStateFlow, adaptiveNavHostConfiguration) {
             rememberedNavStateFlow.collect {
-                adaptiveHostRouter.multiStackNav = it
+                multiStackNavState.value = it
             }
         }
 
@@ -125,60 +156,22 @@ class SavedStateAdaptiveContentState @Inject constructor(
     }
 }
 
-private class AppAdaptiveNavHostConfiguration(
-    navStateFlow: StateFlow<MultiStackNav>,
-    val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
-    val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
-) : AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route> {
-
-    var multiStackNav by mutableStateOf(navStateFlow.value)
-
-    private val configurationTrie = RouteTrie<AdaptiveNodeConfiguration<ThreePane, Route>>().apply {
-        routeConfigurationMap
-            .mapKeys { (template) -> PathPattern(template) }
-            .forEach(::set)
-    }
-
-    override val navigationState: MultiStackNav
-        get() = multiStackNav
-
-    override val currentNode: Route
-        get() = multiStackNav.current as? Route ?: unknownRoute("")
-
-    override fun configuration(
-        node: Route
-    ): AdaptiveNodeConfiguration<ThreePane, Route> {
-        val configuration = configurationTrie[node]!!
-        return adaptiveNodeConfiguration(
-            transitions = configuration.transitions,
-            paneMapping = configuration.paneMapper,
-            render = { paneNode ->
-                val factory =
-                    remember(paneNode) { nodeViewModelFactoryProvider.viewModelFactoryFor(paneNode) }
-                CompositionLocalProvider(
-                    LocalViewModelFactory provides factory
-                ) {
-                    with(configuration) {
-                        render(paneNode)
-                    }
-                }
-            }
-        )
-    }
-}
 
 private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPreviewConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,
-) = object : AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route> by this {
-    override fun configuration(node: Route): AdaptiveNodeConfiguration<ThreePane, Route> {
+) = AdaptiveNavHostConfiguration(
+    navigationState = navigationState,
+    currentNode = currentNode,
+    configuration = { node ->
         val original = this@backPreviewConfiguration.configuration(node)
-        return AdaptiveNodeConfiguration(
+        AdaptiveNodeConfiguration(
             transitions = original.transitions,
             paneMapper = paneMapper@{ inner ->
                 val originalMapping = original.paneMapper(inner)
                 val previousRoute =
-                    navigationState.pop().current as? Route ?: return@paneMapper originalMapping
+                    navigationState.value.pop().current as? Route
+                        ?: return@paneMapper originalMapping
 
                 // Consider navigation state different if window size class changes
                 val backStatus by backStatusState
@@ -206,7 +199,7 @@ private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPr
             }
         )
     }
-}
+)
 
 @Composable
 private fun Modifier.modifierFor(
