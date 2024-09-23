@@ -1,24 +1,15 @@
 package com.tunjid.scaffold.scaffold
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,12 +18,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
-import com.tunjid.scaffold.adaptive.AnimatedAdaptiveContentScope
-import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
 import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.di.AdaptiveRouter
@@ -40,13 +28,24 @@ import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
 import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
-import com.tunjid.scaffold.lifecycle.NodeViewModelStoreCreator
+import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.Node
+import com.tunjid.treenav.adaptive.AdaptiveHostScope
+import com.tunjid.treenav.adaptive.AdaptivePaneState
+import com.tunjid.treenav.adaptive.AdaptiveRouteConfiguration
+import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
+import com.tunjid.treenav.adaptive.adaptiveRouteConfiguration
+import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.adaptive.threepane.adaptFor
+import com.tunjid.treenav.current
+import com.tunjid.treenav.strings.Route
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import com.tunjid.treenav.adaptive.AdaptiveRouter as NewAdaptiveRouter
 
 @AssistedFactory
 interface AdaptiveContentStateFactory {
@@ -56,55 +55,97 @@ interface AdaptiveContentStateFactory {
     ): SavedStateAdaptiveContentState
 }
 
-@Stable
-class SavedStateAdaptiveContentState @AssistedInject constructor(
+private class InnerAdaptiveHostRouter(
+    navStateFlow: StateFlow<MultiStackNav>,
     val adaptiveRouter: AdaptiveRouter,
     val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
-    navStateFlow: StateFlow<MultiStackNav>,
-    uiStateFlow: StateFlow<UiState>,
-    @Assisted coroutineScope: CoroutineScope,
-    @Assisted saveableStateHolder: SaveableStateHolder,
-) : AdaptiveContentState,
-    SaveableStateHolder by saveableStateHolder {
+) : NewAdaptiveRouter<ThreePane, Route> {
 
-    private val mutator = coroutineScope.adaptiveNavigationStateMutator(
-        adaptiveRouter = adaptiveRouter,
-        navStateFlow = navStateFlow,
-        uiStateFlow = uiStateFlow,
-        onChanged = ::slotBasedAdaptiveNavigationState::set
-    )
+    var multiStackNav by mutableStateOf(navStateFlow.value)
 
-    internal fun onAction(action: Action) = mutator.accept(action)
+    override val navigationState: Node
+        get() = multiStackNav
 
-    internal var slotBasedAdaptiveNavigationState: SlotBasedAdaptiveNavigationState by mutableStateOf(
-        value = mutator.state.value
-    )
-    override val navigationState: Adaptive.NavigationState
-        get() = slotBasedAdaptiveNavigationState
+    override val currentNode: Route
+        get() = multiStackNav.current as? Route ?: unknownRoute("")
 
-    private val slotsToRoutes =
-        mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
-            map[null] = {}
-            Adaptive.Pane.slots.forEach { slot ->
-                map[slot] = movableContentOf {
-                    Render(slot)
-                }
+    override fun configuration(
+        node: Route
+    ): AdaptiveRouteConfiguration<ThreePane, Route> = adaptiveRouteConfiguration(
+        paneMapping = { primary ->
+            mapOf(
+                ThreePane.Primary to primary,
+                ThreePane.Secondary to adaptiveRouter.secondaryNodeFor(node) as? Route?,
+            )
+        },
+        render = { paneNode ->
+            val factory =
+                remember(paneNode) { nodeViewModelFactoryProvider.viewModelFactoryFor(paneNode) }
+            CompositionLocalProvider(
+                LocalViewModelFactory provides factory
+            ) {
+                adaptiveRouter.destination(paneNode).invoke()
             }
         }
+    )
+
+    override fun transitionsFor(state: AdaptivePaneState<ThreePane, Route>): com.tunjid.treenav.adaptive.Adaptive.Transitions? {
+        return null
+    }
+}
+
+@Stable
+class SavedStateAdaptiveContentState @AssistedInject constructor(
+    private val adaptiveRouter: AdaptiveRouter,
+    private val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
+    private val navStateFlow: StateFlow<MultiStackNav>,
+    private val uiStateFlow: StateFlow<UiState>,
+    @Assisted coroutineScope: CoroutineScope,
+    @Assisted saveableStateHolder: SaveableStateHolder,
+) : AdaptiveContentState, SaveableStateHolder by saveableStateHolder {
+
+    var windowSizeClass = mutableStateOf(WindowSizeClass.COMPACT)
+
+    @Composable
+    override fun scope(): AdaptiveHostScope<ThreePane, Route> {
+        val inner = remember {
+            InnerAdaptiveHostRouter(
+                navStateFlow = navStateFlow,
+                adaptiveRouter = adaptiveRouter,
+                nodeViewModelFactoryProvider = nodeViewModelFactoryProvider
+            )
+        }
+        val actual = remember {
+            SavedStateAdaptiveNavHostState(
+                panes = ThreePane.entries.toList(),
+                adaptiveRouter = inner
+                    .adaptFor(windowSizeClass),
+                saveableStateHolder = this,
+            )
+        }
+
+        val nav = remember { navStateFlow }
+        val ui = remember { uiStateFlow }
+
+        LaunchedEffect(nav, inner) {
+            nav.collect { inner.multiStackNav = it }
+        }
+
+        LaunchedEffect(ui) {
+            ui.collect {
+                windowSizeClass.value = it.windowSizeClass
+                println("WINDOW SIZE CLASS: ${windowSizeClass.value}")
+            }
+        }
+
+        return actual.scope()
+    }
 
     override val overlays: Collection<SharedElementOverlay>
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
-    internal val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
-        rootNodeProvider = navStateFlow::value
-    )
 
-    @Composable
-    override fun RouteIn(pane: Adaptive.Pane) {
-        val slot = slotBasedAdaptiveNavigationState.slotFor(pane)
-        slotsToRoutes.getValue(slot).invoke()
-    }
 
     fun isCurrentlyShared(key: Any): Boolean =
         keysToMovableSharedElements.contains(key)
@@ -124,83 +165,6 @@ class SavedStateAdaptiveContentState @AssistedInject constructor(
     }
 }
 
-/**
- * Renders [slot] into is [Adaptive.Pane] with scopes that allow for animations
- * and shared elements.
- */
-@Composable
-private fun SavedStateAdaptiveContentState.Render(
-    slot: Adaptive.Slot,
-) {
-    val paneTransition = updateTransition(
-        targetState = slotBasedAdaptiveNavigationState.paneStateFor(slot),
-        label = "$slot-PaneTransition",
-    )
-    paneTransition.AnimatedContent(
-        contentKey = { it.currentNode?.id },
-        transitionSpec = {
-            EnterTransition.None togetherWith ExitTransition.None
-        }
-    ) { targetPaneState ->
-        val scope = remember {
-            AnimatedAdaptiveContentScope(
-                paneState = targetPaneState,
-                adaptiveContentHost = this@Render,
-                animatedContentScope = this
-            )
-        }
-        // While technically a backwards write, it stabilizes and ensures the values are
-        // correct at first composition
-        scope.paneState = targetPaneState
-
-        when (val route = targetPaneState.currentNode) {
-            null -> Unit
-            else -> Box(
-                modifier = modifierFor(
-                    adaptiveRouter = adaptiveRouter,
-                    paneState = targetPaneState,
-                    windowSizeClass = navigationState.windowSizeClass
-                )
-            ) {
-                CompositionLocalProvider(
-                    LocalAdaptiveContentScope provides scope,
-                    LocalViewModelFactory provides nodeViewModelFactoryProvider.viewModelFactoryFor(
-                        route
-                    ),
-                    LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(
-                        route
-                    ),
-                ) {
-                    SaveableStateProvider(route.id) {
-                        adaptiveRouter.destination(route).invoke()
-                        DisposableEffect(Unit) {
-                            onDispose {
-                                val routeIds = slotBasedAdaptiveNavigationState.nodeIds
-                                if (!routeIds.contains(route.id)) removeState(route.id)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Add routes ids that are animating out
-        LaunchedEffect(transition.isRunning) {
-            if (transition.targetState == EnterExitState.PostExit) {
-                val routeId = targetPaneState.currentNode?.id ?: return@LaunchedEffect
-                onAction(Action.RouteExitStart(routeId))
-            }
-        }
-        // Remove route ids that have animated out
-        DisposableEffect(Unit) {
-            onDispose {
-                val routeId = targetPaneState.currentNode?.id ?: return@onDispose
-                onAction(Action.RouteExitEnd(routeId))
-                targetPaneState.currentNode?.let(nodeViewModelStoreCreator::clearStoreFor)
-            }
-        }
-    }
-}
 
 @Composable
 private fun AnimatedVisibilityScope.modifierFor(

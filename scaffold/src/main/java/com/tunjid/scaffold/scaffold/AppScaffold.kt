@@ -42,6 +42,7 @@ import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import kotlin.math.roundToInt
 
 /**
@@ -67,21 +68,25 @@ fun Scaffold(
                     navStateHolder = navStateHolder,
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
-                AdaptiveContentRoot(adaptiveContentState) {
-                    AdaptiveContentScaffold(
-                        contentState = adaptiveContentState,
-                        positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-                            mapper = UiState::uiChromeState
-                        ).value,
-                        onPaneAnchorChanged = remember {
-                            { paneAnchor: PaneAnchor ->
-                                globalUiStateHolder.accept {
-                                    copy(paneAnchor = paneAnchor)
+//                AdaptiveContentRoot(adaptiveContentState) {
+                    AdaptiveNavHost(
+                        state = adaptiveContentState,
+                        modifier = modifier.fillMaxSize()
+                    ) {
+                        AdaptiveContentScaffold(
+                            positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
+                                mapper = UiState::uiChromeState
+                            ).value,
+                            onPaneAnchorChanged = remember {
+                                { paneAnchor: PaneAnchor ->
+                                    globalUiStateHolder.accept {
+                                        copy(paneAnchor = paneAnchor)
+                                    }
                                 }
-                            }
-                        },
-                    )
-                }
+                            },
+                        )
+                    }
+//                }
                 AppFab(
                     globalUiStateHolder = globalUiStateHolder,
                 )
