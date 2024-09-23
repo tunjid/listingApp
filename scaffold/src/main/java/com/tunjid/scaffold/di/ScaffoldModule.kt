@@ -1,7 +1,6 @@
 package com.tunjid.scaffold.di
 
 import android.content.Context
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
@@ -24,7 +23,7 @@ import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
+import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -146,12 +145,6 @@ object ScaffoldModule {
     fun lifecycleStateStream(
         lifecycleStateHolder: LifecycleStateHolder
     ): StateFlow<Lifecycle> = lifecycleStateHolder.state
-
-    @Provides
-    fun adaptiveContentStateCreator(
-        factory: AdaptiveContentStateFactory
-    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState =
-        factory::create
 }
 
 @Module
@@ -196,6 +189,11 @@ interface ScaffoldBindModule {
     fun bindPlayerManager(
         playerManager: ExoPlayerManager
     ): PlayerManager
+
+    @Binds
+    fun bindAdaptiveContentState(
+        adaptiveContentState: SavedStateAdaptiveContentState
+    ): AdaptiveContentState
 }
 
 private fun routeMatchingComparator() =

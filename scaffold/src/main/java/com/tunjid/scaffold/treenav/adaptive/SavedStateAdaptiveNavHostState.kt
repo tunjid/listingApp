@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -55,7 +56,6 @@ interface AdaptiveHostScope<T, R : Node> {
 class SavedStateAdaptiveNavHostState<T, R : Node>(
     private val panes: List<T>,
     private val adaptiveRouter: AdaptiveRouter<T, R>,
-    private val saveableStateHolder: SaveableStateHolder,
 ) : AdaptiveNavHostState<T, R> {
 
 
@@ -63,6 +63,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
     override fun scope(): AdaptiveHostScope<T, R> {
         val navigationState = adaptiveRouter.navigationState
         val panesToNodes = adaptiveRouter.paneMapping()
+        val saveableStateHolder = rememberSaveableStateHolder()
 
         val adaptiveContentScope = remember {
             SavedStateAdaptiveHostScope(

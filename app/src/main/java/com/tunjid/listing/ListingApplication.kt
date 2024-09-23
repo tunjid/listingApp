@@ -1,11 +1,6 @@
 package com.tunjid.listing
 
 import android.app.Application
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.VideoFrameDecoder
@@ -61,23 +56,11 @@ class ListingApplication : Application(), ImageLoaderFactory {
 }
 
 interface ListingApp {
-    val adaptiveContentStateCreator: (CoroutineScope, SaveableStateHolder) -> AdaptiveContentState
+    val adaptiveContentState: AdaptiveContentState
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
     val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider
-}
-
-@Composable
-fun ListingApp.adaptiveContentState(): AdaptiveContentState {
-    val scope = rememberCoroutineScope()
-    val saveableStateHolder = rememberSaveableStateHolder()
-    return remember {
-        adaptiveContentStateCreator(
-            scope,
-            saveableStateHolder
-        )
-    }
 }
 
 @Singleton
@@ -89,10 +72,7 @@ class PersistedListingApp @Inject constructor(
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
     override val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
-    override val adaptiveContentStateCreator: (
-        @JvmSuppressWildcards CoroutineScope,
-        @JvmSuppressWildcards SaveableStateHolder
-    ) -> @JvmSuppressWildcards AdaptiveContentState,
+    override val adaptiveContentState: AdaptiveContentState,
 ) : ListingApp {
 
     init {
