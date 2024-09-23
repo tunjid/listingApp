@@ -34,7 +34,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
-import com.tunjid.scaffold.adaptive.Adaptive.key
+import com.tunjid.treenav.adaptive.Adaptive.key
+import com.tunjid.treenav.adaptive.AdaptivePaneState
+import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
@@ -110,7 +113,7 @@ internal class MovableSharedElementData<T>(
     }
 
     private fun updatePaneStateSeen(
-        paneState: Adaptive.PaneState
+        paneState: AdaptivePaneState<ThreePane, Route>
     ) {
         panesKeysToSeenCount[paneState.key] = Unit
     }
@@ -220,7 +223,7 @@ internal class MovableSharedElementData<T>(
             animationMapper: (MovableSharedElementData<*>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val paneState = LocalAdaptiveContentScope.current
+            val paneState = LocalAdaptivePaneScope.current
                 ?.paneState
                 ?.also(::updatePaneStateSeen)
 
@@ -246,8 +249,8 @@ internal class MovableSharedElementData<T>(
             else paneState.canAnimateOnStartingFrames()
         }
 
-        private fun Adaptive.PaneState?.canAnimateOnStartingFrames() =
-            this?.pane != Adaptive.Pane.TransientPrimary
+        private fun AdaptivePaneState<ThreePane, Route>?.canAnimateOnStartingFrames() =
+            this?.pane != ThreePane.TransientPrimary
 
         private val sizeSpec = spring(
             stiffness = Spring.StiffnessLow,

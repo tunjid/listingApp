@@ -25,9 +25,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import com.tunjid.scaffold.adaptive.Adaptive
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
-import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
+import com.tunjid.scaffold.adaptive.LocalAdaptivePaneScope
 import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
@@ -42,6 +41,7 @@ import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
+import com.tunjid.treenav.adaptive.threepane.ThreePane
 import kotlin.math.roundToInt
 
 /**
@@ -166,8 +166,8 @@ internal fun Modifier.backPreviewModifier(): Modifier =
     }
 
 fun Modifier.backPreviewBackgroundModifier(): Modifier = composed {
-    val scope = LocalAdaptiveContentScope.current
-    if (scope?.paneState?.pane != Adaptive.Pane.TransientPrimary)
+    val scope = LocalAdaptivePaneScope.current
+    if (scope?.paneState?.pane != ThreePane.TransientPrimary)
         return@composed this
 
     var elevation by remember { mutableStateOf(0.dp) }

@@ -3,10 +3,8 @@ package com.tunjid.scaffold.adaptive
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -14,29 +12,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import com.tunjid.scaffold.adaptive.Adaptive.key
 import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
+import com.tunjid.treenav.adaptive.Adaptive.key
+import com.tunjid.treenav.adaptive.AdaptivePaneScope
+import com.tunjid.treenav.adaptive.AdaptivePaneState
+import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.strings.Route
 
 /**
  * An implementation of [Adaptive.PaneScope] that supports animations and shared elements
  */
 @Stable
 internal class AnimatedAdaptiveContentScope(
-    paneState: Adaptive.PaneState,
+    paneState: AdaptivePaneState<*, *>,
     val adaptiveContentHost: SavedStateAdaptiveContentState,
     val animatedContentScope: AnimatedContentScope
-) : Adaptive.PaneScope, AnimatedVisibilityScope by animatedContentScope {
+) : AnimatedVisibilityScope by animatedContentScope {
 
-    override val key: String by derivedStateOf { paneState.key }
+     val key: String by derivedStateOf { paneState.key }
 
-    override var paneState by mutableStateOf(paneState)
+     var paneState by mutableStateOf(paneState)
 
-    override fun isCurrentlyShared(key: Any): Boolean =
+     fun isCurrentlyShared(key: Any): Boolean =
         adaptiveContentHost.isCurrentlyShared(key)
 
     @Composable
-    override fun <T> movableSharedElementOf(
+     fun <T> movableSharedElementOf(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
@@ -102,7 +103,7 @@ fun <T> movableSharedElementOf(
 //        }
 //    }
 
-internal val LocalAdaptiveContentScope = staticCompositionLocalOf<Adaptive.PaneScope?> {
+internal val LocalAdaptivePaneScope = staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {
     null
 }
 
@@ -111,28 +112,3 @@ internal val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransit
     TODO()
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-fun AdaptiveContentRoot(
-    adaptiveContentState: AdaptiveContentState,
-    content: @Composable () -> Unit
-) {
-    SharedTransitionLayout(
-        modifier = Modifier.drawWithContent {
-            drawContent()
-            adaptiveContentState.overlays.forEach { overlay ->
-                with(overlay) {
-                    drawInOverlay()
-                }
-            }
-        }
-    ) {
-        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-            content()
-        }
-    }
-}
-
-internal val Adaptive.PaneScope.isPreviewingBack: Boolean
-    get() = paneState.pane == Adaptive.Pane.Primary
-            && paneState.adaptation == Adaptive.Adaptation.PrimaryToTransient

@@ -1,35 +1,10 @@
 package com.tunjid.scaffold.adaptive
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.runtime.Composable
 import com.tunjid.scaffold.navigation.SerializedRouteParams
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
 import kotlinx.serialization.Serializable
-
-/**
- * Route implementation with adaptive semantics
- */
-interface AdaptiveRouteConfiguration {
-
-    @Composable
-    fun Render(route: Route)
-
-    fun transitionsFor(
-        state: Adaptive.PaneState
-    ): Adaptive.Transitions = NoTransition
-
-    /**
-     * Defines what route to show in the secondary panel alongside this route
-     */
-    fun secondaryRoute(route: Route): Route?
-}
 
 /**
  * Basic route definition
@@ -84,25 +59,4 @@ fun routeOf(
     pathArgs = pathArgs,
     queryParams = queryParams,
     children = children
-)
-
-private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
-    durationMillis = 700
-)
-
-private val DefaultTransition = Adaptive.Transitions(
-    enter = fadeIn(
-        animationSpec = RouteTransitionAnimationSpec,
-        // This is needed because I can't exclude shared elements from transitions
-        // so to actually see them move, start fading in from 0.1f
-        initialAlpha = 0.1f
-    ),
-    exit = fadeOut(
-        animationSpec = RouteTransitionAnimationSpec
-    )
-)
-
-private val NoTransition = Adaptive.Transitions(
-    enter = EnterTransition.None,
-    exit = ExitTransition.None,
 )
