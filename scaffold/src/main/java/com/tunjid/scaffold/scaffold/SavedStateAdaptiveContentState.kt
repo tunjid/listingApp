@@ -1,5 +1,10 @@
 package com.tunjid.scaffold.scaffold
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -11,6 +16,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.MovableSharedElementData
@@ -23,11 +30,12 @@ import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
 import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
-import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
+import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
+import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
-import com.tunjid.treenav.adaptive.adaptiveConfiguration
+import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.windowSizeClassConfiguration
 import com.tunjid.treenav.current
@@ -64,8 +72,13 @@ class SavedStateAdaptiveContentState @Inject constructor(
             SavedStateAdaptiveNavHostState(
                 panes = ThreePane.entries.toList(),
                 router = adaptiveHostRouter
-                    .windowSizeClassConfiguration(windowSizeClass)
-                    .backPreviewConfiguration(backStatus),
+                    .windowSizeClassConfiguration(
+                        windowSizeClassState = windowSizeClass
+                    )
+                    .backPreviewConfiguration(
+                        windowSizeClassState = windowSizeClass,
+                        backStatusState = backStatus
+                    ),
             )
         }
 
@@ -136,7 +149,7 @@ private class AppAdaptiveNavHostConfiguration(
         node: Route
     ): AdaptiveNodeConfiguration<ThreePane, Route> {
         val configuration = configurationTrie[node]!!
-        return adaptiveConfiguration(
+        return adaptiveNodeConfiguration(
             transitions = configuration.transitions,
             paneMapping = configuration.paneMapper,
             render = { paneNode ->
@@ -155,15 +168,15 @@ private class AppAdaptiveNavHostConfiguration(
 }
 
 private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPreviewConfiguration(
+    windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,
 ) = object : AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route> by this {
     override fun configuration(node: Route): AdaptiveNodeConfiguration<ThreePane, Route> {
         val original = this@backPreviewConfiguration.configuration(node)
         return AdaptiveNodeConfiguration(
-            render = original.render,
             transitions = original.transitions,
             paneMapper = paneMapper@{ inner ->
-                val originalMapping = original.paneMapping(inner)
+                val originalMapping = original.paneMapper(inner)
                 val previousRoute =
                     navigationState.pop().current as? Route ?: return@paneMapper originalMapping
 
@@ -175,46 +188,57 @@ private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPr
 
                 if (!isPreviewingBack) return@paneMapper originalMapping
 
-
-
-                original.paneMapping(previousRoute) +
+                original.paneMapper(previousRoute) +
                         (ThreePane.TransientPrimary to originalMapping[ThreePane.Primary])
+            },
+            render = paneScope@{ toRender ->
+                val windowSizeClass by windowSizeClassState
+                Box(
+                    Modifier.modifierFor(
+                        windowSizeClass = windowSizeClass,
+                        nodeConfiguration = original,
+                        adaptivePaneScope = this@paneScope
+                    )
+                )
+                {
+                    original.render.invoke(this@paneScope, toRender)
+                }
             }
         )
     }
 }
 
-//@Composable
-//private fun AnimatedVisibilityScope.modifierFor(
-//    router: AdaptiveRouter,
-//    paneState: Adaptive.PaneState,
-//    windowSizeClass: WindowSizeClass,
-//): Modifier = when (paneState.pane) {
-//    Adaptive.Pane.Primary, Adaptive.Pane.Secondary -> FillSizeModifier
-//        .background(color = MaterialTheme.colorScheme.surface)
-//        .then(
-//            when {
-//                windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp -> Modifier.clip(
-//                    RoundedCornerShape(16.dp)
-//                )
-//
-//                else -> Modifier
-//            }
-//        )
-//        .then(
-//            when (val enterAndExit = router.transitionsFor(paneState)) {
-//                null -> Modifier
-//                else -> Modifier.animateEnterExit(
-//                    enter = enterAndExit.enter,
-//                    exit = enterAndExit.exit
-//                )
-//            }
-//        )
-//
-//    Adaptive.Pane.TransientPrimary -> FillSizeModifier
-//        .backPreviewModifier()
-//
-//    null -> FillSizeModifier
-//}
-//
-//private val FillSizeModifier = Modifier.fillMaxSize()
+@Composable
+private fun Modifier.modifierFor(
+    windowSizeClass: WindowSizeClass,
+    nodeConfiguration: AdaptiveNodeConfiguration<ThreePane, Route>,
+    adaptivePaneScope: AdaptivePaneScope<ThreePane, Route>,
+): Modifier = this then with(adaptivePaneScope) {
+    when (paneState.pane) {
+        ThreePane.Primary, ThreePane.Secondary -> FillSizeModifier
+            .background(color = MaterialTheme.colorScheme.surface)
+            .run {
+                when {
+                    windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp -> Modifier.clip(
+                        RoundedCornerShape(16.dp)
+                    )
+
+                    else -> Modifier
+                }
+            }
+            .run {
+                val enterAndExit = nodeConfiguration.transitions(adaptivePaneScope)
+                Modifier.animateEnterExit(
+                    enter = enterAndExit.enter,
+                    exit = enterAndExit.exit
+                )
+            }
+
+        ThreePane.TransientPrimary -> FillSizeModifier
+            .backPreviewModifier()
+
+        else -> FillSizeModifier
+    }
+}
+
+private val FillSizeModifier = Modifier.fillMaxSize()

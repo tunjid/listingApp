@@ -39,7 +39,7 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
         paneScope.paneState.currentNode
     } ?: return
     with(configuration(current)) {
-        paneScope.Render(current)
+        paneScope.render(current)
     }
 }
 
@@ -47,6 +47,6 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
 internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.paneMapping(): Map<T, R?> {
     val current = remember(currentNode) { currentNode }
     return current.let {
-        configuration(it).paneMapping(it)
+        configuration(it).paneMapper(it)
     }
 }

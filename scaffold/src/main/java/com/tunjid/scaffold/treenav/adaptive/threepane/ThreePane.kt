@@ -73,7 +73,7 @@ fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.windowSiz
             paneMapper = { inner ->
                 // Consider navigation state different if window size class changes
                 val windowSizeClass by windowSizeClassState
-                val originalMapping = original.paneMapping(inner)
+                val originalMapping = original.paneMapper(inner)
                 val primaryNode = originalMapping[ThreePane.Primary]
                 mapOf(
                     ThreePane.Primary to primaryNode,
