@@ -46,7 +46,6 @@ sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
 @Stable
 sealed interface AdaptivePaneState<T, R : Node> {
     val currentNode: R?
-    val previousNode: R?
     val pane: T?
     val adaptation: Adaptation
 }

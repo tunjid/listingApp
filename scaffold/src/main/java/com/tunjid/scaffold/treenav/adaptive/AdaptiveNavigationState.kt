@@ -63,8 +63,8 @@ object Adaptive {
      */
     internal data class SlotPaneState<T, R : Node>(
         val slot: Slot?,
+        val previousNode: R?,
         override val currentNode: R?,
-        override val previousNode: R?,
         override val pane: T?,
         override val adaptation: Adaptation,
     ) : AdaptivePaneState<T, R>
