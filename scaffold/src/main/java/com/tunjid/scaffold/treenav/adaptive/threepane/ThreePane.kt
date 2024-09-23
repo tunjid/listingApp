@@ -62,9 +62,9 @@ enum class ThreePane {
     }
 }
 
-fun <R : Node> AdaptiveRouter<ThreePane, R>.adaptFor(
+fun <S : Node, R : Node> AdaptiveRouter<ThreePane, S, R>.adaptFor(
     windowSizeClassState: State<WindowSizeClass>,
-) = object : AdaptiveRouter<ThreePane, R> by this {
+) = object : AdaptiveRouter<ThreePane, S, R> by this {
     override fun configuration(node: R): AdaptiveConfiguration<ThreePane, R> {
         val original = this@adaptFor.configuration(node)
         return AdaptiveConfiguration(

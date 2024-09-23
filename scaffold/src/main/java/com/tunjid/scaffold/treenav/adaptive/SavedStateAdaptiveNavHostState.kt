@@ -55,7 +55,7 @@ interface AdaptiveHostScope<T, R : Node> {
 @Stable
 class SavedStateAdaptiveNavHostState<T, R : Node>(
     private val panes: List<T>,
-    private val adaptiveRouter: AdaptiveRouter<T, R>,
+    private val adaptiveRouter: AdaptiveRouter<T, *, R>,
 ) : AdaptiveNavHostState<T, R> {
 
 
@@ -90,7 +90,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             panes: List<T>,
             initialPanesToNodes: Map<T, R?>,
             saveableStateHolder: SaveableStateHolder,
-            val adaptiveRouter: AdaptiveRouter<T, R>,
+            val adaptiveRouter: AdaptiveRouter<T, *, R>,
         ) : AdaptiveHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
 
             val slots = List(panes.size, Adaptive::Slot).toSet()
