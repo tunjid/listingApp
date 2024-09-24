@@ -1,6 +1,5 @@
 package com.tunjid.scaffold.adaptive
 
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -13,16 +12,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.scaffold.LisingAppAdaptiveNavHostState
-import com.tunjid.treenav.adaptive.Adaptive.key
+import com.tunjid.treenav.Node
+import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 
 
 @Stable
-class Thing {
+class Thing<T, R: Node>(
+    val adaptiveNavHostScope: AdaptiveNavHostScope<T,R>,
+) {
     val overlays: Collection<SharedElementOverlay>
         get() = keysToMovableSharedElements.values
 
@@ -51,39 +51,37 @@ class Thing {
  * An implementation of [Adaptive.PaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedAdaptiveContentScope(
-    paneState: AdaptivePaneState<*, *>,
-    val adaptiveContentHost: LisingAppAdaptiveNavHostState,
-    val animatedContentScope: AnimatedContentScope
-) : AnimatedVisibilityScope by animatedContentScope {
+internal class AnimatedAdaptiveContentScope<T, R: Node>(
+    paneScope: AdaptivePaneScope<T, R>,
+    val thing: Thing<T, R>,
+) : AnimatedVisibilityScope by paneScope, MovableSharedElementScope {
 
-    val key: String by derivedStateOf { paneState.key }
+    val key: String by derivedStateOf { paneScope.key }
 
-    var paneState by mutableStateOf(paneState)
+    var paneScope by mutableStateOf(paneScope)
 
-//     fun isCurrentlyShared(key: Any): Boolean =
-//        adaptiveContentHost.isCurrentlyShared(key)
+    override fun isCurrentlyShared(key: Any): Boolean =
+        thing.isCurrentlyShared(key)
 
     @Composable
-    fun <T> movableSharedElementOf(
+    override fun <T> movableSharedElementOf(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
-        return sharedElement
-//        val currentNavigationState = adaptiveContentHost.navigationState
-//        // This pane state may be animating out. Look up the actual current route
-//        val currentRouteInPane = paneState.pane?.let(
-//            currentNavigationState::nodeFor
-//        )
-//        val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentNode?.id
-//
-//        // Do not use the shared element if this content is being animated out
-//        if (!isCurrentlyAnimatingIn) return { _, _ -> }
-//
-//        return adaptiveContentHost.createOrUpdateSharedElement(
-//            key = key,
-//            sharedElement = sharedElement
-//        )
+        val paneState = paneScope.paneState
+        // This pane state may be animating out. Look up the actual current route
+        val currentRouteInPane = paneState.pane?.let(
+            thing.adaptiveNavHostScope::nodeFor
+        )
+        val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentNode?.id
+
+        // Do not use the shared element if this content is being animated out
+        if (!isCurrentlyAnimatingIn) return { _, _ -> }
+
+        return thing.createOrUpdateSharedElement(
+            key = key,
+            sharedElement = sharedElement
+        )
     }
 }
 

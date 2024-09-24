@@ -29,7 +29,6 @@ import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.paneMapping
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -40,6 +39,7 @@ import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteTrie
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,25 +69,16 @@ class LisingAppAdaptiveNavHostState @Inject constructor(
             }
         }
 
-        val adaptiveNavHostConfiguration = remember {
-            adaptiveNavHostConfiguration(
+        val adaptiveNavHostState = remember {
+            val adaptiveNavHostConfiguration = adaptiveNavHostConfiguration(
                 navigationState = multiStackNavState,
                 currentNode = derivedStateOf {
                     multiStackNavState.value.current as? Route ?: unknownRoute("")
                 },
                 configuration = { node ->
-                    val configuration = configurationTrie[node]!!
-                    adaptiveNodeConfiguration(
-                        transitions = configuration.transitions,
-                        paneMapping = configuration.paneMapper,
-                        render = { paneNode ->
-                            with(configuration) { render(paneNode) }
-                        }
-                    )
+                    configurationTrie[node]!!
                 }
             )
-        }
-        val adaptiveNavHostState = remember {
             SavedStateAdaptiveNavHostState(
                 panes = ThreePane.entries.toList(),
                 configuration = adaptiveNavHostConfiguration
@@ -104,17 +95,21 @@ class LisingAppAdaptiveNavHostState @Inject constructor(
         val rememberedNavStateFlow = remember { navStateFlow }
         val rememberedUiStateFlow = remember { uiStateFlow }
 
-        LaunchedEffect(rememberedNavStateFlow, adaptiveNavHostConfiguration) {
+        LaunchedEffect(rememberedNavStateFlow) {
             rememberedNavStateFlow.collect {
                 multiStackNavState.value = it
             }
         }
 
         LaunchedEffect(rememberedUiStateFlow) {
-            rememberedUiStateFlow.collect {
-                windowSizeClass.value = it.windowSizeClass
-                isPreviewing.value = it.backStatus.isPreviewing
-            }
+            rememberedUiStateFlow
+                .distinctUntilChangedBy {
+                    it.windowSizeClass to it.backStatus.isPreviewing
+                }
+                .collect {
+                    windowSizeClass.value = it.windowSizeClass
+                    isPreviewing.value = it.backStatus.isPreviewing
+                }
         }
 
         return adaptiveNavHostState.scope()
@@ -149,7 +144,7 @@ private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPr
             render = paneScope@{ toRender ->
                 val windowSizeClass by windowSizeClassState
                 Box(
-                    Modifier.modifierFor(
+                    Modifier.adaptiveModifier(
                         windowSizeClass = windowSizeClass,
                         nodeConfiguration = originalConfiguration,
                         adaptivePaneScope = this@paneScope
@@ -163,7 +158,7 @@ private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPr
     })
 
 @Composable
-private fun Modifier.modifierFor(
+private fun Modifier.adaptiveModifier(
     windowSizeClass: WindowSizeClass,
     nodeConfiguration: AdaptiveNodeConfiguration<ThreePane, Route>,
     adaptivePaneScope: AdaptivePaneScope<ThreePane, Route>,
