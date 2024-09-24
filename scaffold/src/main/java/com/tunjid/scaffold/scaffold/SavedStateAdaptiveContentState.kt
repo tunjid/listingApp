@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.globalui.COMPACT
@@ -28,6 +27,7 @@ import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
+import com.tunjid.treenav.adaptive.AdaptiveNavHostState
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
@@ -52,7 +52,7 @@ class SavedStateAdaptiveContentState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
     private val navStateFlow: StateFlow<MultiStackNav>,
     private val uiStateFlow: StateFlow<UiState>,
-) : AdaptiveContentState {
+) : AdaptiveNavHostState<ThreePane, Route> {
 
     private var windowSizeClass = mutableStateOf(WindowSizeClass.COMPACT)
     private var isPreviewing = mutableStateOf(false)
@@ -121,29 +121,6 @@ class SavedStateAdaptiveContentState @Inject constructor(
         }
 
         return adaptiveNavHostState.scope()
-    }
-
-    override val overlays: Collection<SharedElementOverlay>
-        get() = keysToMovableSharedElements.values
-
-    private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
-
-
-    fun isCurrentlyShared(key: Any): Boolean =
-        keysToMovableSharedElements.contains(key)
-
-    fun <T> createOrUpdateSharedElement(
-        key: Any,
-        sharedElement: @Composable (T, Modifier) -> Unit,
-    ): @Composable (T, Modifier) -> Unit {
-        val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
-            MovableSharedElementData(
-                sharedElement = sharedElement,
-                onRemoved = { keysToMovableSharedElements.remove(key) }
-            )
-        }
-        // Can't really guarantee that the caller will use the same key for the right type
-        return movableSharedElementData.moveableSharedElement
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -19,6 +20,33 @@ import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 
+
+@Stable
+class Thing {
+    val overlays: Collection<SharedElementOverlay>
+        get() = keysToMovableSharedElements.values
+
+    private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
+
+
+    fun isCurrentlyShared(key: Any): Boolean =
+        keysToMovableSharedElements.contains(key)
+
+    fun <T> createOrUpdateSharedElement(
+        key: Any,
+        sharedElement: @Composable (T, Modifier) -> Unit,
+    ): @Composable (T, Modifier) -> Unit {
+        val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
+            MovableSharedElementData(
+                sharedElement = sharedElement,
+                onRemoved = { keysToMovableSharedElements.remove(key) }
+            )
+        }
+        // Can't really guarantee that the caller will use the same key for the right type
+        return movableSharedElementData.moveableSharedElement
+    }
+}
+
 /**
  * An implementation of [Adaptive.PaneScope] that supports animations and shared elements
  */
@@ -29,15 +57,15 @@ internal class AnimatedAdaptiveContentScope(
     val animatedContentScope: AnimatedContentScope
 ) : AnimatedVisibilityScope by animatedContentScope {
 
-     val key: String by derivedStateOf { paneState.key }
+    val key: String by derivedStateOf { paneState.key }
 
-     var paneState by mutableStateOf(paneState)
+    var paneState by mutableStateOf(paneState)
 
-     fun isCurrentlyShared(key: Any): Boolean =
-        adaptiveContentHost.isCurrentlyShared(key)
+//     fun isCurrentlyShared(key: Any): Boolean =
+//        adaptiveContentHost.isCurrentlyShared(key)
 
     @Composable
-     fun <T> movableSharedElementOf(
+    fun <T> movableSharedElementOf(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
@@ -103,9 +131,10 @@ fun <T> movableSharedElementOf(
 //        }
 //    }
 
-internal val LocalAdaptivePaneScope = staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {
-    null
-}
+internal val LocalAdaptivePaneScope =
+    staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {
+        null
+    }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 internal val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {

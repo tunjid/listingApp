@@ -6,7 +6,6 @@ import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.DelegatingByteSerializer
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
@@ -23,6 +22,8 @@ import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.adaptive.AdaptiveNavHostState
+import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParser
@@ -185,8 +186,8 @@ interface ScaffoldBindModule {
 
     @Binds
     fun bindAdaptiveContentState(
-        adaptiveContentState: SavedStateAdaptiveContentState
-    ): AdaptiveContentState
+        adaptiveNavHostState: SavedStateAdaptiveContentState
+    ): AdaptiveNavHostState<ThreePane, Route>
 }
 
 private fun routeMatchingComparator() =

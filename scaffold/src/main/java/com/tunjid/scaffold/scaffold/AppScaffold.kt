@@ -25,7 +25,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.LocalAdaptivePaneScope
 import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
@@ -41,7 +40,9 @@ import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
+import com.tunjid.treenav.adaptive.AdaptiveNavHostState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.strings.Route
 import kotlin.math.roundToInt
 
 /**
@@ -50,7 +51,7 @@ import kotlin.math.roundToInt
 @Composable
 fun Scaffold(
     modifier: Modifier,
-    adaptiveContentState: AdaptiveContentState,
+    adaptiveNavHostState: AdaptiveNavHostState<ThreePane, Route>,
     navStateHolder: NavigationStateHolder,
     globalUiStateHolder: GlobalUiStateHolder,
 ) {
@@ -69,7 +70,7 @@ fun Scaffold(
                 // Root LookaheadScope used to anchor all shared element transitions
 //                AdaptiveContentRoot(adaptiveContentState) {
                 AdaptiveNavHost(
-                    state = adaptiveContentState,
+                    state = adaptiveNavHostState,
                     modifier = modifier.fillMaxSize()
                 ) {
                     AdaptiveContentScaffold(
