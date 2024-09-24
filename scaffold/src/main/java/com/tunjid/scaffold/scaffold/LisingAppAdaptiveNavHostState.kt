@@ -21,6 +21,7 @@ import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isPreviewing
 import com.tunjid.scaffold.navigation.unknownRoute
+import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.windowSizeClassConfiguration
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
@@ -32,7 +33,6 @@ import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.paneMapping
 import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.adaptive.threepane.windowSizeClassConfiguration
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.PathPattern

@@ -23,17 +23,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptation.Swap
 import com.tunjid.treenav.adaptive.Adaptive
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.delegated
 
 /**
  * A layout in the hierarchy that hosts an [AdaptiveNodeConfiguration]
@@ -61,29 +55,6 @@ enum class ThreePane {
             to = TransientPrimary
         )
     }
-}
-
-fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.windowSizeClassConfiguration(
-    windowSizeClassState: State<WindowSizeClass>,
-): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
-    val original = this@windowSizeClassConfiguration.configuration(node)
-    AdaptiveNodeConfiguration(
-        render = original.render,
-        transitions = original.transitions,
-        paneMapper = { inner ->
-            // Consider navigation state different if window size class changes
-            val windowSizeClass by windowSizeClassState
-            val originalMapping = original.paneMapper(inner)
-            val primaryNode = originalMapping[ThreePane.Primary]
-            mapOf(
-                ThreePane.Primary to primaryNode,
-                ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryNode ->
-                    secondaryNode?.id != primaryNode?.id
-                            && windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
-                },
-            )
-        }
-    )
 }
 
 fun <R : Node> threePaneAdaptiveNodeConfiguration(
