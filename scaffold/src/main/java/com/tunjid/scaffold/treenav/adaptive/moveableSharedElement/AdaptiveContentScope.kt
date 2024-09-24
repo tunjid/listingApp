@@ -1,4 +1,4 @@
-package com.tunjid.scaffold.adaptive
+package com.tunjid.scaffold.treenav.adaptive.moveableSharedElement
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.MovableSharedElementData
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptivePaneScope

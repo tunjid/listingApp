@@ -32,7 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.lazy.grid.interpolatedFirstItemIndex
-import com.tunjid.scaffold.adaptive.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility

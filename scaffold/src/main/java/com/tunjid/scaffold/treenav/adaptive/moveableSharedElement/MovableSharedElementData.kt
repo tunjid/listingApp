@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
-import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptive.key
 import com.tunjid.treenav.adaptive.AdaptivePaneScope

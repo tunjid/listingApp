@@ -49,7 +49,7 @@ import coil.compose.AsyncImage
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
 import com.tunjid.listing.feature.listing.detail.R
-import com.tunjid.scaffold.adaptive.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility

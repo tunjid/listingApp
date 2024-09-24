@@ -25,7 +25,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import com.tunjid.scaffold.adaptive.LocalAdaptivePaneScope
+import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.LocalAdaptivePaneScope
 import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
