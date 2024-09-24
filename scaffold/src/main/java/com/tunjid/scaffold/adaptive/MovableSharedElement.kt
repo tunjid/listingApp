@@ -45,8 +45,7 @@ interface SharedElementOverlay {
     fun ContentDrawScope.drawInOverlay()
 }
 
-internal interface MovableSharedElementScope {
-    fun isCurrentlyShared(key: Any): Boolean
+interface MovableSharedElementScope {
 
     @Composable
     fun <T> movableSharedElementOf(

@@ -1,8 +1,8 @@
 package com.tunjid.scaffold.adaptive
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -18,16 +18,15 @@ import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 
-
 @Stable
-class Thing<T, R: Node>(
-    val adaptiveNavHostScope: AdaptiveNavHostScope<T,R>,
+class MovableSharedElementHostState<T, R : Node>(
+    val adaptiveNavHostScope: AdaptiveNavHostScope<T, R>,
 ) {
+
     val overlays: Collection<SharedElementOverlay>
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
-
 
     fun isCurrentlyShared(key: Any): Boolean =
         keysToMovableSharedElements.contains(key)
@@ -51,17 +50,17 @@ class Thing<T, R: Node>(
  * An implementation of [Adaptive.PaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedAdaptiveContentScope<T, R: Node>(
+internal class AdaptiveMovableSharedElementScope<T, R : Node>(
     paneScope: AdaptivePaneScope<T, R>,
-    val thing: Thing<T, R>,
-) : AnimatedVisibilityScope by paneScope, MovableSharedElementScope {
+    private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
+) : MovableSharedElementScope {
 
     val key: String by derivedStateOf { paneScope.key }
 
     var paneScope by mutableStateOf(paneScope)
 
-    override fun isCurrentlyShared(key: Any): Boolean =
-        thing.isCurrentlyShared(key)
+    fun isCurrentlyShared(key: Any): Boolean =
+        movableSharedElementHostState.isCurrentlyShared(key)
 
     @Composable
     override fun <T> movableSharedElementOf(
@@ -71,14 +70,14 @@ internal class AnimatedAdaptiveContentScope<T, R: Node>(
         val paneState = paneScope.paneState
         // This pane state may be animating out. Look up the actual current route
         val currentRouteInPane = paneState.pane?.let(
-            thing.adaptiveNavHostScope::nodeFor
+            movableSharedElementHostState.adaptiveNavHostScope::nodeFor
         )
         val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentNode?.id
 
         // Do not use the shared element if this content is being animated out
         if (!isCurrentlyAnimatingIn) return { _, _ -> }
 
-        return thing.createOrUpdateSharedElement(
+        return movableSharedElementHostState.createOrUpdateSharedElement(
             key = key,
             sharedElement = sharedElement
         )
@@ -96,38 +95,52 @@ fun <T> movableSharedElementOf(
     key: Any,
     sharedElement: @Composable (T, Modifier) -> Unit
 ): @Composable (T, Modifier) -> Unit = sharedElement
-//    when (val scope = LocalAdaptiveContentScope.current) {
-//        null -> throw IllegalArgumentException(
-//            "This may only be called from an adaptive content scope"
-//        )
-//
-//        else -> when (scope.paneState.pane) {
-//            null -> throw IllegalArgumentException(
-//                "Shared elements may only be used in non null panes"
-//            )
-//            // Allow shared elements in the primary or transient primary content only
-//            Adaptive.Pane.Primary -> when {
-//                // Show a blank space for shared elements between the destinations
-//                scope.isPreviewingBack && scope.isCurrentlyShared(key) -> { _, modifier ->
-//                    Box(modifier)
-//                }
-//                // If previewing and it won't be shared, show the item as is
-//                scope.isPreviewingBack -> sharedElement
-//                // Share the element
-//                else -> scope.movableSharedElementOf(
-//                    key = key,
-//                    sharedElement = sharedElement
-//                )
-//            }
-//            // Share the element when in the transient pane
-//            Adaptive.Pane.TransientPrimary -> scope.movableSharedElementOf(
-//                key = key,
-//                sharedElement = sharedElement
-//            )
-//            // In the secondary pane use the element as is
-//            Adaptive.Pane.Secondary -> sharedElement
-//        }
-//    }
+
+@Stable
+internal class ThreePaneMovableSharedElementScope<R : Node>(
+    private val delegate: AdaptiveMovableSharedElementScope<ThreePane, R>,
+) : MovableSharedElementScope {
+    @Composable
+    override fun <T> movableSharedElementOf(
+        key: Any,
+        sharedElement: @Composable (T, Modifier) -> Unit
+    ): @Composable (T, Modifier) -> Unit {
+        val paneScope = delegate.paneScope
+        return when (paneScope.paneState.pane) {
+            null -> throw IllegalArgumentException(
+                "Shared elements may only be used in non null panes"
+            )
+            // Allow shared elements in the primary or transient primary content only
+            ThreePane.Primary -> when {
+                // Show a blank space for shared elements between the destinations
+                paneScope.isPreviewingBack && delegate.isCurrentlyShared(key) -> { _, modifier ->
+                    Box(modifier)
+                }
+                // If previewing and it won't be shared, show the item as is
+                paneScope.isPreviewingBack -> sharedElement
+                // Share the element
+                else -> delegate.movableSharedElementOf(
+                    key = key,
+                    sharedElement = sharedElement
+                )
+            }
+            // Share the element when in the transient pane
+            ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
+                key = key,
+                sharedElement = sharedElement
+            )
+
+            // In the other panes use the element as is
+            ThreePane.Secondary,
+            ThreePane.Tertiary,
+            ThreePane.Overlay -> sharedElement
+        }
+    }
+}
+
+private val AdaptivePaneScope<ThreePane, *>.isPreviewingBack: Boolean
+    get() = paneState.pane == ThreePane.Primary
+            && paneState.adaptation == ThreePane.PrimaryToTransient
 
 internal val LocalAdaptivePaneScope =
     staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {
