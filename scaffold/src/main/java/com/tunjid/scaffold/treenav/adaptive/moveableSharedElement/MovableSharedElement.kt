@@ -1,4 +1,4 @@
-package com.tunjid.scaffold.adaptive
+package com.tunjid.scaffold.treenav.adaptive.moveableSharedElement
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -35,12 +35,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
+import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptive.key
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
