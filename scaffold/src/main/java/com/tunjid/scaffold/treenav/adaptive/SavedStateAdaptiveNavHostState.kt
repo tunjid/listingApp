@@ -55,19 +55,19 @@ interface AdaptiveNavHostScope<T, R : Node> {
 @Stable
 class SavedStateAdaptiveNavHostState<T, R : Node>(
     private val panes: List<T>,
-    private val router: AdaptiveNavHostConfiguration<T, *, R>,
+    private val configuration: AdaptiveNavHostConfiguration<T, *, R>,
 ) : AdaptiveNavHostState<T, R> {
 
     @Composable
     override fun scope(): AdaptiveNavHostScope<T, R> {
-        val navigationState by router.navigationState
-        val panesToNodes = router.paneMapping()
+        val navigationState by configuration.navigationState
+        val panesToNodes = configuration.paneMapping()
         val saveableStateHolder = rememberSaveableStateHolder()
 
         val adaptiveContentScope = remember {
             SavedStateAdaptiveNavHostScope(
                 panes = panes,
-                router = router,
+                router = configuration,
                 initialPanesToNodes = panesToNodes,
                 saveableStateHolder = saveableStateHolder,
             )

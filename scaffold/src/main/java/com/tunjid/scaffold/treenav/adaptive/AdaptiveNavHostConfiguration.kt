@@ -41,10 +41,12 @@ fun <T, S : Node, R : Node> adaptiveNavHostConfiguration(
 )
 
 fun <T, S : Node, R : Node> AdaptiveNavHostConfiguration<T, S, R>.delegated(
+    navigationState: State<S> = this@delegated.navigationState,
+    currentNode: State<R> = this@delegated.currentNode,
     configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
 ) = AdaptiveNavHostConfiguration(
-    navigationState = this@delegated.navigationState,
-    currentNode = this@delegated.currentNode,
+    navigationState = navigationState,
+    currentNode = currentNode,
     configuration = configuration,
 )
 

@@ -22,7 +22,6 @@ import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptive.MovableSharedElementData
 import com.tunjid.scaffold.adaptive.SharedElementOverlay
-import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isPreviewing
@@ -38,6 +37,7 @@ import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.delegated
+import com.tunjid.treenav.adaptive.paneMapping
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.windowSizeClassConfiguration
 import com.tunjid.treenav.current
@@ -59,7 +59,7 @@ class SavedStateAdaptiveContentState @Inject constructor(
 ) : AdaptiveContentState {
 
     private var windowSizeClass = mutableStateOf(WindowSizeClass.COMPACT)
-    private var backStatus = mutableStateOf<BackStatus>(BackStatus.None)
+    private var isPreviewing = mutableStateOf(false)
 
     @Composable
     override fun scope(): AdaptiveNavHostScope<ThreePane, Route> {
@@ -102,15 +102,15 @@ class SavedStateAdaptiveContentState @Inject constructor(
             )
         }
         val adaptiveNavHostState = remember {
-            SavedStateAdaptiveNavHostState<ThreePane, Route>(
+            SavedStateAdaptiveNavHostState(
                 panes = ThreePane.entries.toList(),
-                router = adaptiveNavHostConfiguration
+                configuration = adaptiveNavHostConfiguration
                     .windowSizeClassConfiguration(
                         windowSizeClassState = windowSizeClass
                     )
                     .backPreviewConfiguration(
                         windowSizeClassState = windowSizeClass,
-                        backStatusState = backStatus
+                        isPreviewingState = isPreviewing
                     ),
             )
         }
@@ -127,7 +127,7 @@ class SavedStateAdaptiveContentState @Inject constructor(
         LaunchedEffect(rememberedUiStateFlow) {
             rememberedUiStateFlow.collect {
                 windowSizeClass.value = it.windowSizeClass
-                backStatus.value = it.backStatus
+                isPreviewing.value = it.backStatus.isPreviewing
             }
         }
 
@@ -161,43 +161,43 @@ class SavedStateAdaptiveContentState @Inject constructor(
 
 private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPreviewConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
-    backStatusState: State<BackStatus>,
-) = delegated { node ->
-    val original = this@backPreviewConfiguration.configuration(node)
-    AdaptiveNodeConfiguration(
-        transitions = original.transitions,
-        paneMapper = paneMapper@{ inner ->
-            val originalMapping = original.paneMapper(inner)
-            val previousRoute =
-                navigationState.value.pop().current as? Route
-                    ?: return@paneMapper originalMapping
+    isPreviewingState: State<Boolean>,
+) = delegated(
+    currentNode = derivedStateOf {
+        val current = currentNode.value
+        if (isPreviewingState.value) navigationState.value.pop().current as Route
+        else current
+    },
+    configuration = { node ->
+        val originalConfiguration = configuration(node)
+        AdaptiveNodeConfiguration(
+            transitions = originalConfiguration.transitions,
+            paneMapper = paneMapper@{ inner ->
+                val originalMapping = originalConfiguration.paneMapper(inner)
 
-            // Consider navigation state different if window size class changes
-            val backStatus by backStatusState
-            val isPreviewingBack = backStatus.isPreviewing
-                    && previousRoute.id != originalMapping[ThreePane.Primary]?.id
-                    && previousRoute.id != originalMapping[ThreePane.Secondary]?.id
+                val isPreviewingBack by isPreviewingState
+                if (!isPreviewingBack) return@paneMapper originalMapping
 
-            if (!isPreviewingBack) return@paneMapper originalMapping
-
-            original.paneMapper(previousRoute) +
-                    (ThreePane.TransientPrimary to originalMapping[ThreePane.Primary])
-        },
-        render = paneScope@{ toRender ->
-            val windowSizeClass by windowSizeClassState
-            Box(
-                Modifier.modifierFor(
-                    windowSizeClass = windowSizeClass,
-                    nodeConfiguration = original,
-                    adaptivePaneScope = this@paneScope
+                // Back is being previewed, therefore the original mapping is already for back.
+                // Pass the previous primary value into transient.
+                val transient = this@backPreviewConfiguration.paneMapping()[ThreePane.Primary]
+                originalMapping + (ThreePane.TransientPrimary to transient)
+            },
+            render = paneScope@{ toRender ->
+                val windowSizeClass by windowSizeClassState
+                Box(
+                    Modifier.modifierFor(
+                        windowSizeClass = windowSizeClass,
+                        nodeConfiguration = originalConfiguration,
+                        adaptivePaneScope = this@paneScope
+                    )
                 )
-            )
-            {
-                original.render.invoke(this@paneScope, toRender)
+                {
+                    originalConfiguration.render.invoke(this@paneScope, toRender)
+                }
             }
-        }
-    )
-}
+        )
+    })
 
 @Composable
 private fun Modifier.modifierFor(
