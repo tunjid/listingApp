@@ -20,7 +20,7 @@ import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
+import com.tunjid.scaffold.scaffold.LisingAppAdaptiveNavHostState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -186,7 +186,7 @@ interface ScaffoldBindModule {
 
     @Binds
     fun bindAdaptiveContentState(
-        adaptiveNavHostState: SavedStateAdaptiveContentState
+        adaptiveNavHostState: LisingAppAdaptiveNavHostState
     ): AdaptiveNavHostState<ThreePane, Route>
 }
 

@@ -11,15 +11,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import com.tunjid.scaffold.adaptive.MovableSharedElementData
-import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isPreviewing
@@ -48,7 +45,7 @@ import javax.inject.Singleton
 
 @Stable
 @Singleton
-class SavedStateAdaptiveContentState @Inject constructor(
+class LisingAppAdaptiveNavHostState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
     private val navStateFlow: StateFlow<MultiStackNav>,
     private val uiStateFlow: StateFlow<UiState>,

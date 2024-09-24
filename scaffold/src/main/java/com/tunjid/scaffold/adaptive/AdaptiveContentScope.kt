@@ -13,7 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.scaffold.SavedStateAdaptiveContentState
+import com.tunjid.scaffold.scaffold.LisingAppAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.Adaptive.key
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
@@ -53,7 +53,7 @@ class Thing {
 @Stable
 internal class AnimatedAdaptiveContentScope(
     paneState: AdaptivePaneState<*, *>,
-    val adaptiveContentHost: SavedStateAdaptiveContentState,
+    val adaptiveContentHost: LisingAppAdaptiveNavHostState,
     val animatedContentScope: AnimatedContentScope
 ) : AnimatedVisibilityScope by animatedContentScope {
 
