@@ -1,6 +1,7 @@
 package com.tunjid.scaffold.adaptive
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.DeferredTargetAnimation
 import androidx.compose.animation.core.ExperimentalAnimatableApi
 import androidx.compose.animation.core.Spring
@@ -34,36 +35,26 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
+import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptive.key
+import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
-interface SharedElementOverlay {
-    fun ContentDrawScope.drawInOverlay()
-}
-
-interface MovableSharedElementScope {
-
-    @Composable
-    fun <T> movableSharedElementOf(
-        key: Any,
-        sharedElement: @Composable (T, Modifier) -> Unit
-    ): @Composable (T, Modifier) -> Unit
-}
-
-fun thumbnailSharedElementKey(
-    property: Any?
-) = "thumbnail-$property"
-
 @Stable
-@OptIn(ExperimentalAnimatableApi::class)
-internal class MovableSharedElementData<T>(
-    sharedElement: @Composable (T, Modifier) -> Unit,
+@OptIn(ExperimentalAnimatableApi::class, ExperimentalSharedTransitionApi::class)
+internal class MovableSharedElementData<S, T, R : Node>(
+    private val sharedTransitionScope: SharedTransitionScope,
+    sharedElement: @Composable (S, Modifier) -> Unit,
+    private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
     onRemoved: () -> Unit
 ) : SharedElementOverlay {
+
+    var adaptivePaneScope by mutableStateOf<AdaptivePaneScope<T, R>?>(null)
+
     private var inCount by mutableIntStateOf(0)
 
     private var layer: GraphicsLayer? = null
@@ -87,7 +78,7 @@ internal class MovableSharedElementData<T>(
             sharedElement(
                 // The shared element composable will be created by the first screen and reused by
                 // subsequent screens. This updates the state from other screens so changes are seen.
-                state as T,
+                state as S,
                 Modifier
                     .movableSharedElement(
                         movableSharedElementData = this,
@@ -112,7 +103,7 @@ internal class MovableSharedElementData<T>(
     }
 
     private fun updatePaneStateSeen(
-        paneState: AdaptivePaneState<ThreePane, Route>
+        paneState: AdaptivePaneState<*, *>
     ) {
         panesKeysToSeenCount[paneState.key] = Unit
     }
@@ -128,19 +119,19 @@ internal class MovableSharedElementData<T>(
             ExperimentalAnimatableApi::class,
             ExperimentalSharedTransitionApi::class
         )
-        internal fun Modifier.movableSharedElement(
-            movableSharedElementData: MovableSharedElementData<*>,
+        internal fun <T, R : Node> Modifier.movableSharedElement(
+            movableSharedElementData: MovableSharedElementData<*, T, R>,
         ): Modifier = composed {
-            with(LocalSharedTransitionScope.current) {
+            with(movableSharedElementData.sharedTransitionScope) {
                 val coroutineScope = rememberCoroutineScope()
 
                 val sizeAnimInProgress = movableSharedElementData.isInProgress(
-                    MovableSharedElementData<*>::sizeAnimation
+                    MovableSharedElementData<*, T, R>::sizeAnimation
                 )
                     .also { movableSharedElementData.sizeAnimInProgress = it }
 
                 val offsetAnimInProgress = movableSharedElementData.isInProgress(
-                    MovableSharedElementData<*>::offsetAnimation
+                    MovableSharedElementData<*, T, R>::offsetAnimation
                 )
                     .also { movableSharedElementData.offsetAnimInProgress = it }
 
@@ -218,24 +209,24 @@ internal class MovableSharedElementData<T>(
 
         @OptIn(ExperimentalAnimatableApi::class)
         @Composable
-        private fun MovableSharedElementData<*>.isInProgress(
-            animationMapper: (MovableSharedElementData<*>) -> DeferredTargetAnimation<*, *>
+        private fun <T, R : Node> MovableSharedElementData<*, T, R>.isInProgress(
+            animationMapper: (MovableSharedElementData<*, T, R>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val paneState = LocalAdaptivePaneScope.current
+            val paneState = adaptivePaneScope
                 ?.paneState
                 ?.also(::updatePaneStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
                 initialValue = Pair(
                     paneState?.key,
-                    paneState.canAnimateOnStartingFrames()
+                    paneState?.let(canAnimateOnStartingFrames) == true
                 ),
                 key1 = paneState
             ) {
                 value = Pair(
                     paneState?.key,
-                    paneState.canAnimateOnStartingFrames()
+                    paneState?.let(canAnimateOnStartingFrames) == true
                 )
                 value = snapshotFlow { animation.isIdle }
                     .filter(true::equals)
@@ -245,11 +236,8 @@ internal class MovableSharedElementData<T>(
 
             return if (laggingScopeKey == paneState?.key) animationInProgressTillFirstIdle
                     && hasBeenShared()
-            else paneState.canAnimateOnStartingFrames()
+            else paneState?.let(canAnimateOnStartingFrames) == true
         }
-
-        private fun AdaptivePaneState<ThreePane, Route>?.canAnimateOnStartingFrames() =
-            this?.pane != ThreePane.TransientPrimary
 
         private val sizeSpec = spring(
             stiffness = Spring.StiffnessLow,

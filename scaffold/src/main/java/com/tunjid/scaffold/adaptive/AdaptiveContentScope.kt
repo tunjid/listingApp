@@ -12,35 +12,57 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
+import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 
+internal interface SharedElementOverlay {
+    fun ContentDrawScope.drawInOverlay()
+}
+
+interface MovableSharedElementScope {
+
+    @Composable
+    fun <T> movableSharedElementOf(
+        key: Any,
+        sharedElement: @Composable (T, Modifier) -> Unit
+    ): @Composable (T, Modifier) -> Unit
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class MovableSharedElementHostState<T, R : Node>(
-    val adaptiveNavHostScope: AdaptiveNavHostScope<T, R>,
+    private val sharedTransitionScope: SharedTransitionScope,
+    internal val adaptiveNavHostScope: AdaptiveNavHostScope<T, R>,
+    private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
 ) {
 
-    val overlays: Collection<SharedElementOverlay>
+    internal val overlays: Collection<SharedElementOverlay>
         get() = keysToMovableSharedElements.values
 
-    private val keysToMovableSharedElements = mutableStateMapOf<Any, MovableSharedElementData<*>>()
+    private val keysToMovableSharedElements =
+        mutableStateMapOf<Any, MovableSharedElementData<*, T, R>>()
 
     fun isCurrentlyShared(key: Any): Boolean =
         keysToMovableSharedElements.contains(key)
 
-    fun <T> createOrUpdateSharedElement(
+    fun <S> createOrUpdateSharedElement(
         key: Any,
-        sharedElement: @Composable (T, Modifier) -> Unit,
-    ): @Composable (T, Modifier) -> Unit {
+        sharedElement: @Composable (S, Modifier) -> Unit,
+    ): @Composable (S, Modifier) -> Unit {
         val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
             MovableSharedElementData(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedElement = sharedElement,
+                canAnimateOnStartingFrames = canAnimateOnStartingFrames,
                 onRemoved = { keysToMovableSharedElements.remove(key) }
             )
         }
+
         // Can't really guarantee that the caller will use the same key for the right type
         return movableSharedElementData.moveableSharedElement
     }
@@ -138,6 +160,9 @@ internal class ThreePaneMovableSharedElementScope<R : Node>(
     }
 }
 
+private fun AdaptivePaneState<ThreePane, Route>?.canAnimateOnStartingFrames() =
+    this?.pane != ThreePane.TransientPrimary
+
 private val AdaptivePaneScope<ThreePane, *>.isPreviewingBack: Boolean
     get() = paneState.pane == ThreePane.Primary
             && paneState.adaptation == ThreePane.PrimaryToTransient
@@ -146,9 +171,4 @@ internal val LocalAdaptivePaneScope =
     staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {
         null
     }
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-internal val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope> {
-    TODO()
-}
 
