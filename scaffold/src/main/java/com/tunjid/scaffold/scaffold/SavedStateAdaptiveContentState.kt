@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -25,8 +24,6 @@ import com.tunjid.scaffold.adaptive.SharedElementOverlay
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isPreviewing
-import com.tunjid.scaffold.lifecycle.LocalViewModelFactory
-import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
@@ -53,7 +50,6 @@ import javax.inject.Singleton
 @Singleton
 class SavedStateAdaptiveContentState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
-    private val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
     private val navStateFlow: StateFlow<MultiStackNav>,
     private val uiStateFlow: StateFlow<UiState>,
 ) : AdaptiveContentState {
@@ -88,14 +84,7 @@ class SavedStateAdaptiveContentState @Inject constructor(
                         transitions = configuration.transitions,
                         paneMapping = configuration.paneMapper,
                         render = { paneNode ->
-                            val factory = remember(paneNode) {
-                                nodeViewModelFactoryProvider.viewModelFactoryFor(paneNode)
-                            }
-                            CompositionLocalProvider(
-                                LocalViewModelFactory provides factory
-                            ) {
-                                with(configuration) { render(paneNode) }
-                            }
+                            with(configuration) { render(paneNode) }
                         }
                     )
                 }

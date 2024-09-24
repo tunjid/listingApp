@@ -1,6 +1,7 @@
 package com.tunjid.feature.detail.di
 
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailViewModel
 import com.tunjid.feature.detail.ListingStateHolderFactory
@@ -8,9 +9,8 @@ import com.tunjid.feature.detail.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModel
+import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
@@ -22,7 +22,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -72,26 +71,26 @@ object ListingDetailModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = threePaneAdaptiveNodeConfiguration<Route>(
+    fun routeAdaptiveConfiguration(
+        factory: ListingStateHolderFactory
+    ) = threePaneAdaptiveNodeConfiguration(
         paneMapping = { route ->
             mapOf(
                 ThreePane.Primary to route,
                 ThreePane.Secondary to route.children.first() as? Route
             )
         },
-        render = {
-            val viewModel = viewModel<ListingDetailViewModel>()
+        render = { route ->
+            val viewModel = viewModel<ListingDetailViewModel> {
+                factory.create(
+                    scope = viewModelCoroutineScope(),
+                    route = route,
+                )
+            }
             ListingDetailScreen(
                 modifier = Modifier.backPreviewBackgroundModifier(),
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 actions = viewModel.accept
             )
         })
-
-    @IntoMap
-    @Provides
-    @ClassKey(ListingDetailViewModel::class)
-    fun archiveListStateHolderCreator(
-        factory: ListingStateHolderFactory
-    ): ScreenStateHolderCreator = factory
 }

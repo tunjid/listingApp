@@ -8,7 +8,6 @@ import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
-import com.tunjid.scaffold.lifecycle.NodeViewModelFactoryProvider
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
@@ -60,7 +59,6 @@ interface ListingApp {
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
-    val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider
 }
 
 @Singleton
@@ -71,7 +69,6 @@ class PersistedListingApp @Inject constructor(
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
-    override val nodeViewModelFactoryProvider: NodeViewModelFactoryProvider,
     override val adaptiveContentState: AdaptiveContentState,
 ) : ListingApp {
 
