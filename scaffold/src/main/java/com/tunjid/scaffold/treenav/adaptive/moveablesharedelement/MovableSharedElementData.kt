@@ -1,4 +1,4 @@
-package com.tunjid.scaffold.treenav.adaptive.moveableSharedElement
+package com.tunjid.scaffold.treenav.adaptive.moveablesharedelement
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope

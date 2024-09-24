@@ -6,7 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import com.tunjid.mutator.mutationOf
-import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.LocalAdaptivePaneScope
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.LocalAdaptivePaneScope
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 
 /**

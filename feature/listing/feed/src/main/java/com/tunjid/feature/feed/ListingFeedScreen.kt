@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.sp
 import com.tunjid.composables.scrollbars.scrollable.grid.scrollbarState
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
-import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility

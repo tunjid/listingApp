@@ -26,7 +26,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.min
-import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility

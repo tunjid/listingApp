@@ -30,7 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tunjid.listing.feature.listing.gallery.R
-import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility

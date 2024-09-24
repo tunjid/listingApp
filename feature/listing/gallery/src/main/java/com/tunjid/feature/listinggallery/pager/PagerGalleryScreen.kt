@@ -6,7 +6,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import com.tunjid.scaffold.treenav.adaptive.moveableSharedElement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
