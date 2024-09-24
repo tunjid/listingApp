@@ -35,7 +35,9 @@ import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
+import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.windowSizeClassConfiguration
 import com.tunjid.treenav.current
@@ -75,7 +77,7 @@ class SavedStateAdaptiveContentState @Inject constructor(
         }
 
         val adaptiveNavHostConfiguration = remember {
-            AdaptiveNavHostConfiguration(
+            adaptiveNavHostConfiguration(
                 navigationState = multiStackNavState,
                 currentNode = derivedStateOf {
                     multiStackNavState.value.current as? Route ?: unknownRoute("")
@@ -160,46 +162,42 @@ class SavedStateAdaptiveContentState @Inject constructor(
 private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPreviewConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,
-) = AdaptiveNavHostConfiguration(
-    navigationState = navigationState,
-    currentNode = currentNode,
-    configuration = { node ->
-        val original = this@backPreviewConfiguration.configuration(node)
-        AdaptiveNodeConfiguration(
-            transitions = original.transitions,
-            paneMapper = paneMapper@{ inner ->
-                val originalMapping = original.paneMapper(inner)
-                val previousRoute =
-                    navigationState.value.pop().current as? Route
-                        ?: return@paneMapper originalMapping
+) = delegated { node ->
+    val original = this@backPreviewConfiguration.configuration(node)
+    AdaptiveNodeConfiguration(
+        transitions = original.transitions,
+        paneMapper = paneMapper@{ inner ->
+            val originalMapping = original.paneMapper(inner)
+            val previousRoute =
+                navigationState.value.pop().current as? Route
+                    ?: return@paneMapper originalMapping
 
-                // Consider navigation state different if window size class changes
-                val backStatus by backStatusState
-                val isPreviewingBack = backStatus.isPreviewing
-                        && previousRoute.id != originalMapping[ThreePane.Primary]?.id
-                        && previousRoute.id != originalMapping[ThreePane.Secondary]?.id
+            // Consider navigation state different if window size class changes
+            val backStatus by backStatusState
+            val isPreviewingBack = backStatus.isPreviewing
+                    && previousRoute.id != originalMapping[ThreePane.Primary]?.id
+                    && previousRoute.id != originalMapping[ThreePane.Secondary]?.id
 
-                if (!isPreviewingBack) return@paneMapper originalMapping
+            if (!isPreviewingBack) return@paneMapper originalMapping
 
-                original.paneMapper(previousRoute) +
-                        (ThreePane.TransientPrimary to originalMapping[ThreePane.Primary])
-            },
-            render = paneScope@{ toRender ->
-                val windowSizeClass by windowSizeClassState
-                Box(
-                    Modifier.modifierFor(
-                        windowSizeClass = windowSizeClass,
-                        nodeConfiguration = original,
-                        adaptivePaneScope = this@paneScope
-                    )
+            original.paneMapper(previousRoute) +
+                    (ThreePane.TransientPrimary to originalMapping[ThreePane.Primary])
+        },
+        render = paneScope@{ toRender ->
+            val windowSizeClass by windowSizeClassState
+            Box(
+                Modifier.modifierFor(
+                    windowSizeClass = windowSizeClass,
+                    nodeConfiguration = original,
+                    adaptivePaneScope = this@paneScope
                 )
-                {
-                    original.render.invoke(this@paneScope, toRender)
-                }
+            )
+            {
+                original.render.invoke(this@paneScope, toRender)
             }
-        )
-    }
-)
+        }
+    )
+}
 
 @Composable
 private fun Modifier.modifierFor(

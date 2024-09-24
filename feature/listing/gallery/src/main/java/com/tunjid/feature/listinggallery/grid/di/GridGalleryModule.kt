@@ -12,7 +12,7 @@ import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModel
 import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -62,7 +62,7 @@ object GridGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = threePaneAdaptiveConfiguration<Route> {
+    fun routeAdaptiveConfiguration() = threePaneAdaptiveNodeConfiguration<Route> {
         val viewModel = viewModel<GridGalleryViewModel>()
         GridGalleryScreen(
             modifier = Modifier.backPreviewBackgroundModifier(),

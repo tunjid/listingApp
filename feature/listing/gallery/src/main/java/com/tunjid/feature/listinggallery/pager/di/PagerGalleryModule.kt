@@ -11,7 +11,7 @@ import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModel
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -61,7 +61,7 @@ object PagerGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = threePaneAdaptiveConfiguration<Route> {
+    fun routeAdaptiveConfiguration() = threePaneAdaptiveNodeConfiguration<Route> {
         val viewModel = viewModel<PagerGalleryViewModel>()
         FullscreenGalleryScreen(
             modifier = Modifier,

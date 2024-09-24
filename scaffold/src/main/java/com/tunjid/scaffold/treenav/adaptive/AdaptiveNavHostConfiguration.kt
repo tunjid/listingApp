@@ -24,10 +24,28 @@ import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
 
 @Stable
-class AdaptiveNavHostConfiguration<T, S : Node, R : Node>(
+class AdaptiveNavHostConfiguration<T, S : Node, R : Node> internal constructor(
     val navigationState: State<S>,
     val currentNode: State<R>,
     val configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
+)
+
+fun <T, S : Node, R : Node> adaptiveNavHostConfiguration(
+    navigationState: State<S>,
+    currentNode: State<R>,
+    configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
+) = AdaptiveNavHostConfiguration(
+    navigationState = navigationState,
+    currentNode = currentNode,
+    configuration = configuration,
+)
+
+fun <T, S : Node, R : Node> AdaptiveNavHostConfiguration<T, S, R>.delegated(
+    configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
+) = AdaptiveNavHostConfiguration(
+    navigationState = this@delegated.navigationState,
+    currentNode = this@delegated.currentNode,
+    configuration = configuration,
 )
 
 @Composable
