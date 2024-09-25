@@ -19,23 +19,16 @@ package com.tunjid.treenav.adaptive
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptive.key
 
 /**
  * Scope for adaptive content that can show up in an arbitrary [Pane]
  */
 @Stable
 sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
-
-    /**
-     * Unique key to identify this scope
-     */
-    val key: String
 
     val paneState: AdaptivePaneState<T, R>
 }
@@ -58,8 +51,6 @@ internal class AnimatedAdaptivePaneScope<T, R : Node>(
     paneState: AdaptivePaneState<T, R>,
     val animatedContentScope: AnimatedContentScope
 ) : AdaptivePaneScope<T, R>, AnimatedVisibilityScope by animatedContentScope {
-
-    override val key: String by derivedStateOf { paneState.key }
 
     override var paneState by mutableStateOf(paneState)
 }

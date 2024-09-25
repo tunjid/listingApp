@@ -1,9 +1,10 @@
 package com.tunjid.scaffold.treenav.adaptive.moveablesharedelement
 
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -12,8 +13,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.adaptive.Adaptive.key
 import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
@@ -37,11 +40,19 @@ interface MovableSharedElementScope {
 @Stable
 class MovableSharedElementHostState<T, R : Node>(
     private val sharedTransitionScope: SharedTransitionScope,
-    internal val adaptiveNavHostScope: AdaptiveNavHostScope<T, R>,
     private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
 ) {
 
-    internal val overlays: Collection<SharedElementOverlay>
+    val modifier = Modifier.drawWithContent {
+        drawContent()
+        overlays.forEach { overlay ->
+            with(overlay) {
+                drawInOverlay()
+            }
+        }
+    }
+
+    private val overlays: Collection<SharedElementOverlay>
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements =
@@ -51,6 +62,7 @@ class MovableSharedElementHostState<T, R : Node>(
         keysToMovableSharedElements.contains(key)
 
     fun <S> createOrUpdateSharedElement(
+        paneScope: AdaptivePaneScope<T, R>,
         key: Any,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
@@ -61,7 +73,7 @@ class MovableSharedElementHostState<T, R : Node>(
                 canAnimateOnStartingFrames = canAnimateOnStartingFrames,
                 onRemoved = { keysToMovableSharedElements.remove(key) }
             )
-        }
+        }.also { it.adaptivePaneScope = paneScope }
 
         // Can't really guarantee that the caller will use the same key for the right type
         return movableSharedElementData.moveableSharedElement
@@ -77,8 +89,6 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
     private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
 ) : MovableSharedElementScope {
 
-    val key: String by derivedStateOf { paneScope.key }
-
     var paneScope by mutableStateOf(paneScope)
 
     fun isCurrentlyShared(key: Any): Boolean =
@@ -89,17 +99,19 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
         key: Any,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
-        val paneState = paneScope.paneState
         // This pane state may be animating out. Look up the actual current route
-        val currentRouteInPane = paneState.pane?.let(
-            movableSharedElementHostState.adaptiveNavHostScope::nodeFor
-        )
-        val isCurrentlyAnimatingIn = currentRouteInPane?.id == paneState.currentNode?.id
+
+        val isActive = when(paneScope.transition.targetState) {
+            EnterExitState.PreEnter -> false
+            EnterExitState.Visible -> true
+            EnterExitState.PostExit -> false
+        }
 
         // Do not use the shared element if this content is being animated out
-        if (!isCurrentlyAnimatingIn) return { _, _ -> }
+        if (!isActive) return { _, _ -> }
 
         return movableSharedElementHostState.createOrUpdateSharedElement(
+            paneScope = paneScope,
             key = key,
             sharedElement = sharedElement
         )
@@ -116,56 +128,16 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 fun <T> movableSharedElementOf(
     key: Any,
     sharedElement: @Composable (T, Modifier) -> Unit
-): @Composable (T, Modifier) -> Unit = sharedElement
+): @Composable (T, Modifier) -> Unit =
+    LocalMovableSharedElementScope.current.movableSharedElementOf(
+        key = key,
+        sharedElement = sharedElement,
+    )
 
-@Stable
-internal class ThreePaneMovableSharedElementScope<R : Node>(
-    private val delegate: AdaptiveMovableSharedElementScope<ThreePane, R>,
-) : MovableSharedElementScope {
-    @Composable
-    override fun <T> movableSharedElementOf(
-        key: Any,
-        sharedElement: @Composable (T, Modifier) -> Unit
-    ): @Composable (T, Modifier) -> Unit {
-        val paneScope = delegate.paneScope
-        return when (paneScope.paneState.pane) {
-            null -> throw IllegalArgumentException(
-                "Shared elements may only be used in non null panes"
-            )
-            // Allow shared elements in the primary or transient primary content only
-            ThreePane.Primary -> when {
-                // Show a blank space for shared elements between the destinations
-                paneScope.isPreviewingBack && delegate.isCurrentlyShared(key) -> { _, modifier ->
-                    Box(modifier)
-                }
-                // If previewing and it won't be shared, show the item as is
-                paneScope.isPreviewingBack -> sharedElement
-                // Share the element
-                else -> delegate.movableSharedElementOf(
-                    key = key,
-                    sharedElement = sharedElement
-                )
-            }
-            // Share the element when in the transient pane
-            ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
-                key = key,
-                sharedElement = sharedElement
-            )
-
-            // In the other panes use the element as is
-            ThreePane.Secondary,
-            ThreePane.Tertiary,
-            ThreePane.Overlay -> sharedElement
-        }
+val LocalMovableSharedElementScope =
+    staticCompositionLocalOf<MovableSharedElementScope> {
+        throw IllegalArgumentException("LocalMovableSharedElementScope not set")
     }
-}
-
-private fun AdaptivePaneState<ThreePane, Route>?.canAnimateOnStartingFrames() =
-    this?.pane != ThreePane.TransientPrimary
-
-private val AdaptivePaneScope<ThreePane, *>.isPreviewingBack: Boolean
-    get() = paneState.pane == ThreePane.Primary
-            && paneState.adaptation == ThreePane.PrimaryToTransient
 
 internal val LocalAdaptivePaneScope =
     staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {

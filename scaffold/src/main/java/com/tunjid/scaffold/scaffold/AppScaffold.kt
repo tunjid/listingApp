@@ -1,5 +1,7 @@
 package com.tunjid.scaffold.scaffold
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
@@ -39,13 +41,19 @@ import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.LocalAdaptivePaneScope
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
+import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
+import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
+import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.strings.Route
 import kotlin.math.roundToInt
 
 /**
  * Root scaffold for the app
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Scaffold(
     modifier: Modifier,
@@ -66,27 +74,37 @@ fun Scaffold(
                     navStateHolder = navStateHolder,
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
-//                AdaptiveContentRoot(adaptiveContentState) {
-                AdaptiveNavHost(
-                    state = remember {
-                        listingAppState.adaptiveNavHostState { this }
-                    },
-                    modifier = modifier.fillMaxSize()
-                ) {
-                    AdaptiveContentScaffold(
-                        positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-                            mapper = UiState::uiChromeState
-                        ).value,
-                        onPaneAnchorChanged = remember {
-                            { paneAnchor: PaneAnchor ->
-                                globalUiStateHolder.accept {
-                                    copy(paneAnchor = paneAnchor)
-                                }
+                SharedTransitionScope { sharedElementModifier ->
+                    val movableSharedElementHostState = remember {
+                        MovableSharedElementHostState(
+                            sharedTransitionScope = this@SharedTransitionScope,
+                            canAnimateOnStartingFrames = AdaptivePaneState<ThreePane, Route>::canAnimateOnStartingFrames
+                        )
+                    }
+                    AdaptiveNavHost(
+                        state = remember {
+                            listingAppState.adaptiveNavHostState {
+                                movableSharedElementConfiguration(movableSharedElementHostState)
                             }
                         },
-                    )
+                        modifier = Modifier.fillMaxSize()
+                                then movableSharedElementHostState.modifier
+                                then sharedElementModifier
+                    ) {
+                        AdaptiveContentScaffold(
+                            positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
+                                mapper = UiState::uiChromeState
+                            ).value,
+                            onPaneAnchorChanged = remember {
+                                { paneAnchor: PaneAnchor ->
+                                    globalUiStateHolder.accept {
+                                        copy(paneAnchor = paneAnchor)
+                                    }
+                                }
+                            },
+                        )
+                    }
                 }
-//                }
                 AppFab(
                     globalUiStateHolder = globalUiStateHolder,
                 )
