@@ -34,7 +34,7 @@ sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
 }
 
 /**
- * Information about content in an [Adaptive.Pane]
+ * Information about content in a pane
  */
 @Stable
 sealed interface AdaptivePaneState<T, R : Node> {

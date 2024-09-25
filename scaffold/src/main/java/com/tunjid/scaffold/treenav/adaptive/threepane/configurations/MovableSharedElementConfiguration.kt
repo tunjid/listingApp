@@ -37,6 +37,7 @@ fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSh
 
             val movableSharedElementScope = remember {
                 ThreePaneMovableSharedElementScope(
+                    hostState = movableSharedElementHostState,
                     delegate = delegate,
                 )
             }
@@ -51,7 +52,8 @@ fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSh
 }
 
 @Stable
-internal class ThreePaneMovableSharedElementScope<R : Node>(
+private class ThreePaneMovableSharedElementScope<R : Node>(
+    private val hostState: MovableSharedElementHostState<ThreePane, R>,
     private val delegate: AdaptiveMovableSharedElementScope<ThreePane, R>,
 ) : MovableSharedElementScope {
     @Composable
@@ -67,7 +69,7 @@ internal class ThreePaneMovableSharedElementScope<R : Node>(
             // Allow shared elements in the primary or transient primary content only
             ThreePane.Primary -> when {
                 // Show a blank space for shared elements between the destinations
-                paneScope.isPreviewingBack && delegate.isCurrentlyShared(key) -> { _, modifier ->
+                paneScope.isPreviewingBack && hostState.isCurrentlyShared(key) -> { _, modifier ->
                     Box(modifier)
                 }
                 // If previewing and it won't be shared, show the item as is

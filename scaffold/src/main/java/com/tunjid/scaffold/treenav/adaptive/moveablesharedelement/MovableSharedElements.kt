@@ -4,9 +4,7 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -16,8 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptive.key
-import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -91,9 +87,6 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 
     var paneScope by mutableStateOf(paneScope)
 
-    fun isCurrentlyShared(key: Any): Boolean =
-        movableSharedElementHostState.isCurrentlyShared(key)
-
     @Composable
     override fun <T> movableSharedElementOf(
         key: Any,
@@ -101,7 +94,7 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
     ): @Composable (T, Modifier) -> Unit {
         // This pane state may be animating out. Look up the actual current route
 
-        val isActive = when(paneScope.transition.targetState) {
+        val isActive = when (paneScope.transition.targetState) {
             EnterExitState.PreEnter -> false
             EnterExitState.Visible -> true
             EnterExitState.PostExit -> false
