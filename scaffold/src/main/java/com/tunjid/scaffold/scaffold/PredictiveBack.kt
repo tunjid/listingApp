@@ -35,7 +35,6 @@ import com.tunjid.scaffold.globalui.progress
 import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.LocalAdaptivePaneScope
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
@@ -179,9 +178,10 @@ private fun Modifier.predictiveBackModifier(): Modifier =
             .pointerInput(Unit) {}
     }
 
-fun Modifier.predictiveBackBackgroundModifier(): Modifier = composed {
-    val scope = LocalAdaptivePaneScope.current
-    if (scope?.paneState?.pane != ThreePane.TransientPrimary)
+fun Modifier.predictiveBackBackgroundModifier(
+    paneScope: AdaptivePaneScope<ThreePane, *>
+): Modifier = composed {
+    if (paneScope.paneState.pane != ThreePane.TransientPrimary)
         return@composed this
 
     var elevation by remember { mutableStateOf(0.dp) }

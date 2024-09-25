@@ -70,7 +70,7 @@ object GridGalleryModule {
             )
         }
         GridGalleryScreen(
-            modifier = Modifier.predictiveBackBackgroundModifier(),
+            modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
         )
