@@ -30,6 +30,7 @@ import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
+import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.paneMapping
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -128,9 +129,9 @@ private fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.backPr
     },
     configuration = { node ->
         val originalConfiguration = configuration(node)
-        AdaptiveNodeConfiguration(
+        adaptiveNodeConfiguration(
             transitions = originalConfiguration.transitions,
-            paneMapper = paneMapper@{ inner ->
+            paneMapping = paneMapper@{ inner ->
                 val originalMapping = originalConfiguration.paneMapper(inner)
 
                 val isPreviewingBack by isPreviewingState

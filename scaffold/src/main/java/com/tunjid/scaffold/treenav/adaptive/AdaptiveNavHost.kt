@@ -16,30 +16,20 @@
 
 package com.tunjid.treenav.adaptive
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun <T, R : Node> AdaptiveNavHost(
     state: AdaptiveNavHostState<T, R>,
     modifier: Modifier = Modifier,
     content: @Composable AdaptiveNavHostScope<T, R>.() -> Unit
 ) {
-
-    LaunchedEffect(state) {
-
-    }
-
-    SharedTransitionLayout(
+    Box(
         modifier = modifier
     ) {
-//        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-//        }
-        content(state.scope())
+        state.scope().content()
     }
 }

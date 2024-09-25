@@ -28,6 +28,7 @@ import com.tunjid.treenav.adaptive.Adaptation.Swap
 import com.tunjid.treenav.adaptive.Adaptive
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
+import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 
 /**
  * A layout in the hierarchy that hosts an [AdaptiveNodeConfiguration]
@@ -85,8 +86,8 @@ fun <R : Node> threePaneAdaptiveNodeConfiguration(
         mapOf(ThreePane.Primary to it)
     },
     render: @Composable AdaptivePaneScope<ThreePane, R>.(R) -> Unit
-) = AdaptiveNodeConfiguration(
-    paneMapper = paneMapping,
+) = adaptiveNodeConfiguration(
+    paneMapping = paneMapping,
     transitions = transitions,
     render = render
 )
