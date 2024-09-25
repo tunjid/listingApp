@@ -57,7 +57,7 @@ import kotlin.math.roundToInt
 @Composable
 fun Scaffold(
     modifier: Modifier,
-    listingAppState: LisingAppState,
+    listingAppState: ListingAppState,
     navStateHolder: NavigationStateHolder,
     globalUiStateHolder: GlobalUiStateHolder,
 ) {

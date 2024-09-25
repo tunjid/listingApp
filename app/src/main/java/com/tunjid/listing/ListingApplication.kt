@@ -10,7 +10,7 @@ import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.scaffold.scaffold.LisingAppState
+import com.tunjid.scaffold.scaffold.ListingAppState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.Route
 import dagger.Binds
@@ -55,7 +55,7 @@ class ListingApplication : Application(), ImageLoaderFactory {
 }
 
 interface ListingApp {
-    val appState: LisingAppState
+    val appState: ListingAppState
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
@@ -69,7 +69,7 @@ class PersistedListingApp @Inject constructor(
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
-    override val appState: LisingAppState,
+    override val appState: ListingAppState,
 ) : ListingApp {
 
     init {

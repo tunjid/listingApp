@@ -45,7 +45,7 @@ import javax.inject.Singleton
 
 @Stable
 @Singleton
-class LisingAppState @Inject constructor(
+class ListingAppState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
     private val navStateFlow: StateFlow<MultiStackNav>,
     private val uiStateFlow: StateFlow<UiState>,
