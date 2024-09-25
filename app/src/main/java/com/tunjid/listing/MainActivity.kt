@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         modifier = Modifier,
-                        adaptiveNavHostState = listingApp.adaptiveNavHostState,
+                        listingAppState = listingApp.appState,
                         navStateHolder = listingApp.navigationStateHolder,
                         globalUiStateHolder = listingApp.globalUiStateHolder,
                     )

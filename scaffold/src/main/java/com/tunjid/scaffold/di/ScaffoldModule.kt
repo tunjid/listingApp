@@ -20,10 +20,7 @@ import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.scaffold.scaffold.LisingAppAdaptiveNavHostState
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNavHostState
-import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParser
@@ -183,11 +180,6 @@ interface ScaffoldBindModule {
     fun bindPlayerManager(
         playerManager: ExoPlayerManager
     ): PlayerManager
-
-    @Binds
-    fun bindAdaptiveContentState(
-        adaptiveNavHostState: LisingAppAdaptiveNavHostState
-    ): AdaptiveNavHostState<ThreePane, Route>
 }
 
 private fun routeMatchingComparator() =

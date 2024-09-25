@@ -10,9 +10,8 @@ import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
+import com.tunjid.scaffold.scaffold.LisingAppState
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNavHostState
-import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 import dagger.Binds
 import dagger.Module
@@ -56,7 +55,7 @@ class ListingApplication : Application(), ImageLoaderFactory {
 }
 
 interface ListingApp {
-    val adaptiveNavHostState: AdaptiveNavHostState<ThreePane, Route>
+    val appState: LisingAppState
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
@@ -70,7 +69,7 @@ class PersistedListingApp @Inject constructor(
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
-    override val adaptiveNavHostState: AdaptiveNavHostState<ThreePane, Route>,
+    override val appState: LisingAppState,
 ) : ListingApp {
 
     init {
