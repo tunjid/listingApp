@@ -12,7 +12,7 @@ import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
-import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -90,7 +90,7 @@ object ListingFeedModule {
             )
         }
         ListingFeedScreen(
-            modifier = Modifier.backPreviewBackgroundModifier(),
+            modifier = Modifier.predictiveBackBackgroundModifier(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
         )

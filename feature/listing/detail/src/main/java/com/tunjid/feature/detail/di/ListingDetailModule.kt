@@ -11,7 +11,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
-import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.Route
@@ -88,7 +88,7 @@ object ListingDetailModule {
                 )
             }
             ListingDetailScreen(
-                modifier = Modifier.backPreviewBackgroundModifier(),
+                modifier = Modifier.predictiveBackBackgroundModifier(),
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 actions = viewModel.accept
             )
