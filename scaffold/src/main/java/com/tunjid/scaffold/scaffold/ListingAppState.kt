@@ -63,9 +63,9 @@ class ListingAppState @Inject constructor(
                 )
                 .predictiveBackConfiguration(
                     windowSizeClassState = windowSizeClassState,
-                    isPreviewingState = derivedStateOf {
-                        uiState.value.backStatus.isPreviewing
-                    }
+                    backStatusState = derivedStateOf {
+                        uiState.value.backStatus
+                    },
                 )
                 .configurationBlock(),
         )

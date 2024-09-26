@@ -6,8 +6,6 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -21,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
@@ -67,7 +64,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
         val adaptiveContentScope = remember {
             SavedStateAdaptiveNavHostScope(
                 panes = panes,
-                router = configuration,
+                navHostConfiguration = configuration,
                 initialPanesToNodes = panesToNodes,
                 saveableStateHolder = saveableStateHolder,
             )
@@ -89,11 +86,11 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             panes: List<T>,
             initialPanesToNodes: Map<T, R?>,
             saveableStateHolder: SaveableStateHolder,
-            val router: AdaptiveNavHostConfiguration<T, *, R>,
+            val navHostConfiguration: AdaptiveNavHostConfiguration<T, *, R>,
         ) : AdaptiveNavHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
 
             private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
-                rootNodeProvider = router.navigationState::value
+                rootNodeProvider = navHostConfiguration.navigationState::value
             )
 
             val slots = List(panes.size, Adaptive::Slot).toSet()
@@ -102,7 +99,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
                     slots = slots,
                     panesToNodes = initialPanesToNodes,
-                    backStackIds = router.navigationState.value.backStackIds(),
+                    backStackIds = navHostConfiguration.navigationState.value.backStackIds(),
                 )
             )
 
@@ -176,21 +173,15 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
 
                     when (val node = targetPaneState.currentNode) {
                         null -> Unit
-                        else -> Box(
-                            modifier = Modifier.fillMaxSize()
+                        else -> CompositionLocalProvider(
+                            LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(node),
                         ) {
-                            CompositionLocalProvider(
-                                LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(
-                                    node
-                                ),
-                            ) {
-                                SaveableStateProvider(node.id) {
-                                    router.Destination(paneScope = scope)
-                                    DisposableEffect(Unit) {
-                                        onDispose {
-                                            val routeIds = adaptiveNavigationState.nodeIds
-                                            if (!routeIds.contains(node.id)) removeState(node.id)
-                                        }
+                            SaveableStateProvider(node.id) {
+                                navHostConfiguration.Destination(paneScope = scope)
+                                DisposableEffect(Unit) {
+                                    onDispose {
+                                        val routeIds = adaptiveNavigationState.nodeIds
+                                        if (!routeIds.contains(node.id)) removeState(node.id)
                                     }
                                 }
                             }

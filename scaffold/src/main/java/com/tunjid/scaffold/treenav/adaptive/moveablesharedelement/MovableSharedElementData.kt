@@ -211,20 +211,20 @@ internal class MovableSharedElementData<S, T, R : Node>(
             animationMapper: (MovableSharedElementData<*, T, R>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val paneState = requireNotNull(adaptivePaneScope)
-                .paneState
+            val paneScope = requireNotNull(adaptivePaneScope)
+            val paneState = paneScope.paneState
                 .also(::updatePaneStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
                 initialValue = Pair(
                     paneState.key,
-                    paneState.let(canAnimateOnStartingFrames)
+                    paneState.canAnimateOnStartingFrames()
                 ),
                 key1 = paneState
             ) {
                 value = Pair(
                     paneState.key,
-                    paneState.let(canAnimateOnStartingFrames)
+                    paneState.canAnimateOnStartingFrames()
                 )
                 value = snapshotFlow { animation.isIdle }
                     .filter(true::equals)
@@ -232,9 +232,13 @@ internal class MovableSharedElementData<S, T, R : Node>(
                     .let { value.first to false }
             }.value
 
-            return if (laggingScopeKey == paneState.key) animationInProgressTillFirstIdle
-                    && hasBeenShared()
-            else paneState.canAnimateOnStartingFrames()
+            if (!hasBeenShared()) return false
+
+            val isLagging = laggingScopeKey != paneState.key
+            val canAnimateOnStartingFrames = paneState.canAnimateOnStartingFrames()
+            if (isLagging) return canAnimateOnStartingFrames
+
+            return animationInProgressTillFirstIdle
         }
 
         private val sizeSpec = spring(
@@ -249,4 +253,3 @@ internal class MovableSharedElementData<S, T, R : Node>(
         )
     }
 }
-

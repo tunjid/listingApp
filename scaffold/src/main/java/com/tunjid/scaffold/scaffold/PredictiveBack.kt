@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
@@ -28,13 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.COMPACT
-import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.isFromLeft
+import com.tunjid.scaffold.globalui.isPreviewing
 import com.tunjid.scaffold.globalui.progress
 import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
-import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
@@ -50,11 +47,11 @@ import kotlin.math.roundToInt
 
 fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBackConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
-    isPreviewingState: State<Boolean>,
+    backStatusState: State<BackStatus>,
 ) = delegated(
     currentNode = derivedStateOf {
         val current = currentNode.value
-        if (isPreviewingState.value) navigationState.value.pop().current as Route
+        if (backStatusState.value.isPreviewing) navigationState.value.pop().current as Route
         else current
     },
     configuration = { node ->
@@ -63,8 +60,9 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
             transitions = originalConfiguration.transitions,
             paneMapping = paneMapper@{ inner ->
                 val originalMapping = originalConfiguration.paneMapper(inner)
-
-                val isPreviewingBack by isPreviewingState
+                val isPreviewingBack by remember {
+                    derivedStateOf { backStatusState.value.isPreviewing }
+                }
                 if (!isPreviewingBack) return@paneMapper originalMapping
 
                 // Back is being previewed, therefore the original mapping is already for back.
@@ -74,9 +72,11 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
             },
             render = paneScope@{ toRender ->
                 val windowSizeClass by windowSizeClassState
+                val backStatus by backStatusState
                 Box(
                     modifier = Modifier.adaptiveModifier(
                         windowSizeClass = windowSizeClass,
+                        backStatus = backStatus,
                         nodeConfiguration = originalConfiguration,
                         adaptivePaneScope = this@paneScope
                     )
@@ -91,6 +91,7 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
 @Composable
 private fun Modifier.adaptiveModifier(
     windowSizeClass: WindowSizeClass,
+    backStatus: BackStatus,
     nodeConfiguration: AdaptiveNodeConfiguration<ThreePane, Route>,
     adaptivePaneScope: AdaptivePaneScope<ThreePane, Route>,
 ): Modifier = this then with(adaptivePaneScope) {
@@ -103,10 +104,15 @@ private fun Modifier.adaptiveModifier(
             }
             .run {
                 val enterAndExit = nodeConfiguration.transitions(adaptivePaneScope)
-                animateEnterExit(enter = enterAndExit.enter, exit = enterAndExit.exit)
+                animateEnterExit(
+                    enter = enterAndExit.enter,
+                    exit = enterAndExit.exit
+                )
             }
 
-        ThreePane.TransientPrimary -> FillSizeModifier.predictiveBackModifier()
+        ThreePane.TransientPrimary -> FillSizeModifier.predictiveBackModifier(
+            backStatus = backStatus
+        )
 
         else -> FillSizeModifier
     }
@@ -116,73 +122,68 @@ private val FillSizeModifier = Modifier.fillMaxSize()
 
 // Previews back content as specified by the material motion spec for Android predictive back:
 // https://developer.android.com/design/ui/mobile/guides/patterns/predictive-back#motion-specs
-private fun Modifier.predictiveBackModifier(): Modifier =
-    composed {
-        val configuration = LocalConfiguration.current
-        val globalUiStateHolder = LocalGlobalUiStateHolder.current
+@Composable
+private fun Modifier.predictiveBackModifier(
+    backStatus: BackStatus
+): Modifier {
+    val configuration = LocalConfiguration.current
 
-        val uiStateFlow = remember {
-            globalUiStateHolder.state
-        }
-        val backStatus by uiStateFlow.mappedCollectAsStateWithLifecycle(
-            mapper = UiState::backStatus
-        )
-        if (backStatus is BackStatus.DragDismiss) {
-            return@composed this
-        }
-        val scale by animateFloatAsState(
-            // Deviates from the spec here. The spec says 90% of the pane, I'm doing 85%
-            targetValue = 1f - (backStatus.progress * 0.15F),
-            label = "back preview modifier scale"
-        )
-        Modifier
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(
-                    constraints.copy(
-                        maxWidth = (constraints.maxWidth * scale).roundToInt(),
-                        minWidth = (constraints.minWidth * scale).roundToInt(),
-                        maxHeight = (constraints.maxHeight * scale).roundToInt(),
-                        minHeight = (constraints.minHeight * scale).roundToInt(),
-                    )
-                )
-                val paneWidth = placeable.width
-                val paneHeight = placeable.height
-
-                val scaledWidth = paneWidth * scale
-                val spaceOnEachSide = (paneWidth - scaledWidth) / 2
-                val margin = (BACK_PREVIEW_PADDING * backStatus.progress).dp.roundToPx()
-
-                val xOffset = ((spaceOnEachSide - margin) * when {
-                    backStatus.isFromLeft -> 1
-                    else -> -1
-                }).toInt()
-
-                val maxYShift = ((paneHeight / 20) - BACK_PREVIEW_PADDING)
-                val isOrientedHorizontally = paneWidth > paneHeight
-                val screenSize = when {
-                    isOrientedHorizontally -> configuration.screenWidthDp
-                    else -> configuration.screenHeightDp
-                }.dp.roundToPx()
-                val touchPoint = when {
-                    isOrientedHorizontally -> backStatus.touchX
-                    else -> backStatus.touchY
-                }
-                val verticalProgress = (touchPoint / screenSize) - 0.5f
-                val yOffset = (verticalProgress * maxYShift).roundToInt()
-
-                layout(placeable.width, placeable.height) {
-                    placeable.placeRelative(x = xOffset, y = yOffset)
-                }
-            }
-            // Disable interactions in the preview pane
-            .pointerInput(Unit) {}
+    if (backStatus is BackStatus.DragDismiss) {
+        return this
     }
+    val scale by animateFloatAsState(
+        // Deviates from the spec here. The spec says 90% of the pane, I'm doing 85%
+        targetValue = 1f - (backStatus.progress * 0.15F),
+        label = "back preview modifier scale"
+    )
+    return layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.copy(
+                maxWidth = (constraints.maxWidth * scale).roundToInt(),
+                minWidth = (constraints.minWidth * scale).roundToInt(),
+                maxHeight = (constraints.maxHeight * scale).roundToInt(),
+                minHeight = (constraints.minHeight * scale).roundToInt(),
+            )
+        )
+        val paneWidth = placeable.width
+        val paneHeight = placeable.height
 
+        val scaledWidth = paneWidth * scale
+        val spaceOnEachSide = (paneWidth - scaledWidth) / 2
+        val margin = (BACK_PREVIEW_PADDING * backStatus.progress).dp.roundToPx()
+
+        val xOffset = ((spaceOnEachSide - margin) * when {
+            backStatus.isFromLeft -> 1
+            else -> -1
+        }).toInt()
+
+        val maxYShift = ((paneHeight / 20) - BACK_PREVIEW_PADDING)
+        val isOrientedHorizontally = paneWidth > paneHeight
+        val screenSize = when {
+            isOrientedHorizontally -> configuration.screenWidthDp
+            else -> configuration.screenHeightDp
+        }.dp.roundToPx()
+        val touchPoint = when {
+            isOrientedHorizontally -> backStatus.touchX
+            else -> backStatus.touchY
+        }
+        val verticalProgress = (touchPoint / screenSize) - 0.5f
+        val yOffset = (verticalProgress * maxYShift).roundToInt()
+
+        layout(placeable.width, placeable.height) {
+            placeable.placeRelative(x = xOffset, y = yOffset)
+        }
+    }
+        // Disable interactions in the preview pane
+        .pointerInput(Unit) {}
+}
+
+@Composable
 fun Modifier.predictiveBackBackgroundModifier(
     paneScope: AdaptivePaneScope<ThreePane, *>
-): Modifier = composed {
+): Modifier {
     if (paneScope.paneState.pane != ThreePane.TransientPrimary)
-        return@composed this
+        return this
 
     var elevation by remember { mutableStateOf(0.dp) }
     LaunchedEffect(Unit) {
@@ -192,7 +193,7 @@ fun Modifier.predictiveBackBackgroundModifier(
             animationSpec = spring(stiffness = Spring.StiffnessVeryLow)
         ) { value, _ -> elevation = value.dp }
     }
-    background(
+    return background(
         color = MaterialTheme.colorScheme.surfaceColorAtElevation(elevation),
         shape = RoundedCornerShape(16.dp)
     )
