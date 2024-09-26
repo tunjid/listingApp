@@ -21,6 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -71,14 +72,14 @@ class ListingAppState @Inject constructor(
         )
     }
 
-    suspend fun start() = coroutineScope {
-        awaitAll(
-            async {
-                navStateFlow.collect(multiStackNavState::value::set)
-            },
-            async {
-                uiStateFlow.collect(uiState::value::set)
-            },
-        )
+    suspend fun start() {
+        combine(
+            navStateFlow,
+            uiStateFlow,
+            ::Pair,
+        ).collect { (multiStackNav, ui) ->
+            uiState.value = ui
+            multiStackNavState.value = multiStackNav
+        }
     }
 }

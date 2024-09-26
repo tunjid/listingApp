@@ -52,7 +52,9 @@ internal fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
                 copy(backStatus = BackStatus.None)
             }
             // Pop navigation
-            navigationStateHolder.accept { navState.pop() }
+            navigationStateHolder.accept {
+                navState.pop()
+            }
         }
     )
 }
