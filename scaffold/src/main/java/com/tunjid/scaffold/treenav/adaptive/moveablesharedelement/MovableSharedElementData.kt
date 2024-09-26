@@ -22,7 +22,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.translate
@@ -117,9 +116,10 @@ internal class MovableSharedElementData<S, T, R : Node>(
             ExperimentalAnimatableApi::class,
             ExperimentalSharedTransitionApi::class
         )
+        @Composable
         internal fun <T, R : Node> Modifier.movableSharedElement(
             movableSharedElementData: MovableSharedElementData<*, T, R>,
-        ): Modifier = composed {
+        ): Modifier {
             with(movableSharedElementData.sharedTransitionScope) {
                 val coroutineScope = rememberCoroutineScope()
 
@@ -136,7 +136,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                 val layer = rememberGraphicsLayer().also {
                     movableSharedElementData.layer = it
                 }
-                approachLayout(
+                return approachLayout(
                     isMeasurementApproachInProgress = { lookaheadSize ->
                         movableSharedElementData.sizeAnimation.updateTarget(
                             target = lookaheadSize,
