@@ -1,4 +1,4 @@
-package com.tunjid.scaffold.globalui
+package com.tunjid.scaffold.scaffold
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -9,6 +9,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.dragtodismiss.dragToDismiss
+import com.tunjid.scaffold.globalui.BackStatus
+import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.treenav.pop
 

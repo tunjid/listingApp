@@ -32,7 +32,7 @@ import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.dragToPop
+import com.tunjid.scaffold.scaffold.dragToPop
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 

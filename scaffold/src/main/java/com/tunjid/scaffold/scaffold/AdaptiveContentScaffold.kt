@@ -56,11 +56,9 @@ import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.EXPANDED
-import com.tunjid.scaffold.globalui.LocalDragToDismissState
 import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.bottomNavSize
-import com.tunjid.scaffold.globalui.dragToPopInternal
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.UiChromeState
