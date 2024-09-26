@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.first
 internal class MovableSharedElementData<S, T, R : Node>(
     private val sharedTransitionScope: SharedTransitionScope,
     sharedElement: @Composable (S, Modifier) -> Unit,
-    private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
+    private val canAnimateOnStartingFrames: AdaptivePaneState<T, R>.() -> Boolean,
     onRemoved: () -> Unit
 ) : SharedElementOverlay {
 
@@ -211,20 +211,20 @@ internal class MovableSharedElementData<S, T, R : Node>(
             animationMapper: (MovableSharedElementData<*, T, R>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val paneState = adaptivePaneScope
-                ?.paneState
-                ?.also(::updatePaneStateSeen)
+            val paneState = requireNotNull(adaptivePaneScope)
+                .paneState
+                .also(::updatePaneStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
                 initialValue = Pair(
-                    paneState?.key,
-                    paneState?.let(canAnimateOnStartingFrames) == true
+                    paneState.key,
+                    paneState.let(canAnimateOnStartingFrames)
                 ),
                 key1 = paneState
             ) {
                 value = Pair(
-                    paneState?.key,
-                    paneState?.let(canAnimateOnStartingFrames) == true
+                    paneState.key,
+                    paneState.let(canAnimateOnStartingFrames)
                 )
                 value = snapshotFlow { animation.isIdle }
                     .filter(true::equals)
@@ -232,9 +232,9 @@ internal class MovableSharedElementData<S, T, R : Node>(
                     .let { value.first to false }
             }.value
 
-            return if (laggingScopeKey == paneState?.key) animationInProgressTillFirstIdle
+            return if (laggingScopeKey == paneState.key) animationInProgressTillFirstIdle
                     && hasBeenShared()
-            else paneState?.let(canAnimateOnStartingFrames) == true
+            else paneState.canAnimateOnStartingFrames()
         }
 
         private val sizeSpec = spring(
