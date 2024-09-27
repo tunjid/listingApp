@@ -34,7 +34,6 @@ import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.delegated
@@ -77,7 +76,6 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
                     modifier = Modifier.adaptiveModifier(
                         windowSizeClass = windowSizeClass,
                         backStatus = backStatus,
-                        nodeConfiguration = originalConfiguration,
                         adaptivePaneScope = this@paneScope
                     )
                 )
@@ -92,7 +90,6 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
 private fun Modifier.adaptiveModifier(
     windowSizeClass: WindowSizeClass,
     backStatus: BackStatus,
-    nodeConfiguration: AdaptiveNodeConfiguration<ThreePane, Route>,
     adaptivePaneScope: AdaptivePaneScope<ThreePane, Route>,
 ): Modifier = this then with(adaptivePaneScope) {
     when (paneState.pane) {
@@ -101,13 +98,6 @@ private fun Modifier.adaptiveModifier(
             .run {
                 if (windowSizeClass.minWidthDp <= WindowSizeClass.COMPACT.minWidthDp) this
                 else clip(RoundedCornerShape(16.dp))
-            }
-            .run {
-                val enterAndExit = nodeConfiguration.transitions(adaptivePaneScope)
-                animateEnterExit(
-                    enter = enterAndExit.enter,
-                    exit = enterAndExit.exit
-                )
             }
 
         ThreePane.TransientPrimary -> FillSizeModifier.predictiveBackModifier(

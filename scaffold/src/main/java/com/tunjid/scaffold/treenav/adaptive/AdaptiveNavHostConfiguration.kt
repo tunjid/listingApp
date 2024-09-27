@@ -16,11 +16,13 @@
 
 package com.tunjid.treenav.adaptive
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
 @Stable
@@ -58,7 +60,17 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
         paneScope.paneState.currentNode
     } ?: return
     with(configuration(current)) {
-        paneScope.render(current)
+        val enterAndExit = transitions(paneScope)
+        with(paneScope) {
+            Box(
+                modifier = Modifier.animateEnterExit(
+                    enter = enterAndExit.enter,
+                    exit = enterAndExit.exit
+                )
+            ) {
+                paneScope.render(current)
+            }
+        }
     }
 }
 
