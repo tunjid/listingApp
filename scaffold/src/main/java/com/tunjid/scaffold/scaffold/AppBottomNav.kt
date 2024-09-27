@@ -66,7 +66,7 @@ internal fun BoxScope.AppBottomNav(
                         label = { Text(navItem.name) },
                         selected = navItem.selected,
                         onClick = {
-                           onNavItemSelected(navItem)
+                            onNavItemSelected(navItem)
                         }
                     )
                 }

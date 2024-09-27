@@ -62,7 +62,7 @@ object PagerGalleryModule {
     fun routeAdaptiveConfiguration(
         factory: PagerGalleryStateHolderFactory
     ) = threePaneAdaptiveNodeConfiguration { route ->
-        val viewModel = viewModel<PagerGalleryViewModel>{
+        val viewModel = viewModel<PagerGalleryViewModel> {
             factory.create(
                 scope = viewModelCoroutineScope(),
                 route = route,

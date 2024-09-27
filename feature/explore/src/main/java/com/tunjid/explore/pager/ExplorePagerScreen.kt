@@ -26,15 +26,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.min
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.scaffold.dragToPop
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
+import com.tunjid.scaffold.scaffold.dragToPop
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 
 @Composable
 fun FullscreenGalleryScreen(

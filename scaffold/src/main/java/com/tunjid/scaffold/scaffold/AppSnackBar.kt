@@ -21,17 +21,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.countIf
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.Message
 import com.tunjid.scaffold.globalui.MessageQueue
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.peek
 import com.tunjid.scaffold.globalui.slices.SnackbarPositionalState
-import com.tunjid.scaffold.globalui.slices.UiChromeState
-import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
-import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 
 private val snackbarPeek = 56.dp

@@ -49,7 +49,6 @@ import coil.compose.AsyncImage
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
 import com.tunjid.listing.feature.listing.detail.R
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
@@ -59,6 +58,7 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.SecondaryPaneCloseBackHandler
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.tiler.compose.PivotedTilingEffect
 
 @Composable
