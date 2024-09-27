@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -17,13 +18,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
+import com.tunjid.scaffold.globalui.Message
+import com.tunjid.scaffold.globalui.MessageQueue
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.peek
+import com.tunjid.scaffold.globalui.slices.SnackbarPositionalState
+import com.tunjid.scaffold.globalui.slices.UiChromeState
 import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
 import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import kotlinx.coroutines.delay
@@ -35,20 +41,13 @@ private val snackbarPeek = 56.dp
  */
 @Composable
 internal fun BoxScope.AppSnackBar(
-    globalUiStateHolder: GlobalUiStateHolder,
+    state: SnackbarPositionalState,
+    queue: MessageQueue,
+    onMessageClicked: (Message) -> Unit,
+    onSnackbarOffsetChanged: (Dp) -> Unit,
 ) {
-    val queue by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::snackbarMessages
-    )
-    val state by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::snackbarPositionalState
-    )
-    val messageConsumer by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::snackbarMessageConsumer
-    )
-
     var canShow by remember { mutableStateOf(true) }
-    var snackbarHeight by remember { mutableStateOf(0) }
+    var snackbarHeight by remember { mutableIntStateOf(0) }
     val message = queue.peek()?.takeIf { canShow }
     val head = message?.value
 
@@ -83,7 +82,7 @@ internal fun BoxScope.AppSnackBar(
         if (head != null) {
             delay(1000)
             canShow = false
-            messageConsumer(message)
+            onMessageClicked(message)
         }
     }
 
@@ -92,6 +91,6 @@ internal fun BoxScope.AppSnackBar(
     }
 
     LaunchedEffect(snackbarOffset) {
-        globalUiStateHolder.accept { copy(snackbarOffset = snackbarOffset) }
+        onSnackbarOffsetChanged(snackbarOffset)
     }
 }

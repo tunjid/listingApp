@@ -2,9 +2,14 @@ package com.tunjid.scaffold.scaffold
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.isPreviewing
+import com.tunjid.scaffold.navigation.NavItem
+import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.scaffold.navigation.navItemSelected
+import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.windowSizeClassConfiguration
 import com.tunjid.treenav.MultiStackNav
@@ -17,10 +22,6 @@ import com.tunjid.treenav.current
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteTrie
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,12 +30,15 @@ import javax.inject.Singleton
 @Singleton
 class ListingAppState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
-    private val navStateFlow: StateFlow<MultiStackNav>,
-    private val uiStateFlow: StateFlow<UiState>,
+    private val navigationStateHolder: NavigationStateHolder,
+    private val globalUiStateHolder: GlobalUiStateHolder
 ) {
 
-    private val multiStackNavState = mutableStateOf(navStateFlow.value)
-    private val uiState = mutableStateOf(uiStateFlow.value)
+    private val multiStackNavState = mutableStateOf(navigationStateHolder.state.value)
+    private val uiState = mutableStateOf(globalUiStateHolder.state.value)
+
+    val navItems by derivedStateOf { multiStackNavState.value.navItems }
+    val globalUi by uiState
 
     private val configurationTrie = RouteTrie<AdaptiveNodeConfiguration<ThreePane, Route>>().apply {
         routeConfigurationMap
@@ -72,10 +76,20 @@ class ListingAppState @Inject constructor(
         )
     }
 
+    fun updateGlobalUi(
+        block: UiState.() -> UiState
+    ) {
+        globalUiStateHolder.accept(block)
+    }
+
+    fun onNavItemSelected(navItem: NavItem) {
+        navigationStateHolder.accept { navState.navItemSelected(item = navItem) }
+    }
+
     suspend fun start() {
         combine(
-            navStateFlow,
-            uiStateFlow,
+            navigationStateHolder.state,
+            globalUiStateHolder.state,
             ::Pair,
         ).collect { (multiStackNav, ui) ->
             uiState.value = ui

@@ -8,14 +8,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.PaneAnchor
-import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.globalui.slices.bottomNavPositionalState
+import com.tunjid.scaffold.globalui.slices.fabState
+import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
 import com.tunjid.scaffold.globalui.slices.uiChromeState
-import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
@@ -46,8 +48,11 @@ fun Scaffold(
                 modifier = modifier.fillMaxSize()
             ) {
                 AppNavRail(
-                    globalUiStateHolder = globalUiStateHolder,
-                    navStateHolder = navStateHolder,
+                    navItems = listingAppState.navItems,
+                    uiChromeState = remember {
+                        derivedStateOf { listingAppState.globalUi.uiChromeState }
+                    }.value,
+                    onNavItemSelected = listingAppState::onNavItemSelected,
                 )
                 // Root LookaheadScope used to anchor all shared element transitions
                 SharedTransitionScope { sharedElementModifier ->
@@ -68,9 +73,9 @@ fun Scaffold(
                                 then sharedElementModifier
                     ) {
                         AdaptiveContentScaffold(
-                            positionalState = globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-                                mapper = UiState::uiChromeState
-                            ).value,
+                            positionalState = remember {
+                                derivedStateOf { listingAppState.globalUi.uiChromeState }
+                            }.value,
                             onPaneAnchorChanged = remember {
                                 { paneAnchor: PaneAnchor ->
                                     globalUiStateHolder.accept {
@@ -82,14 +87,33 @@ fun Scaffold(
                     }
                 }
                 AppFab(
-                    globalUiStateHolder = globalUiStateHolder,
+                    state = remember {
+                        derivedStateOf { listingAppState.globalUi.fabState }
+                    }.value,
+                    onClicked = {
+                        listingAppState.globalUi.fabClickListener(Unit)
+                    }
                 )
                 AppBottomNav(
-                    globalUiStateHolder = globalUiStateHolder,
-                    navStateHolder = navStateHolder,
+                    navItems = listingAppState.navItems,
+                    positionalState = remember {
+                        derivedStateOf { listingAppState.globalUi.bottomNavPositionalState }
+                    }.value,
+                    onNavItemSelected = listingAppState::onNavItemSelected,
                 )
                 AppSnackBar(
-                    globalUiStateHolder = globalUiStateHolder,
+                    state = remember {
+                        derivedStateOf { listingAppState.globalUi.snackbarPositionalState }
+                    }.value,
+                    queue = remember {
+                        derivedStateOf { listingAppState.globalUi.snackbarMessages }
+                    }.value,
+                    onMessageClicked = { message ->
+                        listingAppState.globalUi.snackbarMessageConsumer(message)
+                    },
+                    onSnackbarOffsetChanged = { offset ->
+                        listingAppState.updateGlobalUi { copy(snackbarOffset = offset) }
+                    },
                 )
             }
         }

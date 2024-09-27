@@ -18,43 +18,26 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tunjid.scaffold.countIf
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.navRailWidth
-import com.tunjid.scaffold.globalui.slices.uiChromeState
-import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
+import com.tunjid.scaffold.globalui.slices.UiChromeState
 import com.tunjid.scaffold.navigation.NavItem
-import com.tunjid.scaffold.navigation.NavigationStateHolder
-import com.tunjid.scaffold.navigation.navItemSelected
-import com.tunjid.scaffold.navigation.navItems
-import com.tunjid.treenav.MultiStackNav
 
 /**
  * Motionally intelligent nav rail shared amongst nav routes in the app
  */
 @Composable
 internal fun AppNavRail(
-    globalUiStateHolder: GlobalUiStateHolder,
-    navStateHolder: NavigationStateHolder,
+    navItems: List<NavItem>,
+    uiChromeState: UiChromeState,
+    onNavItemSelected: (NavItem) -> Unit,
 ) {
-    val paneState by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::uiChromeState
-    )
-    val windowSizeClass by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::windowSizeClass
-    )
-
-    val navItems by navStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = MultiStackNav::navItems
-    )
-
     val statusBarSize = with(LocalDensity.current) {
-        paneState.statusBarSize.toDp()
-    } countIf paneState.insetDescriptor.hasTopInset
+        uiChromeState.statusBarSize.toDp()
+    } countIf uiChromeState.insetDescriptor.hasTopInset
 
     val topClearance by animateDpAsState(targetValue = statusBarSize)
     val navRailWidth by animateDpAsState(
-        targetValue = windowSizeClass.navRailWidth() countIf paneState.navRailVisible
+        targetValue = uiChromeState.windowSizeClass.navRailWidth() countIf uiChromeState.navRailVisible
     )
 
     NavigationRail(
@@ -68,7 +51,10 @@ internal fun AppNavRail(
                 .height(24.dp)
         )
         navItems.forEach { navItem ->
-            NavRailItem(item = navItem, navStateHolder = navStateHolder)
+            NavRailItem(
+                item = navItem,
+                onNavItemSelected = onNavItemSelected
+            )
         }
     }
 }
@@ -76,7 +62,7 @@ internal fun AppNavRail(
 @Composable
 private fun NavRailItem(
     item: NavItem,
-    navStateHolder: NavigationStateHolder,
+    onNavItemSelected: (NavItem) -> Unit,
 ) {
     val alpha = if (item.selected) 1f else 0.6f
     NavigationRailItem(
@@ -95,7 +81,7 @@ private fun NavRailItem(
             )
         },
         onClick = {
-            navStateHolder.accept { navState.navItemSelected(item = item) }
+            onNavItemSelected(item)
         }
     )
 }
