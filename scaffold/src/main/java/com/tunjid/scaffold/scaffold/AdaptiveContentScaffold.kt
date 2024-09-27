@@ -131,9 +131,18 @@ internal fun AdaptiveNavHostScope<ThreePane, Route>.AdaptiveContentScaffold(
                         ) {
                             Destination(ThreePane.Primary)
                         }
+                        // TODO: This should not be necessary. Figure out why a frame renders with
+                        //  an offset of zero while the content in the transient primary container
+                        //  is still visible.
+                        val dragToDismissOffset by rememberUpdatedStateIf(
+                            value = dragToDismissState.offset.round(),
+                            predicate = {
+                                it != IntOffset.Zero || nodeFor(ThreePane.TransientPrimary) == null
+                            }
+                        )
                         Box(
                             modifier = Modifier
-                                .offset { dragToDismissState.offset.round() }
+                                .offset { dragToDismissOffset }
                         ) {
                             Destination(ThreePane.TransientPrimary)
                         }

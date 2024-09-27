@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.COMPACT
+import com.tunjid.scaffold.globalui.PreviewBackStatus
 import com.tunjid.scaffold.globalui.isFromLeft
 import com.tunjid.scaffold.globalui.isPreviewing
 import com.tunjid.scaffold.globalui.progress
@@ -100,9 +101,10 @@ private fun Modifier.adaptiveModifier(
                 else clip(RoundedCornerShape(16.dp))
             }
 
-        ThreePane.TransientPrimary -> FillSizeModifier.predictiveBackModifier(
-            backStatus = backStatus
-        )
+        ThreePane.TransientPrimary -> FillSizeModifier
+            .predictiveBackModifier(
+                backStatus = backStatus
+            )
 
         else -> FillSizeModifier
     }
@@ -126,6 +128,13 @@ private fun Modifier.predictiveBackModifier(
         targetValue = 1f - (backStatus.progress * 0.15F),
         label = "back preview modifier scale"
     )
+
+    // TODO: This should not be necessary. Figure out why a frame renders without this
+    //  being applied and yet the transient primary container is visible.
+    val rememberedBackStatus by rememberUpdatedStateIf(backStatus) {
+        it is PreviewBackStatus
+    }
+
     return layout { measurable, constraints ->
         val placeable = measurable.measure(
             constraints.copy(
@@ -140,10 +149,10 @@ private fun Modifier.predictiveBackModifier(
 
         val scaledWidth = paneWidth * scale
         val spaceOnEachSide = (paneWidth - scaledWidth) / 2
-        val margin = (BACK_PREVIEW_PADDING * backStatus.progress).dp.roundToPx()
+        val margin = (BACK_PREVIEW_PADDING * rememberedBackStatus.progress).dp.roundToPx()
 
         val xOffset = ((spaceOnEachSide - margin) * when {
-            backStatus.isFromLeft -> 1
+            rememberedBackStatus.isFromLeft -> 1
             else -> -1
         }).toInt()
 
@@ -154,8 +163,8 @@ private fun Modifier.predictiveBackModifier(
             else -> configuration.screenHeightDp
         }.dp.roundToPx()
         val touchPoint = when {
-            isOrientedHorizontally -> backStatus.touchX
-            else -> backStatus.touchY
+            isOrientedHorizontally -> rememberedBackStatus.touchX
+            else -> rememberedBackStatus.touchY
         }
         val verticalProgress = (touchPoint / screenSize) - 0.5f
         val yOffset = (verticalProgress * maxYShift).roundToInt()
