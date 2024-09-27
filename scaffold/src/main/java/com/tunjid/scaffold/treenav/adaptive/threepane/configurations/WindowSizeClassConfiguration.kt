@@ -10,10 +10,10 @@ import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 
-fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.windowSizeClassConfiguration(
+fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.threePaneAdaptiveConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
 ): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
-    val original = this@windowSizeClassConfiguration.configuration(node)
+    val original = this@threePaneAdaptiveConfiguration.configuration(node)
     adaptiveNodeConfiguration(
         render = original.render,
         transitions = original.transitions,

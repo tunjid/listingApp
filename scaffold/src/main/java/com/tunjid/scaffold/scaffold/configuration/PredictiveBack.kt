@@ -1,4 +1,4 @@
-package com.tunjid.scaffold.scaffold
+package com.tunjid.scaffold.scaffold.configuration
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate
@@ -33,6 +33,7 @@ import com.tunjid.scaffold.globalui.isPreviewing
 import com.tunjid.scaffold.globalui.progress
 import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
+import com.tunjid.scaffold.scaffold.rememberUpdatedStateIf
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope

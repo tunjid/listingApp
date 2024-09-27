@@ -1,9 +1,12 @@
 package com.tunjid.scaffold.scaffold
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.navigation.NavItem
@@ -11,7 +14,6 @@ import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.navItemSelected
 import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.windowSizeClassConfiguration
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
@@ -22,7 +24,10 @@ import com.tunjid.treenav.current
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteTrie
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,24 +61,30 @@ class ListingAppState @Inject constructor(
         }
     )
 
-    fun adaptiveNavHostState(
+    @Composable
+    fun rememberAdaptiveNavHostState(
         configurationBlock: AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>
     ): SavedStateAdaptiveNavHostState<ThreePane, Route> {
-        val windowSizeClassState = derivedStateOf { uiState.value.windowSizeClass }
-        return SavedStateAdaptiveNavHostState(
-            panes = ThreePane.entries.toList(),
-            configuration = adaptiveNavHostConfiguration
-                .windowSizeClassConfiguration(
-                    windowSizeClassState = windowSizeClassState
-                )
-                .predictiveBackConfiguration(
-                    windowSizeClassState = windowSizeClassState,
-                    backStatusState = derivedStateOf {
-                        uiState.value.backStatus
-                    },
-                )
-                .configurationBlock(),
-        )
+        val adaptiveNavHostState = remember {
+            SavedStateAdaptiveNavHostState(
+                panes = ThreePane.entries.toList(),
+                configuration = adaptiveNavHostConfiguration.configurationBlock(),
+            )
+        }
+        DisposableEffect(Unit) {
+            val job = CoroutineScope(Dispatchers.Main.immediate).launch {
+                combine(
+                    navigationStateHolder.state,
+                    globalUiStateHolder.state,
+                    ::Pair,
+                ).collect { (multiStackNav, ui) ->
+                    uiState.value = ui
+                    multiStackNavState.value = multiStackNav
+                }
+            }
+            onDispose { job.cancel() }
+        }
+        return adaptiveNavHostState
     }
 
     fun updateGlobalUi(
@@ -84,16 +95,5 @@ class ListingAppState @Inject constructor(
 
     fun onNavItemSelected(navItem: NavItem) {
         navigationStateHolder.accept { navState.navItemSelected(item = navItem) }
-    }
-
-    suspend fun start() {
-        combine(
-            navigationStateHolder.state,
-            globalUiStateHolder.state,
-            ::Pair,
-        ).collect { (multiStackNav, ui) ->
-            uiState.value = ui
-            multiStackNavState.value = multiStackNav
-        }
     }
 }

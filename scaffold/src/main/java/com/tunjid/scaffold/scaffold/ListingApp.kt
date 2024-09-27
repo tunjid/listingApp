@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,23 +19,22 @@ import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
 import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.scaffold.scaffold.configuration.predictiveBackConfiguration
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
 import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementConfiguration
+import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Root scaffold for the app
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun Scaffold(
+fun ListingApp(
     modifier: Modifier,
     listingAppState: ListingAppState,
     navStateHolder: NavigationStateHolder,
@@ -66,22 +64,36 @@ fun Scaffold(
                         )
                     }
                     AdaptiveNavHost(
-                        state = remember {
-                            listingAppState.adaptiveNavHostState {
-                                movableSharedElementConfiguration(movableSharedElementHostState)
+                        state = listingAppState.rememberAdaptiveNavHostState {
+                            val windowSizeClassState = derivedStateOf {
+                                listingAppState.globalUi.windowSizeClass
                             }
+                            val backStatusState = derivedStateOf {
+                                listingAppState.globalUi.backStatus
+                            }
+                            this
+                                .threePaneAdaptiveConfiguration(
+                                    windowSizeClassState = windowSizeClassState
+                                )
+                                .predictiveBackConfiguration(
+                                    windowSizeClassState = windowSizeClassState,
+                                    backStatusState = backStatusState,
+                                )
+                                .movableSharedElementConfiguration(
+                                    movableSharedElementHostState
+                                )
                         },
                         modifier = Modifier.fillMaxSize()
                                 then movableSharedElementHostState.modifier
                                 then sharedElementModifier
                     ) {
-                        AdaptiveContentScaffold(
-                            positionalState = remember {
+                        ThreePaneLayout(
+                            uiChromeState = remember {
                                 derivedStateOf { listingAppState.globalUi.uiChromeState }
                             }.value,
                             onPaneAnchorChanged = remember {
                                 { paneAnchor: PaneAnchor ->
-                                    globalUiStateHolder.accept {
+                                    listingAppState.updateGlobalUi {
                                         copy(paneAnchor = paneAnchor)
                                     }
                                 }
@@ -120,12 +132,5 @@ fun Scaffold(
                 )
             }
         }
-    }
-
-    DisposableEffect(listingAppState) {
-        val job = CoroutineScope(Dispatchers.Main.immediate).launch {
-            listingAppState.start()
-        }
-        onDispose { job.cancel() }
     }
 }

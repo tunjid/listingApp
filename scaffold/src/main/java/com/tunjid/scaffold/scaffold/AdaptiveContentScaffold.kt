@@ -76,13 +76,13 @@ import kotlinx.coroutines.launch
  * Motionally intelligent, adaptive pane for the hosting the navigation routes
  */
 @Composable
-internal fun AdaptiveNavHostScope<ThreePane, Route>.AdaptiveContentScaffold(
-    positionalState: UiChromeState,
+internal fun AdaptiveNavHostScope<ThreePane, Route>.ThreePaneLayout(
+    uiChromeState: UiChromeState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
 ) {
-    val paddingValues = routePanePadding(positionalState)
+    val paddingValues = routePanePadding(uiChromeState)
     val (startClearance, topClearance, _, bottomClearance) = paddingValues
-    val windowSizeClass = positionalState.windowSizeClass
+    val windowSizeClass = uiChromeState.windowSizeClass
 
     val hasSecondaryContent = nodeFor(ThreePane.Secondary) != null
     val density = LocalDensity.current

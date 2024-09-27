@@ -18,7 +18,7 @@ import com.tunjid.scaffold.globalui.NavMode
 import com.tunjid.scaffold.globalui.insetMutations
 import com.tunjid.scaffold.globalui.integrateBackActions
 import com.tunjid.scaffold.lifecycle.LocalLifecycleStateHolder
-import com.tunjid.scaffold.scaffold.Scaffold
+import com.tunjid.scaffold.scaffold.ListingApp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalLifecycleStateHolder provides listingApp.lifecycleStateHolder,
                 ) {
-                    Scaffold(
+                    ListingApp(
                         modifier = Modifier,
                         listingAppState = listingApp.appState,
                         navStateHolder = listingApp.navigationStateHolder,
