@@ -99,9 +99,6 @@ private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
 private val DefaultTransition = Adaptive.Transitions(
     enter = fadeIn(
         animationSpec = RouteTransitionAnimationSpec,
-        // This is needed because I can't exclude shared elements from transitions
-        // so to actually see them move, start fading in from 0.1f
-        initialAlpha = 0.1f
     ),
     exit = fadeOut(
         animationSpec = RouteTransitionAnimationSpec
