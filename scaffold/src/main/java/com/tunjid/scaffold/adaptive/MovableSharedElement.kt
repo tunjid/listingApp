@@ -203,14 +203,17 @@ internal class MovableSharedElementData<T>(
                         }
                     }
                 )
-                    .drawWithContent {
-                        layer.record {
-                            this@drawWithContent.drawContent()
-                        }
-                        if (!movableSharedElementData.canDrawInOverlay) {
-                            drawLayer(layer)
-                        }
-                    }
+                    .renderInSharedTransitionScopeOverlay(
+                        renderInOverlay = movableSharedElementData::canDrawInOverlay
+                    )
+//                    .drawWithContent {
+//                        layer.record {
+//                            this@drawWithContent.drawContent()
+//                        }
+//                        if (!movableSharedElementData.canDrawInOverlay) {
+//                            drawLayer(layer)
+//                        }
+//                    }
             }
         }
 
