@@ -1,6 +1,8 @@
 package com.tunjid.feature.detail.di
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailViewModel
@@ -9,6 +11,10 @@ import com.tunjid.feature.detail.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
+import com.tunjid.scaffold.globalui.InsetFlags
+import com.tunjid.scaffold.globalui.NavVisibility
+import com.tunjid.scaffold.globalui.ScreenUiState
+import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
@@ -87,10 +93,18 @@ object ListingDetailModule {
                     route = route,
                 )
             }
+            ScreenUiState(
+                UiState(
+                    navVisibility = NavVisibility.Gone,
+                    insetFlags = InsetFlags.NONE,
+                    statusBarColor = Color.Black.copy(alpha = 0.4f).toArgb()
+                )
+            )
             ListingDetailScreen(
                 modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 actions = viewModel.accept
             )
-        })
+        }
+    )
 }

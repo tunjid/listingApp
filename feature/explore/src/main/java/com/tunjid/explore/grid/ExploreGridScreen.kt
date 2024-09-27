@@ -33,10 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.lazy.grid.interpolatedFirstItemIndex
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
@@ -51,14 +47,6 @@ fun ExploreGridScreen(
     state: State,
     actions: (Action) -> Unit,
 ) {
-    ScreenUiState(
-        UiState(
-            fabShows = false,
-            navVisibility = NavVisibility.Visible,
-            insetFlags = InsetFlags.NONE
-        )
-    )
-
     Column(
         modifier = modifier.fillMaxSize(),
     ) {

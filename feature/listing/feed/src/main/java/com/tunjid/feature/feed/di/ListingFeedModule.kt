@@ -10,6 +10,10 @@ import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.globalui.InsetFlags
+import com.tunjid.scaffold.globalui.NavVisibility
+import com.tunjid.scaffold.globalui.ScreenUiState
+import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
@@ -89,6 +93,13 @@ object ListingFeedModule {
                 route = route,
             )
         }
+        ScreenUiState(
+            UiState(
+                fabShows = false,
+                navVisibility = NavVisibility.Visible,
+                insetFlags = InsetFlags.NONE
+            )
+        )
         ListingFeedScreen(
             modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,

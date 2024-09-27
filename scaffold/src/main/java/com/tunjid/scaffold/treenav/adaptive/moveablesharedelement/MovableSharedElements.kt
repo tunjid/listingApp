@@ -125,11 +125,6 @@ val LocalMovableSharedElementScope =
         throw IllegalArgumentException("LocalMovableSharedElementScope not set")
     }
 
-internal val LocalAdaptivePaneScope =
-    staticCompositionLocalOf<AdaptivePaneScope<ThreePane, Route>?> {
-        null
-    }
-
 private fun <T> emptyComposable(): @Composable (T, Modifier) -> Unit = EMPTY_COMPOSABLE
 
 private val EMPTY_COMPOSABLE: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
