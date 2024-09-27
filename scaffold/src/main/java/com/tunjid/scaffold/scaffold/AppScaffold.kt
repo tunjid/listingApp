@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,9 @@ import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Root scaffold for the app
@@ -119,7 +123,10 @@ fun Scaffold(
         }
     }
 
-    LaunchedEffect(listingAppState) {
-        listingAppState.start()
+    DisposableEffect(listingAppState) {
+        val job = CoroutineScope(Dispatchers.Main.immediate).launch {
+            listingAppState.start()
+        }
+        onDispose { job.cancel() }
     }
 }
