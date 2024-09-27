@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -163,6 +164,10 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     val scope = remember {
                         AnimatedAdaptivePaneScope(
                             paneState = targetPaneState,
+                            activeState = derivedStateOf {
+                                val activePaneState = adaptiveNavigationState.paneStateFor(slot)
+                                activePaneState.currentNode?.id == targetPaneState.currentNode?.id
+                            },
                             animatedContentScope = this@AnimatedContent,
                         )
                     }
@@ -174,7 +179,8 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     when (val node = targetPaneState.currentNode) {
                         null -> Unit
                         else -> CompositionLocalProvider(
-                            LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(node),
+                            LocalViewModelStoreOwner
+                                    provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(node),
                         ) {
                             SaveableStateProvider(node.id) {
                                 navHostConfiguration.Destination(paneScope = scope)

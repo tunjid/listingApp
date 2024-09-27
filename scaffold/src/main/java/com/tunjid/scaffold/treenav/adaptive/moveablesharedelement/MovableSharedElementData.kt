@@ -44,13 +44,14 @@ import kotlinx.coroutines.flow.first
 @Stable
 @OptIn(ExperimentalAnimatableApi::class, ExperimentalSharedTransitionApi::class)
 internal class MovableSharedElementData<S, T, R : Node>(
+    paneScope: AdaptivePaneScope<T, R>,
     private val sharedTransitionScope: SharedTransitionScope,
     sharedElement: @Composable (S, Modifier) -> Unit,
     private val canAnimateOnStartingFrames: AdaptivePaneState<T, R>.() -> Boolean,
     onRemoved: () -> Unit
 ) : SharedElementOverlay {
 
-    var adaptivePaneScope by mutableStateOf<AdaptivePaneScope<T, R>?>(null)
+    var paneScope by mutableStateOf(paneScope)
 
     private var inCount by mutableIntStateOf(0)
 
@@ -211,9 +212,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
             animationMapper: (MovableSharedElementData<*, T, R>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
-            val paneScope = requireNotNull(adaptivePaneScope)
-            val paneState = paneScope.paneState
-                .also(::updatePaneStateSeen)
+            val paneState = paneScope.paneState.also(::updatePaneStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
                 initialValue = Pair(

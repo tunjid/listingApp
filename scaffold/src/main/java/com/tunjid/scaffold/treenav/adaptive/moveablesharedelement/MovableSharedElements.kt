@@ -1,6 +1,5 @@
 package com.tunjid.scaffold.treenav.adaptive.moveablesharedelement
 
-import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
@@ -57,19 +56,19 @@ class MovableSharedElementHostState<T, R : Node>(
     fun isCurrentlyShared(key: Any): Boolean =
         keysToMovableSharedElements.contains(key)
 
-    fun <S> createOrUpdateSharedElement(
-        paneScope: AdaptivePaneScope<T, R>,
+    fun <S> AdaptivePaneScope<T, R>.createOrUpdateSharedElement(
         key: Any,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
         val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
             MovableSharedElementData(
+                paneScope = this,
                 sharedTransitionScope = sharedTransitionScope,
                 sharedElement = sharedElement,
                 canAnimateOnStartingFrames = canAnimateOnStartingFrames,
                 onRemoved = { keysToMovableSharedElements.remove(key) }
             )
-        }.also { it.adaptivePaneScope = paneScope }
+        }.also { it.paneScope = this }
 
         // Can't really guarantee that the caller will use the same key for the right type
         return movableSharedElementData.moveableSharedElement
@@ -77,7 +76,7 @@ class MovableSharedElementHostState<T, R : Node>(
 }
 
 /**
- * An implementation of [Adaptive.PaneScope] that supports animations and shared elements
+ * An implementation of [AdaptivePaneScope] that supports animations and shared elements
  */
 @Stable
 internal class AdaptiveMovableSharedElementScope<T, R : Node>(
@@ -93,21 +92,15 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
         // This pane state may be animating out. Look up the actual current route
-
-        val isActive = when (paneScope.transition.targetState) {
-            EnterExitState.PreEnter -> false
-            EnterExitState.Visible -> true
-            EnterExitState.PostExit -> false
-        }
-
         // Do not use the shared element if this content is being animated out
-        if (!isActive) return { _, _ -> }
+        if (!paneScope.isActive) return emptyComposable()
 
-        return movableSharedElementHostState.createOrUpdateSharedElement(
-            paneScope = paneScope,
-            key = key,
-            sharedElement = sharedElement
-        )
+        return with(movableSharedElementHostState) {
+            paneScope.createOrUpdateSharedElement(
+                key = key,
+                sharedElement = sharedElement
+            )
+        }
     }
 }
 
@@ -137,3 +130,6 @@ internal val LocalAdaptivePaneScope =
         null
     }
 
+private fun <T> emptyComposable(): @Composable (T, Modifier) -> Unit = EMPTY_COMPOSABLE
+
+private val EMPTY_COMPOSABLE: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
