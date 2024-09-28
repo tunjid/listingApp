@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import java.util.UUID
 
 sealed class NavMode {
@@ -24,9 +25,9 @@ enum class PaneAnchor(
     val fraction: Float
 ) {
     Zero(fraction = 0f),
-    OneThirds(fraction = 1/3f),
-    Half(fraction = 1/2f),
-    TwoThirds(fraction = 2/3f),
+    OneThirds(fraction = 1 / 3f),
+    Half(fraction = 1 / 2f),
+    TwoThirds(fraction = 2 / 3f),
     Full(fraction = 1f),
 }
 
@@ -87,12 +88,6 @@ data class UiState(
 )
 
 private fun <T> emptyCallback(): (T) -> Unit = {}
-
-fun Dp.toWindowSizeClass() = when {
-    this < 600.dp -> WindowSizeClass.COMPACT
-    this < 840.dp -> WindowSizeClass.MEDIUM
-    else -> WindowSizeClass.EXPANDED
-}
 
 val UiState.navBarSize get() = systemUI.static.navBarSize
 

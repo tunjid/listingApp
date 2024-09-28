@@ -64,14 +64,10 @@ import androidx.compose.ui.unit.sp
 import com.tunjid.composables.scrollbars.scrollable.grid.scrollbarState
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
-import com.tunjid.scaffold.adaptive.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import com.tunjid.tiler.compose.PivotedTilingEffect
 import com.tunjid.ui.FastScrollbar
 import kotlinx.coroutines.flow.first
@@ -82,13 +78,6 @@ fun ListingFeedScreen(
     state: State,
     actions: (Action) -> Unit,
 ) {
-    ScreenUiState(
-        UiState(
-            fabShows = false,
-            navVisibility = NavVisibility.Visible,
-            insetFlags = InsetFlags.NONE
-        )
-    )
     val gridState = rememberLazyGridState()
     val updatedItems by rememberUpdatedState(state.listings)
     val pullRefreshState = rememberPullRefreshState(

@@ -2,9 +2,9 @@ package com.tunjid.data.database.di
 
 import com.tunjid.data.database.ListingDatabase
 import com.tunjid.data.favorite.database.FavoriteDao
-import com.tunjid.data.media.database.MediaDao
 import com.tunjid.data.listing.database.ListingDao
 import com.tunjid.data.listing.database.UserDao
+import com.tunjid.data.media.database.MediaDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

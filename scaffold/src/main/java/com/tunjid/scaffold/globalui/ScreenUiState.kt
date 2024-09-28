@@ -6,24 +6,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import com.tunjid.mutator.mutationOf
-import com.tunjid.scaffold.adaptive.Adaptive
-import com.tunjid.scaffold.adaptive.LocalAdaptiveContentScope
+import com.tunjid.treenav.adaptive.AdaptivePaneScope
+import com.tunjid.treenav.adaptive.threepane.ThreePane
 
 /**
  * Provides a way of composing the [UiState] on a global level.
  * This allows for coordination of the UI across navigation destinations.
  */
 @Composable
-fun ScreenUiState(state: UiState) {
-    val scope = LocalAdaptiveContentScope.current ?: return
+fun AdaptivePaneScope<ThreePane, *>.ScreenUiState(state: UiState) {
     val uiStateHolder = LocalGlobalUiStateHolder.current
     val updatedState by rememberUpdatedState(state)
 
     val fabClickListener = MutableFunction(state.fabClickListener)
     val snackbarMessageConsumer = MutableFunction(state.snackbarMessageConsumer)
 
-    LaunchedEffect(updatedState, scope.paneState) {
-        if (scope.paneState.pane == Adaptive.Pane.Primary) uiStateHolder.accept(
+    LaunchedEffect(updatedState, paneState) {
+        if (paneState.pane == ThreePane.Primary && isActive) uiStateHolder.accept(
             mutationOf {
                 // Preserve things that should not be overwritten
                 updatedState.copy(

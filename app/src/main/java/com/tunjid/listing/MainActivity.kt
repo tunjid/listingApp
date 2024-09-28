@@ -3,26 +3,22 @@ package com.tunjid.listing
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toComposeRect
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.lifecycleScope
-import androidx.window.layout.WindowMetricsCalculator
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.listing.ui.theme.ListingAppTheme
 import com.tunjid.mutator.mutationOf
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
+import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.NavMode
-import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.globalui.insetMutations
 import com.tunjid.scaffold.globalui.integrateBackActions
-import com.tunjid.scaffold.globalui.toWindowSizeClass
 import com.tunjid.scaffold.lifecycle.LocalLifecycleStateHolder
-import com.tunjid.scaffold.scaffold.Scaffold
+import com.tunjid.scaffold.scaffold.ListingApp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -43,9 +39,9 @@ class MainActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalLifecycleStateHolder provides listingApp.lifecycleStateHolder,
                 ) {
-                    Scaffold(
+                    ListingApp(
                         modifier = Modifier,
-                        adaptiveContentState = listingApp.adaptiveContentState(),
+                        listingAppState = listingApp.appState,
                         navStateHolder = listingApp.navigationStateHolder,
                         globalUiStateHolder = listingApp.globalUiStateHolder,
                     )
@@ -70,25 +66,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun MainActivity.AdaptNavigation(globalUiStateHolder: GlobalUiStateHolder) {
-    val configuration = LocalConfiguration.current
-    val windowMetrics = remember(configuration) {
-        WindowMetricsCalculator.getOrCreate()
-            .computeCurrentWindowMetrics(this)
-    }
-    val windowDpSize = with(LocalDensity.current) {
-        windowMetrics.bounds.toComposeRect().size.toDpSize()
-    }
-    val widthWindowSizeClass = windowDpSize.width.toWindowSizeClass()
+private fun AdaptNavigation(globalUiStateHolder: GlobalUiStateHolder) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
-    LaunchedEffect(widthWindowSizeClass) {
+    LaunchedEffect(windowSizeClass) {
         globalUiStateHolder.accept(mutationOf {
             copy(
-                windowSizeClass = widthWindowSizeClass,
-                navMode = when (widthWindowSizeClass) {
-                    WindowSizeClass.COMPACT -> NavMode.BottomNav
-                    WindowSizeClass.MEDIUM -> NavMode.NavRail
-                    WindowSizeClass.EXPANDED -> NavMode.NavRail
+                windowSizeClass = windowSizeClass,
+                navMode = when (windowSizeClass.minWidthDp) {
+                    in WindowSizeClass.MEDIUM.minWidthDp..Int.MAX_VALUE -> NavMode.NavRail
+                    else -> NavMode.BottomNav
                 }
             )
         })

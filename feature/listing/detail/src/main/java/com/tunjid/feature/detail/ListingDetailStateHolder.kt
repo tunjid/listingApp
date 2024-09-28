@@ -1,6 +1,7 @@
 package com.tunjid.feature.detail
 
 import androidx.lifecycle.ViewModel
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.feature.detail.di.initialQuery
 import com.tunjid.feature.detail.di.listingId
 import com.tunjid.feature.detail.di.startingMediaUrls
@@ -17,8 +18,8 @@ import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.globalui.COMPACT
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.globalui.WindowSizeClass
 import com.tunjid.scaffold.isInPrimaryNavMutations
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
@@ -160,7 +161,7 @@ private suspend fun Flow<Action.LoadImagesAround>.paginationMutations(
         }
 
 private fun StateFlow<UiState>.paneMutations(): Flow<Mutation<State>> =
-    map { (it.windowSizeClass > WindowSizeClass.COMPACT) to it.paneAnchor }
+    map { (it.windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp) to it.paneAnchor }
         .distinctUntilChanged()
         .mapToMutation { (hasSecondaryPanel, paneAnchor) ->
             copy(

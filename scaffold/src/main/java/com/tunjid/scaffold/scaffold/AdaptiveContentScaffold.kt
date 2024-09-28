@@ -50,22 +50,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
+import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.composables.dragtodismiss.DragToDismissState
-import com.tunjid.scaffold.adaptive.Adaptive
-import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.PrimaryToSecondary
-import com.tunjid.scaffold.adaptive.Adaptive.Adaptation.Companion.SecondaryToPrimary
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
 import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.countIf
-import com.tunjid.scaffold.globalui.LocalDragToDismissState
+import com.tunjid.scaffold.globalui.COMPACT
+import com.tunjid.scaffold.globalui.EXPANDED
+import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.PaneAnchor
-import com.tunjid.scaffold.globalui.WindowSizeClass
-import com.tunjid.scaffold.globalui.WindowSizeClass.COMPACT
 import com.tunjid.scaffold.globalui.bottomNavSize
-import com.tunjid.scaffold.globalui.dragToPopInternal
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
-import com.tunjid.scaffold.globalui.slices.RoutePanePositionalState
+import com.tunjid.scaffold.globalui.slices.UiChromeState
+import com.tunjid.treenav.adaptive.Adaptation
+import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
+import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.PrimaryToSecondary
+import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.SecondaryToPrimary
+import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -74,18 +76,15 @@ import kotlinx.coroutines.launch
  * Motionally intelligent, adaptive pane for the hosting the navigation routes
  */
 @Composable
-internal fun AdaptiveContentScaffold(
-    contentState: AdaptiveContentState,
-    positionalState: RoutePanePositionalState,
+internal fun AdaptiveNavHostScope<ThreePane, Route>.ThreePaneLayout(
+    uiChromeState: UiChromeState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
 ) {
-    val navigationState = contentState.navigationState
-    val paddingValues = routePanePadding(positionalState)
+    val paddingValues = routePanePadding(uiChromeState)
     val (startClearance, topClearance, _, bottomClearance) = paddingValues
+    val windowSizeClass = uiChromeState.windowSizeClass
 
-    val hasSecondaryContent = navigationState.routeFor(Adaptive.Pane.Secondary) != null
-    val windowSizeClass = navigationState.windowSizeClass
-
+    val hasSecondaryContent = nodeFor(ThreePane.Secondary) != null
     val density = LocalDensity.current
     val paneSplitState = remember { PaneAnchorState(density) }
     val dragToDismissState = remember { DragToDismissState() }
@@ -109,19 +108,19 @@ internal fun AdaptiveContentScaffold(
                 // Secondary pane content
                 Box(
                     modifier = Modifier.secondaryPaneModifier(
-                        adaptation = navigationState.adaptationIn(Adaptive.Pane.Secondary),
+                        adaptation = adaptationIn(ThreePane.Secondary),
                         width = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() },
                     ),
                     content = {
-                        contentState.RouteIn(pane = Adaptive.Pane.Secondary)
+                        Destination(ThreePane.Secondary)
                     }
                 )
                 // Primary pane content
                 Box(
                     modifier = Modifier.primaryPaneModifier(
                         windowSizeClass = windowSizeClass,
-                        adaptation = navigationState.adaptationIn(Adaptive.Pane.Primary),
+                        adaptation = adaptationIn(ThreePane.Primary),
                         secondaryContentWidth = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() }
                     ),
@@ -130,20 +129,30 @@ internal fun AdaptiveContentScaffold(
                             modifier = Modifier
                                 .dragToPopInternal(dragToDismissState)
                         ) {
-                            contentState.RouteIn(pane = Adaptive.Pane.Primary)
+                            Destination(ThreePane.Primary)
                         }
+                        // TODO: This should not be necessary. Figure out why a frame renders with
+                        //  an offset of zero while the content in the transient primary container
+                        //  is still visible.
+                        val dragToDismissOffset by rememberUpdatedStateIf(
+                            value = dragToDismissState.offset.round(),
+                            predicate = {
+                                it != IntOffset.Zero || nodeFor(ThreePane.TransientPrimary) == null
+                            }
+                        )
                         Box(
                             modifier = Modifier
-                                .offset { dragToDismissState.offset.round() }
+                                .offset { dragToDismissOffset }
                         ) {
-                            contentState.RouteIn(pane = Adaptive.Pane.TransientPrimary)
+                            Destination(ThreePane.TransientPrimary)
                         }
                     }
                 )
                 // Pane separator
                 AnimatedVisibility(
                     modifier = Modifier.align(Alignment.CenterStart),
-                    visible = hasSecondaryContent && windowSizeClass > COMPACT
+                    visible = hasSecondaryContent
+                            && windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp
                 ) {
                     DraggableThumb(
                         paneAnchorState = paneSplitState
@@ -157,10 +166,10 @@ internal fun AdaptiveContentScaffold(
         // Delay briefly so the animation runs
         delay(5)
         paneSplitState.moveTo(
-            if (hasSecondaryContent) when (windowSizeClass) {
-                COMPACT -> PaneAnchor.Zero
-                WindowSizeClass.MEDIUM -> PaneAnchor.OneThirds
-                WindowSizeClass.EXPANDED -> PaneAnchor.Half
+            if (hasSecondaryContent) when (windowSizeClass.minWidthDp) {
+                in WindowSizeClass.EXPANDED.minWidthDp..Int.MAX_VALUE -> PaneAnchor.Half
+                in WindowSizeClass.MEDIUM.minWidthDp..<WindowSizeClass.EXPANDED.minWidthDp -> PaneAnchor.OneThirds
+                else -> PaneAnchor.Zero
             }
             else PaneAnchor.Zero
         )
@@ -228,7 +237,7 @@ private fun BoxScope.DraggableThumb(
 
 private fun Modifier.primaryPaneModifier(
     windowSizeClass: WindowSizeClass,
-    adaptation: Adaptive.Adaptation?,
+    adaptation: Adaptation?,
     secondaryContentWidth: Dp,
     maxWidth: Dp,
 ) = composed {
@@ -245,7 +254,8 @@ private fun Modifier.primaryPaneModifier(
     LaunchedEffect(windowSizeClass, adaptation) {
         try {
             // Maintain max width on smaller devices
-            if (windowSizeClass == COMPACT || adaptation != SecondaryToPrimary
+            if (windowSizeClass.minWidthDp <= WindowSizeClass.COMPACT.minWidthDp
+                || adaptation != SecondaryToPrimary
             ) {
                 complete = true
                 return@LaunchedEffect
@@ -267,7 +277,8 @@ private fun Modifier.primaryPaneModifier(
         .width(if (complete) maxWidth else widthAnimatable.value)
         .padding(
             start = updatedSecondaryContentWidth.countIf(
-                condition = adaptation != SecondaryToPrimary && windowSizeClass != COMPACT
+                condition = adaptation != SecondaryToPrimary
+                        && windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp
             )
         )
         .restrictedSizePlacement(
@@ -276,7 +287,7 @@ private fun Modifier.primaryPaneModifier(
 }
 
 private fun Modifier.secondaryPaneModifier(
-    adaptation: Adaptive.Adaptation?,
+    adaptation: Adaptation?,
     width: Dp,
     maxWidth: Dp,
 ) = composed {
@@ -324,7 +335,7 @@ private fun Modifier.secondaryPaneModifier(
 
 @Composable
 private fun routePanePadding(
-    state: RoutePanePositionalState,
+    state: UiChromeState,
 ): SnapshotStateList<Dp> {
     val paddingValues = remember {
         mutableStateListOf(0.dp, 0.dp, 0.dp, 0.dp)

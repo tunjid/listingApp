@@ -1,23 +1,16 @@
 package com.tunjid.listing
 
 import android.app.Application
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.VideoFrameDecoder
 import com.tunjid.listing.workmanager.initializers.Sync
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
-import com.tunjid.scaffold.di.AdaptiveRouter
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
-import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
+import com.tunjid.scaffold.scaffold.ListingAppState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.Route
 import dagger.Binds
@@ -62,24 +55,10 @@ class ListingApplication : Application(), ImageLoaderFactory {
 }
 
 interface ListingApp {
-    val adaptiveRouter: AdaptiveRouter
-    val adaptiveContentStateCreator: (CoroutineScope, SaveableStateHolder) -> AdaptiveContentState
+    val appState: ListingAppState
     val navigationStateHolder: NavigationStateHolder
     val globalUiStateHolder: GlobalUiStateHolder
     val lifecycleStateHolder: LifecycleStateHolder
-    val viewModelDependencyManager: ViewModelDependencyManager
-}
-
-@Composable
-fun ListingApp.adaptiveContentState(): AdaptiveContentState {
-    val scope = rememberCoroutineScope()
-    val saveableStateHolder = rememberSaveableStateHolder()
-    return remember {
-        adaptiveContentStateCreator(
-            scope,
-            saveableStateHolder
-        )
-    }
 }
 
 @Singleton
@@ -87,15 +66,10 @@ class PersistedListingApp @Inject constructor(
     appScope: CoroutineScope,
     navigationStateStream: StateFlow<MultiStackNav>,
     savedStateRepository: SavedStateRepository,
-    override val adaptiveRouter: AdaptiveRouter,
     override val navigationStateHolder: NavigationStateHolder,
     override val globalUiStateHolder: GlobalUiStateHolder,
     override val lifecycleStateHolder: LifecycleStateHolder,
-    override val viewModelDependencyManager: ViewModelDependencyManager,
-    override val adaptiveContentStateCreator: (
-        @JvmSuppressWildcards CoroutineScope,
-        @JvmSuppressWildcards SaveableStateHolder
-    ) -> @JvmSuppressWildcards AdaptiveContentState,
+    override val appState: ListingAppState,
 ) : ListingApp {
 
     init {

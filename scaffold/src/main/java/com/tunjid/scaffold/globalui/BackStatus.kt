@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 interface BackStatus {
-    data object None: BackStatus
-    data object DragDismiss: BackStatus
+    data object None : BackStatus
+    data object DragDismiss : BackStatus
 }
 
 data class PreviewBackStatus(

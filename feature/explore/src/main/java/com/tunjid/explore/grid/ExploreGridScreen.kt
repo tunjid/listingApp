@@ -1,21 +1,14 @@
 package com.tunjid.explore.grid
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -29,28 +22,21 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.lazy.grid.interpolatedFirstItemIndex
-import com.tunjid.scaffold.adaptive.movableSharedElementOf
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -61,14 +47,6 @@ fun ExploreGridScreen(
     state: State,
     actions: (Action) -> Unit,
 ) {
-    ScreenUiState(
-        UiState(
-            fabShows = false,
-            navVisibility = NavVisibility.Visible,
-            insetFlags = InsetFlags.NONE
-        )
-    )
-
     Column(
         modifier = modifier.fillMaxSize(),
     ) {

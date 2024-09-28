@@ -2,7 +2,7 @@ import ext.libs
 
 plugins {
     id("com.google.devtools.ksp")
-    id ("kotlin-kapt")
+    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
 }
 

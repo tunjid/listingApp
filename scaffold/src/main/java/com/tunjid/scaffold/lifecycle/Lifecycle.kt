@@ -7,7 +7,14 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.asNoOpStateFlowMutator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -85,9 +92,9 @@ class ActualLifecycleStateHolder @Inject constructor(
 
 @Composable
 operator fun <Action : Any, State : Any> ActionStateMutator<Action, StateFlow<State>>.component1()
-: State = state.collectAsStateWithLifecycle().value
+        : State = state.collectAsStateWithLifecycle().value
 
 @Composable
 operator fun <Action : Any, State : Any> ActionStateMutator<Action, StateFlow<State>>.component2()
-: (Action) -> Unit = remember { accept }
+        : (Action) -> Unit = remember { accept }
 

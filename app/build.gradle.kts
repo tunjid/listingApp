@@ -1,5 +1,5 @@
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 plugins {
     id("android-application-convention")
@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.material3.adaptive)
     coreLibraryDesugaring(libs.com.android.desugarJdkLibs)
 
     implementation(project(":scaffold"))
@@ -74,7 +75,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material3.material3)
     implementation(libs.androidx.window.window)
 
     implementation(libs.coil.kt.compose)

@@ -1,24 +1,28 @@
 package com.tunjid.explore.grid.di
 
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
-import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.di.SavedStateType
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModel
-import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
-import com.tunjid.treenav.strings.RouteMatcher
-import com.tunjid.treenav.strings.urlRouteMatcher
-import com.tunjid.explore.grid.State
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tunjid.explore.grid.ExploreGridModelFactory
 import com.tunjid.explore.grid.ExploreGridScreen
 import com.tunjid.explore.grid.ExploreGridViewModel
-import com.tunjid.explore.grid.ExploreGridModelFactory
+import com.tunjid.explore.grid.State
+import com.tunjid.scaffold.adaptive.routeOf
+import com.tunjid.scaffold.di.SavedStateType
+import com.tunjid.scaffold.globalui.InsetFlags
+import com.tunjid.scaffold.globalui.NavVisibility
+import com.tunjid.scaffold.globalui.ScreenUiState
+import com.tunjid.scaffold.globalui.UiState
+import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
+import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
+import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteMatcher
+import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -48,19 +52,26 @@ object ExploreGridModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration { route ->
-        val viewModel = viewModel<ExploreGridViewModel>()
+    fun routeAdaptiveConfiguration(
+        factory: ExploreGridModelFactory
+    ) = threePaneAdaptiveNodeConfiguration<Route> { route ->
+        val viewModel = viewModel<ExploreGridViewModel> {
+            factory.create(
+                scope = viewModelCoroutineScope(),
+                route = route,
+            )
+        }
+        ScreenUiState(
+            UiState(
+                fabShows = false,
+                navVisibility = NavVisibility.Visible,
+                insetFlags = InsetFlags.NONE
+            )
+        )
         ExploreGridScreen(
-            modifier = Modifier.backPreviewBackgroundModifier(),
+            modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
         )
     }
-
-    @IntoMap
-    @Provides
-    @ClassKey(ExploreGridViewModel::class)
-    fun tripsStateHolderCreator(
-        factory: ExploreGridModelFactory
-    ): ScreenStateHolderCreator = factory
 }

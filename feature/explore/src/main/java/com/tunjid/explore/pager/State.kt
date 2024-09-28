@@ -17,7 +17,7 @@ sealed class Action(val key: String) {
         val url: String
     ) : Action("Play")
 
-    data object ToggleDebug: Action("ToggleDebug")
+    data object ToggleDebug : Action("ToggleDebug")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class Pop(

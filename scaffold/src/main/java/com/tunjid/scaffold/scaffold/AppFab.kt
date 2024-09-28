@@ -29,12 +29,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.countIf
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
-import com.tunjid.scaffold.globalui.slices.fabState
-import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
+import com.tunjid.scaffold.globalui.slices.FabState
 
 /**
  * Common motionally intelligent Floating Action button shared amongst nav routes in the app
@@ -42,14 +39,9 @@ import com.tunjid.scaffold.lifecycle.mappedCollectAsStateWithLifecycle
  */
 @Composable
 internal fun BoxScope.AppFab(
-    globalUiStateHolder: GlobalUiStateHolder,
+    state: FabState,
+    onClicked: () -> Unit,
 ) {
-    val state by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::fabState
-    )
-    val clicks by globalUiStateHolder.state.mappedCollectAsStateWithLifecycle(
-        mapper = UiState::fabClickListener
-    )
     val enabled = state.enabled
     val windowSizeClass = state.windowSizeClass
     val position by animateDpAsState(
@@ -73,7 +65,7 @@ internal fun BoxScope.AppFab(
             .offset(x = (-16).dp, y = position)
             .wrapContentHeight(),
         enabled = enabled,
-        onClick = { if (enabled) clicks(Unit) },
+        onClick = { if (enabled) onClicked() },
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.tertiary
         ),

@@ -1,18 +1,22 @@
 package com.tunjid.feature.listinggallery.grid.di
 
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.listinggallery.grid.GridGalleryScreen
 import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.grid.GridGalleryViewModel
 import com.tunjid.feature.listinggallery.grid.State
 import com.tunjid.listing.data.model.MediaQuery
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.globalui.InsetFlags
+import com.tunjid.scaffold.globalui.NavVisibility
+import com.tunjid.scaffold.globalui.ScreenUiState
+import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModel
-import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
+import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -20,7 +24,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
@@ -61,19 +64,26 @@ object GridGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = adaptiveRouteConfiguration {
-        val viewModel = viewModel<GridGalleryViewModel>()
+    fun routeAdaptiveConfiguration(
+        factory: GridGalleryStateHolderFactory
+    ) = threePaneAdaptiveNodeConfiguration { route ->
+        val viewModel = viewModel<GridGalleryViewModel> {
+            factory.create(
+                scope = viewModelCoroutineScope(),
+                route = route,
+            )
+        }
+        ScreenUiState(
+            UiState(
+                fabShows = false,
+                navVisibility = NavVisibility.Gone,
+                insetFlags = InsetFlags.NONE
+            )
+        )
         GridGalleryScreen(
-            modifier = Modifier.backPreviewBackgroundModifier(),
+            modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
         )
     }
-
-    @IntoMap
-    @Provides
-    @ClassKey(GridGalleryViewModel::class)
-    fun listingGalleryStateHolderCreator(
-        factory: GridGalleryStateHolderFactory
-    ): ScreenStateHolderCreator = factory
 }

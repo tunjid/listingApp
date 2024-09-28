@@ -1,16 +1,11 @@
 package com.tunjid.scaffold.di
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.ViewModel
 import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.DelegatingByteSerializer
-import com.tunjid.scaffold.adaptive.Adaptive
-import com.tunjid.scaffold.adaptive.AdaptiveContentState
-import com.tunjid.scaffold.adaptive.AdaptiveRouteConfiguration
 import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
@@ -18,23 +13,17 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.ActualLifecycleStateHolder
 import com.tunjid.scaffold.lifecycle.Lifecycle
 import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
-import com.tunjid.scaffold.lifecycle.ViewModelDependencyManager
-import com.tunjid.scaffold.lifecycle.AppViewModelDependencyManager
 import com.tunjid.scaffold.media.ExoPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
-import com.tunjid.scaffold.navigation.RouteNotFound
 import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
 import com.tunjid.scaffold.savedstate.SavedStateRepository
-import com.tunjid.scaffold.scaffold.AdaptiveContentStateFactory
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParser
-import com.tunjid.treenav.strings.RouteTrie
 import com.tunjid.treenav.strings.routeParserFrom
 import dagger.Binds
 import dagger.Module
@@ -58,7 +47,7 @@ import javax.inject.Singleton
 interface ScreenStateHolderCreator {
     fun create(
         scope: CoroutineScope,
-        route: Route
+        route: Route,
     ): ViewModel
 }
 
@@ -67,14 +56,6 @@ typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 data class SavedStateType(
     val apply: PolymorphicModuleBuilder<ByteSerializable>.() -> Unit
 )
-
-interface AdaptiveRouter {
-    fun destination(route: Route): @Composable () -> Unit
-
-    fun secondaryRouteFor(route: Route): Route?
-
-    fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions?
-}
 
 inline fun <reified T : ByteSerializable> ByteSerializer.restoreState(savedState: ByteArray?): T? {
     return try {
@@ -130,31 +111,6 @@ object ScaffoldModule {
 
     @Provides
     @Singleton
-    fun router(
-        routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveRouteConfiguration>,
-    ): AdaptiveRouter {
-        val configurationTrie = RouteTrie<AdaptiveRouteConfiguration>().apply {
-            routeConfigurationMap
-                .mapKeys { (template) -> PathPattern(template) }
-                .forEach(::set)
-        }
-
-        return object : AdaptiveRouter {
-            override fun secondaryRouteFor(route: Route): Route? =
-                configurationTrie[route]?.secondaryRoute(route)
-
-            override fun transitionsFor(state: Adaptive.PaneState): Adaptive.Transitions? =
-                state.currentRoute?.let(configurationTrie::get)?.transitionsFor(state)
-
-
-            override fun destination(route: Route): @Composable () -> Unit = {
-                configurationTrie[route]?.Render(route) ?: RouteNotFound()
-            }
-        }
-    }
-
-    @Provides
-    @Singleton
     fun savedStateCache(
         savedStateRepository: SavedStateRepository
     ): SavedStateCache = { route ->
@@ -185,12 +141,6 @@ object ScaffoldModule {
     fun lifecycleStateStream(
         lifecycleStateHolder: LifecycleStateHolder
     ): StateFlow<Lifecycle> = lifecycleStateHolder.state
-
-    @Provides
-    fun adaptiveContentStateCreator(
-        factory: AdaptiveContentStateFactory
-    ): (@JvmSuppressWildcards CoroutineScope, @JvmSuppressWildcards SaveableStateHolder) -> @JvmSuppressWildcards AdaptiveContentState =
-        factory::create
 }
 
 @Module
@@ -225,11 +175,6 @@ interface ScaffoldBindModule {
     fun bindSavedStateRepository(
         dataStoreSavedStateRepository: DataStoreSavedStateRepository
     ): SavedStateRepository
-
-    @Binds
-    fun bindRouteViewModelFactoryProvider(
-        routeViewModelFactoryProviderImpl: AppViewModelDependencyManager
-    ): ViewModelDependencyManager
 
     @Binds
     fun bindPlayerManager(

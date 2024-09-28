@@ -1,18 +1,23 @@
 package com.tunjid.feature.feed.di
 
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.feed.ListingFeedScreen
 import com.tunjid.feature.feed.ListingFeedStateHolderFactory
 import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.feature.feed.State
 import com.tunjid.listing.data.model.ListingQuery
-import com.tunjid.scaffold.adaptive.adaptiveRouteConfiguration
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.globalui.InsetFlags
+import com.tunjid.scaffold.globalui.NavVisibility
+import com.tunjid.scaffold.globalui.ScreenUiState
+import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModel
-import com.tunjid.scaffold.scaffold.backPreviewBackgroundModifier
+import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
+import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
+import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -20,12 +25,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
 import kotlinx.serialization.modules.subclass
-import kotlin.reflect.KClass
 
 internal const val FeedPattern = "/listings"
 internal const val FavoritesPattern = "/favorites"
@@ -81,10 +84,24 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
-    fun feedAdaptiveConfiguration() = adaptiveRouteConfiguration {
-        val viewModel = viewModel<ListingFeedViewModel>()
+    fun feedAdaptiveConfiguration(
+        factory: ListingFeedStateHolderFactory
+    ) = threePaneAdaptiveNodeConfiguration { route ->
+        val viewModel = viewModel<ListingFeedViewModel> {
+            factory.create(
+                scope = viewModelCoroutineScope(),
+                route = route,
+            )
+        }
+        ScreenUiState(
+            UiState(
+                fabShows = false,
+                navVisibility = NavVisibility.Visible,
+                insetFlags = InsetFlags.NONE
+            )
+        )
         ListingFeedScreen(
-            modifier = Modifier.backPreviewBackgroundModifier(),
+            modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
         )
@@ -93,19 +110,14 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FavoritesPattern)
-    fun favoritesAdaptiveConfiguration() = feedAdaptiveConfiguration()
+    fun favoritesAdaptiveConfiguration(
+        factory: ListingFeedStateHolderFactory
+    ) = feedAdaptiveConfiguration(factory)
 
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
     fun listingFeedStateHolderCreator(
-        factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory
-
-    @IntoMap
-    @Provides
-    @ClassKey(ListingFeedViewModel::class)
-    fun favoritesStateHolderCreator(
         factory: ListingFeedStateHolderFactory
     ): ScreenStateHolderCreator = factory
 }
