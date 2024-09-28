@@ -22,7 +22,7 @@ fun AdaptivePaneScope<ThreePane, *>.ScreenUiState(state: UiState) {
     val snackbarMessageConsumer = MutableFunction(state.snackbarMessageConsumer)
 
     LaunchedEffect(updatedState, paneState) {
-        if (paneState.pane == ThreePane.Primary) uiStateHolder.accept(
+        if (paneState.pane == ThreePane.Primary && isActive) uiStateHolder.accept(
             mutationOf {
                 // Preserve things that should not be overwritten
                 updatedState.copy(
