@@ -241,12 +241,12 @@ internal class MovableSharedElementData<S, T, R : Node>(
         }
 
         private val sizeSpec = spring(
-            stiffness = Spring.StiffnessLow,
+            stiffness = Spring.StiffnessMediumLow,
             visibilityThreshold = IntSize.VisibilityThreshold
         )
 
         private val offsetSpec = spring(
-            stiffness = Spring.StiffnessLow,
+            stiffness = Spring.StiffnessMediumLow,
             dampingRatio = 0.9f,
             visibilityThreshold = IntOffset.VisibilityThreshold
         )
