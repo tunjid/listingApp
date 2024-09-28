@@ -26,11 +26,12 @@ navigation destinations, obviating the need for legacy APIs from View such as
 [`Activity.postponeEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition())
 and [`Activity.startPostponedEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()).
 
-## App videos
+## App recordings
 
-|          Portrait orientation          |          Landscape orientation           |
-|:--------------------------------------:|:----------------------------------------:|
-| ![portrait](./docs/media/portrait.gif) | ![landscape](./docs/media/landscape.gif) |
+|                Portrait orientation                |             Landscape orientation              |
+|:--------------------------------------------------:|:----------------------------------------------:|
+| ![photo portrait](./docs/media/photo-portrait.gif) | ![landscape](./docs/media/photo-landscape.gif) |
+| ![video portrait](./docs/media/video-portrait.gif) | ![landscape](./docs/media/video-landscape.gif) |
 
 ## Screens
 
