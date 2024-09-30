@@ -53,10 +53,10 @@ class ListingAppState @Inject constructor(
 
     private val adaptiveNavHostConfiguration = adaptiveNavHostConfiguration(
         navigationState = multiStackNavState,
-        currentDestination = derivedStateOf {
-            multiStackNavState.value.current as? Route ?: unknownRoute("")
+        destinationTransform = { multiStackNav ->
+            multiStackNav.current as? Route ?: unknownRoute("")
         },
-        strategy = { node ->
+        strategyTransform = { node ->
             configurationTrie[node]!!
         }
     )

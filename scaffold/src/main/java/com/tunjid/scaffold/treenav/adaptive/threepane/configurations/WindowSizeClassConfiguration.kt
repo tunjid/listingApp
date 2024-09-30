@@ -13,14 +13,14 @@ import com.tunjid.treenav.adaptive.threepane.ThreePane
 fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.threePaneAdaptiveConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
 ): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
-    val original = this@threePaneAdaptiveConfiguration.strategy(node)
+    val originalStrategy = this@threePaneAdaptiveConfiguration.strategyTransform(node)
     adaptivePaneStrategy(
-        render = original.render,
-        transitions = original.transitions,
+        render = originalStrategy.render,
+        transitions = originalStrategy.transitions,
         paneMapping = { inner ->
             // Consider navigation state different if window size class changes
             val windowSizeClass by windowSizeClassState
-            val originalMapping = original.paneMapper(inner)
+            val originalMapping = originalStrategy.paneMapper(inner)
             val primaryNode = originalMapping[ThreePane.Primary]
             mapOf(
                 ThreePane.Primary to primaryNode,

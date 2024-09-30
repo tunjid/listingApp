@@ -50,17 +50,17 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
     windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,
 ) = delegated(
-    currentNode = derivedStateOf {
-        val current = currentDestination.value
-        if (backStatusState.value.isPreviewing) navigationState.value.pop().current as Route
+    destinationTransform = { multiStackNav ->
+        val current = multiStackNav.current as Route
+        if (backStatusState.value.isPreviewing) multiStackNav.pop().current as Route
         else current
     },
-    strategy = { node ->
-        val originalConfiguration = strategy(node)
+    strategyTransform = { destination  ->
+        val originalStrategy = strategyTransform(destination)
         adaptivePaneStrategy(
-            transitions = originalConfiguration.transitions,
+            transitions = originalStrategy.transitions,
             paneMapping = paneMapper@{ inner ->
-                val originalMapping = originalConfiguration.paneMapper(inner)
+                val originalMapping = originalStrategy.paneMapper(inner)
                 val isPreviewingBack by remember {
                     derivedStateOf { backStatusState.value.isPreviewing }
                 }
@@ -82,7 +82,7 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
                     )
                 )
                 {
-                    originalConfiguration.render.invoke(this@paneScope, toRender)
+                    originalStrategy.render.invoke(this@paneScope, toRender)
                 }
             }
         )

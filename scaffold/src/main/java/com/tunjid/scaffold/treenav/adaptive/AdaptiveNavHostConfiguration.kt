@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -28,35 +29,47 @@ import com.tunjid.treenav.Node
 @Stable
 class AdaptiveNavHostConfiguration<T, S : Node, R : Node> internal constructor(
     val navigationState: State<S>,
-    val currentDestination: State<R>,
-    val strategy: (node: R) -> AdaptivePaneStrategy<T, R>
-)
+    val destinationTransform: (S) -> R,
+    val strategyTransform: (destination: R) -> AdaptivePaneStrategy<T, R>
+) {
+    internal val currentDestination: State<R> = derivedStateOf {
+        destinationTransform(navigationState.value)
+    }
+}
 
 /**
  * Configures an [AdaptiveNavHost] for rendering destinations into different panes.
  *
  * @param navigationState the navigation state to be adapted into various panes.
- * @param currentDestination the current destination in the [navigationState].
- * @param strategy the strategy used to adapt the [currentDestination] for the available panes.
+ * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * @param strategyTransform provides the strategy used to adapt the current destination to the
+ * panes available.
  */
 fun <T, S : Node, R : Node> adaptiveNavHostConfiguration(
     navigationState: State<S>,
-    currentDestination: State<R>,
-    strategy: (destination: R) -> AdaptivePaneStrategy<T, R>
+    destinationTransform: (S) -> R,
+    strategyTransform: (destination: R) -> AdaptivePaneStrategy<T, R>
 ) = AdaptiveNavHostConfiguration(
     navigationState = navigationState,
-    currentDestination = currentDestination,
-    strategy = strategy,
+    destinationTransform = destinationTransform,
+    strategyTransform = strategyTransform,
 )
 
+/**
+ * Creates a new [AdaptiveNavHost] by delegating to [this] and  rendering destinations into different panes.
+ *
+ * @param destinationTransform a transform of [AdaptiveNavHostConfiguration.navigationState]
+ * to its current destination.
+ * @param strategyTransform provides the strategy used to adapt the current destination to the
+ * panes available.
+ */
 fun <T, S : Node, R : Node> AdaptiveNavHostConfiguration<T, S, R>.delegated(
-    navigationState: State<S> = this@delegated.navigationState,
-    currentNode: State<R> = this@delegated.currentDestination,
-    strategy: (destination: R) -> AdaptivePaneStrategy<T, R>
-) = AdaptiveNavHostConfiguration(
-    navigationState = navigationState,
-    currentDestination = currentNode,
-    strategy = strategy,
+    destinationTransform: (S) -> R = this@delegated.destinationTransform,
+    strategyTransform: (destination: R) -> AdaptivePaneStrategy<T, R>
+) = adaptiveNavHostConfiguration(
+    navigationState = this@delegated.navigationState,
+    destinationTransform = destinationTransform,
+    strategyTransform = strategyTransform,
 )
 
 /**
@@ -69,7 +82,7 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
     val current = remember(paneScope.paneState.currentNode) {
         paneScope.paneState.currentNode
     } ?: return
-    with(strategy(current)) {
+    with(strategyTransform(current)) {
         val enterAndExit = transitions(paneScope)
         with(paneScope) {
             Box(
@@ -91,6 +104,6 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
 internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.paneMapping(): Map<T, R?> {
     val current by currentDestination
     return current.let {
-        strategy(it).paneMapper(it)
+        strategyTransform(it).paneMapper(it)
     }
 }

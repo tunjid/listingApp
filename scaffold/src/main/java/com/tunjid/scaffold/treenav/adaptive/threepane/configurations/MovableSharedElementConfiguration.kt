@@ -22,10 +22,10 @@ import com.tunjid.treenav.strings.Route
 fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, R>,
 ): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
-    val original = this@movableSharedElementConfiguration.strategy(node)
+    val originalStrategy = this@movableSharedElementConfiguration.strategyTransform(node)
     AdaptivePaneStrategy(
-        transitions = original.transitions,
-        paneMapper = original.paneMapper,
+        transitions = originalStrategy.transitions,
+        paneMapper = originalStrategy.paneMapper,
         render = { inner ->
             val delegate = remember {
                 AdaptiveMovableSharedElementScope(
@@ -45,7 +45,7 @@ fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSh
             CompositionLocalProvider(
                 LocalMovableSharedElementScope provides movableSharedElementScope
             ) {
-                original.render(this, inner)
+                originalStrategy.render(this, inner)
             }
         },
     )
