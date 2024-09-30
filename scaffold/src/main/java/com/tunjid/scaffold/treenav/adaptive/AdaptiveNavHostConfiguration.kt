@@ -26,6 +26,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
+/**
+ * Class for configuring an [AdaptiveNavHost] for adapting different navigation
+ * destinations into different panes from an arbitrary [navigationState].
+ *
+ * @param navigationState the navigation state to be adapted into various panes.
+ * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * @param strategyTransform provides the strategy used to adapt the current destination to the
+ * panes available.
+ */
 @Stable
 class AdaptiveNavHostConfiguration<T, S : Node, R : Node> internal constructor(
     val navigationState: State<S>,
@@ -38,7 +47,9 @@ class AdaptiveNavHostConfiguration<T, S : Node, R : Node> internal constructor(
 }
 
 /**
- * Configures an [AdaptiveNavHost] for rendering destinations into different panes.
+ * Provides an [AdaptiveNavHostConfiguration] for configuring an [AdaptiveNavHost] for
+ * adapting different navigation destinations into different panes from an arbitrary
+ * [navigationState].
  *
  * @param navigationState the navigation state to be adapted into various panes.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
@@ -59,7 +70,8 @@ fun <T, S : Node, R : Node> adaptiveNavHostConfiguration(
  * Creates a new [AdaptiveNavHost] by delegating to [this] and  rendering destinations into different panes.
  *
  * @param destinationTransform a transform of [AdaptiveNavHostConfiguration.navigationState]
- * to its current destination.
+ * to its current destination. It is read inside a [derivedStateOf] block, so reads of snapshot
+ * state objects will be observed.
  * @param strategyTransform provides the strategy used to adapt the current destination to the
  * panes available.
  */

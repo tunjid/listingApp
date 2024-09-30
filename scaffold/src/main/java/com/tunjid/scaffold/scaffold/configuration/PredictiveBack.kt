@@ -46,6 +46,13 @@ import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.Route
 import kotlin.math.roundToInt
 
+/**
+ * An [AdaptiveNavHostConfiguration] that moves the destination in a [ThreePane.Primary] pane, to
+ * to the [ThreePane.TransientPrimary] pane when a predictive back gesture is in progress.
+ *
+ * @param windowSizeClassState provides the current [WindowSizeClass] of the display.
+ * @param backStatusState provides the state of the predictive back gesture.
+ */
 fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBackConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,

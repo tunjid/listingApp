@@ -11,14 +11,22 @@ import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.LocalMovableSh
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
+import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.strings.Route
 
+/**
+ * An [AdaptiveNavHostConfiguration] that applies semantics of movable shared elements to
+ * [ThreePane] layouts.
+ *
+ * @param movableSharedElementHostState the host state for coordinating movable shared elements.
+ * There should be one instance of this per [AdaptiveNavHost].
+ */
 fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, R>,
 ): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
