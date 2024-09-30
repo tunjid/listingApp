@@ -37,7 +37,7 @@ import com.tunjid.scaffold.scaffold.rememberUpdatedStateIf
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.adaptivePaneStrategy
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.paneMapping
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -51,13 +51,13 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
     backStatusState: State<BackStatus>,
 ) = delegated(
     currentNode = derivedStateOf {
-        val current = currentNode.value
+        val current = currentDestination.value
         if (backStatusState.value.isPreviewing) navigationState.value.pop().current as Route
         else current
     },
-    configuration = { node ->
-        val originalConfiguration = configuration(node)
-        adaptiveNodeConfiguration(
+    strategy = { node ->
+        val originalConfiguration = strategy(node)
+        adaptivePaneStrategy(
             transitions = originalConfiguration.transitions,
             paneMapping = paneMapper@{ inner ->
                 val originalMapping = originalConfiguration.paneMapper(inner)

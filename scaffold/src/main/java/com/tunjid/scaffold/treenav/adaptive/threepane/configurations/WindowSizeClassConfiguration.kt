@@ -6,15 +6,15 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.adaptivePaneStrategy
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 
 fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.threePaneAdaptiveConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
 ): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
-    val original = this@threePaneAdaptiveConfiguration.configuration(node)
-    adaptiveNodeConfiguration(
+    val original = this@threePaneAdaptiveConfiguration.strategy(node)
+    adaptivePaneStrategy(
         render = original.render,
         transitions = original.transitions,
         paneMapping = { inner ->

@@ -16,7 +16,7 @@ import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -34,7 +34,7 @@ import javax.inject.Singleton
 @Stable
 @Singleton
 class ListingAppState @Inject constructor(
-    private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptiveNodeConfiguration<ThreePane, Route>>,
+    private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptivePaneStrategy<ThreePane, Route>>,
     private val navigationStateHolder: NavigationStateHolder,
     private val globalUiStateHolder: GlobalUiStateHolder
 ) {
@@ -45,7 +45,7 @@ class ListingAppState @Inject constructor(
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
 
-    private val configurationTrie = RouteTrie<AdaptiveNodeConfiguration<ThreePane, Route>>().apply {
+    private val configurationTrie = RouteTrie<AdaptivePaneStrategy<ThreePane, Route>>().apply {
         routeConfigurationMap
             .mapKeys { (template) -> PathPattern(template) }
             .forEach(::set)
@@ -53,10 +53,10 @@ class ListingAppState @Inject constructor(
 
     private val adaptiveNavHostConfiguration = adaptiveNavHostConfiguration(
         navigationState = multiStackNavState,
-        currentNode = derivedStateOf {
+        currentDestination = derivedStateOf {
             multiStackNavState.value.current as? Route ?: unknownRoute("")
         },
-        configuration = { node ->
+        strategy = { node ->
             configurationTrie[node]!!
         }
     )

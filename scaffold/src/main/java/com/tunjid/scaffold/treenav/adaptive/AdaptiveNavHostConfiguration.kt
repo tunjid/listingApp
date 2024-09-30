@@ -28,30 +28,40 @@ import com.tunjid.treenav.Node
 @Stable
 class AdaptiveNavHostConfiguration<T, S : Node, R : Node> internal constructor(
     val navigationState: State<S>,
-    val currentNode: State<R>,
-    val configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
+    val currentDestination: State<R>,
+    val strategy: (node: R) -> AdaptivePaneStrategy<T, R>
 )
 
+/**
+ * Configures an [AdaptiveNavHost] for rendering destinations into different panes.
+ *
+ * @param navigationState the navigation state to be adapted into various panes.
+ * @param currentDestination the current destination in the [navigationState].
+ * @param strategy the strategy used to adapt the [currentDestination] for the available panes.
+ */
 fun <T, S : Node, R : Node> adaptiveNavHostConfiguration(
     navigationState: State<S>,
-    currentNode: State<R>,
-    configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
+    currentDestination: State<R>,
+    strategy: (destination: R) -> AdaptivePaneStrategy<T, R>
 ) = AdaptiveNavHostConfiguration(
     navigationState = navigationState,
-    currentNode = currentNode,
-    configuration = configuration,
+    currentDestination = currentDestination,
+    strategy = strategy,
 )
 
 fun <T, S : Node, R : Node> AdaptiveNavHostConfiguration<T, S, R>.delegated(
     navigationState: State<S> = this@delegated.navigationState,
-    currentNode: State<R> = this@delegated.currentNode,
-    configuration: (node: R) -> AdaptiveNodeConfiguration<T, R>
+    currentNode: State<R> = this@delegated.currentDestination,
+    strategy: (destination: R) -> AdaptivePaneStrategy<T, R>
 ) = AdaptiveNavHostConfiguration(
     navigationState = navigationState,
-    currentNode = currentNode,
-    configuration = configuration,
+    currentDestination = currentNode,
+    strategy = strategy,
 )
 
+/**
+ * The current destination in a given [paneScope].
+ */
 @Composable
 internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
     paneScope: AdaptivePaneScope<T, R>
@@ -59,7 +69,7 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
     val current = remember(paneScope.paneState.currentNode) {
         paneScope.paneState.currentNode
     } ?: return
-    with(configuration(current)) {
+    with(strategy(current)) {
         val enterAndExit = transitions(paneScope)
         with(paneScope) {
             Box(
@@ -74,10 +84,13 @@ internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
     }
 }
 
+/**
+ * THe current pane mapping to use in the [AdaptiveNavHost].
+ */
 @Composable
 internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.paneMapping(): Map<T, R?> {
-    val current by currentNode
+    val current by currentDestination
     return current.let {
-        configuration(it).paneMapper(it)
+        strategy(it).paneMapper(it)
     }
 }

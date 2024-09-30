@@ -12,7 +12,7 @@ import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedE
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.delegated
@@ -22,8 +22,8 @@ import com.tunjid.treenav.strings.Route
 fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, R>,
 ): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
-    val original = this@movableSharedElementConfiguration.configuration(node)
-    AdaptiveNodeConfiguration(
+    val original = this@movableSharedElementConfiguration.strategy(node)
+    AdaptivePaneStrategy(
         transitions = original.transitions,
         paneMapper = original.paneMapper,
         render = { inner ->
