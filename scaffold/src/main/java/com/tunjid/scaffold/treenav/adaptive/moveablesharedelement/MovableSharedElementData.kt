@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptive.key
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
 import kotlinx.coroutines.flow.filter
@@ -252,3 +251,5 @@ internal class MovableSharedElementData<S, T, R : Node>(
         )
     }
 }
+
+private val AdaptivePaneState<*, *>.key get() = "${currentNode?.id}-$pane"

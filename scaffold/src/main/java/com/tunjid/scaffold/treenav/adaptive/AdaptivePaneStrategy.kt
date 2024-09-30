@@ -11,7 +11,7 @@ import com.tunjid.treenav.Node
  */
 @Stable
 class AdaptivePaneStrategy<T, R : Node> internal constructor(
-    val transitions: AdaptivePaneScope<T, R>.() -> Adaptive.Transitions,
+    val transitions: AdaptivePaneScope<T, R>.() -> AdaptivePaneScope.Transitions,
     /**
      * Defines what route to show in the secondary panel alongside this route
      */
@@ -28,7 +28,7 @@ class AdaptivePaneStrategy<T, R : Node> internal constructor(
  * in a given [AdaptivePaneScope].
  */
 fun <T, R : Node> adaptivePaneStrategy(
-    transitions: AdaptivePaneScope<T, R>.() -> Adaptive.Transitions = { NoTransition },
+    transitions: AdaptivePaneScope<T, R>.() -> AdaptivePaneScope.Transitions = { NoTransition },
     paneMapping: @Composable (R) -> Map<T, R?> = { emptyMap() },
     render: @Composable AdaptivePaneScope<T, R>.(R) -> Unit
 ) = AdaptivePaneStrategy(
@@ -37,7 +37,7 @@ fun <T, R : Node> adaptivePaneStrategy(
     render = render
 )
 
-private val NoTransition = Adaptive.Transitions(
+private val NoTransition = AdaptivePaneScope.Transitions(
     enter = EnterTransition.None,
     exit = ExitTransition.None,
 )

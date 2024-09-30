@@ -94,7 +94,10 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 rootNodeProvider = navHostConfiguration.navigationState::value
             )
 
-            val slots = List(panes.size, Adaptive::Slot).toSet()
+            val slots = List(
+                size = panes.size,
+                init = ::Slot
+            ).toSet()
 
             var adaptiveNavigationState by mutableStateOf(
                 value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
@@ -105,7 +108,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             )
 
             private val slotsToRoutes =
-                mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
+                mutableStateMapOf<Slot?, @Composable () -> Unit>().also { map ->
                     map[null] = {}
                     slots.forEach { slot ->
                         map[slot] = movableContentOf { Render(slot) }
@@ -145,7 +148,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
              */
             @Composable
             private fun Render(
-                slot: Adaptive.Slot,
+                slot: Slot,
             ) {
                 val paneTransition = updateTransition(
                     targetState = adaptiveNavigationState.paneStateFor(slot),

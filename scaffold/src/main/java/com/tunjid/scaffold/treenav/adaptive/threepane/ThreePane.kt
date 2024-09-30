@@ -25,9 +25,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.Adaptation.Swap
-import com.tunjid.treenav.adaptive.Adaptive
-import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
+import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.adaptivePaneStrategy
 
 /**
@@ -59,7 +58,7 @@ enum class ThreePane {
 }
 
 fun <R : Node> threePaneAdaptiveNodeConfiguration(
-    transitions: AdaptivePaneScope<ThreePane, R>.() -> Adaptive.Transitions = {
+    transitions: AdaptivePaneScope<ThreePane, R>.() -> AdaptivePaneScope.Transitions = {
         val state = paneState
         when (state.pane) {
             ThreePane.Primary,
@@ -96,7 +95,7 @@ private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
     durationMillis = 700
 )
 
-private val DefaultTransition = Adaptive.Transitions(
+private val DefaultTransition = AdaptivePaneScope.Transitions(
     enter = fadeIn(
         animationSpec = RouteTransitionAnimationSpec,
     ),
@@ -105,7 +104,7 @@ private val DefaultTransition = Adaptive.Transitions(
     )
 )
 
-private val NoTransition = Adaptive.Transitions(
+private val NoTransition = AdaptivePaneScope.Transitions(
     enter = EnterTransition.None,
     exit = ExitTransition.None,
 )

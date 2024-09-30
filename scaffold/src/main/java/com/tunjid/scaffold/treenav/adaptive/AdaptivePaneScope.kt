@@ -18,6 +18,8 @@ package com.tunjid.treenav.adaptive
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -34,6 +36,14 @@ sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
     val paneState: AdaptivePaneState<T, R>
 
     val isActive: Boolean
+
+    /**
+     * Describes how a destination transitions after an adaptive change
+     */
+    data class Transitions(
+        val enter: EnterTransition,
+        val exit: ExitTransition,
+    )
 }
 
 /**
@@ -45,6 +55,23 @@ sealed interface AdaptivePaneState<T, R : Node> {
     val pane: T?
     val adaptation: Adaptation
 }
+
+/**
+ * [Slot] based implementation of [AdaptivePaneState]
+ */
+internal data class SlotPaneState<T, R : Node>(
+    val slot: Slot?,
+    val previousNode: R?,
+    override val currentNode: R?,
+    override val pane: T?,
+    override val adaptation: Adaptation,
+) : AdaptivePaneState<T, R>
+
+/**
+ * A spot taken by an [AdaptivePaneStrategy] that may be moved in from pane to pane.
+ */
+@JvmInline
+value class Slot internal constructor(val index: Int)
 
 /**
  * An implementation of [AdaptivePaneScope] that supports animations and shared elements
