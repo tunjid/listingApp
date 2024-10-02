@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.first
 
 @Stable
 @OptIn(ExperimentalAnimatableApi::class, ExperimentalSharedTransitionApi::class)
-internal class MovableSharedElementData<S, T, R : Node>(
+internal class MovableSharedElementState<S, T, R : Node>(
     paneScope: AdaptivePaneScope<T, R>,
     private val sharedTransitionScope: SharedTransitionScope,
     sharedElement: @Composable (S, Modifier) -> Unit,
@@ -78,7 +78,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                 state as S,
                 Modifier
                     .movableSharedElement(
-                        movableSharedElementData = this,
+                        state = this,
                     ) then modifier,
             )
 
@@ -118,27 +118,27 @@ internal class MovableSharedElementData<S, T, R : Node>(
         )
         @Composable
         internal fun <T, R : Node> Modifier.movableSharedElement(
-            movableSharedElementData: MovableSharedElementData<*, T, R>,
+            state: MovableSharedElementState<*, T, R>,
         ): Modifier {
-            with(movableSharedElementData.sharedTransitionScope) {
+            with(state.sharedTransitionScope) {
                 val coroutineScope = rememberCoroutineScope()
 
-                val sizeAnimInProgress = movableSharedElementData.isInProgress(
-                    MovableSharedElementData<*, T, R>::sizeAnimation
+                val sizeAnimInProgress = state.isInProgress(
+                    MovableSharedElementState<*, T, R>::sizeAnimation
                 )
-                    .also { movableSharedElementData.sizeAnimInProgress = it }
+                    .also { state.sizeAnimInProgress = it }
 
-                val offsetAnimInProgress = movableSharedElementData.isInProgress(
-                    MovableSharedElementData<*, T, R>::offsetAnimation
+                val offsetAnimInProgress = state.isInProgress(
+                    MovableSharedElementState<*, T, R>::offsetAnimation
                 )
-                    .also { movableSharedElementData.offsetAnimInProgress = it }
+                    .also { state.offsetAnimInProgress = it }
 
                 val layer = rememberGraphicsLayer().also {
-                    movableSharedElementData.layer = it
+                    state.layer = it
                 }
                 return approachLayout(
                     isMeasurementApproachInProgress = { lookaheadSize ->
-                        movableSharedElementData.sizeAnimation.updateTarget(
+                        state.sizeAnimation.updateTarget(
                             target = lookaheadSize,
                             coroutineScope = coroutineScope,
                             animationSpec = sizeSpec
@@ -150,7 +150,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                             sourceCoordinates = lookaheadCoordinates
                         ).round()
 
-                        movableSharedElementData.offsetAnimation.updateTarget(
+                        state.offsetAnimation.updateTarget(
                             target = lookaheadOffset,
                             coroutineScope = coroutineScope,
                             animationSpec = offsetSpec,
@@ -158,7 +158,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                         offsetAnimInProgress
                     },
                     approachMeasure = { measurable, _ ->
-                        val (width, height) = movableSharedElementData.sizeAnimation.updateTarget(
+                        val (width, height) = state.sizeAnimation.updateTarget(
                             target = lookaheadSize,
                             coroutineScope = coroutineScope,
                             animationSpec = sizeSpec
@@ -171,7 +171,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                                 x = 0,
                                 y = 0
                             )
-                            movableSharedElementData.apply {
+                            state.apply {
                                 targetOffset = offsetAnimation.updateTarget(
                                     target = lookaheadScopeCoordinates.localLookaheadPositionOf(
                                         sourceCoordinates = currentCoordinates
@@ -185,7 +185,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                                 sourceCoordinates = currentCoordinates,
                             ).round()
 
-                            val (x, y) = movableSharedElementData.targetOffset - currentOffset
+                            val (x, y) = state.targetOffset - currentOffset
                             placeable.place(
                                 x = x,
                                 y = y
@@ -197,7 +197,7 @@ internal class MovableSharedElementData<S, T, R : Node>(
                         layer.record {
                             this@drawWithContent.drawContent()
                         }
-                        if (!movableSharedElementData.canDrawInOverlay) {
+                        if (!state.canDrawInOverlay) {
                             drawLayer(layer)
                         }
                     }
@@ -207,8 +207,8 @@ internal class MovableSharedElementData<S, T, R : Node>(
 
         @OptIn(ExperimentalAnimatableApi::class)
         @Composable
-        private fun <T, R : Node> MovableSharedElementData<*, T, R>.isInProgress(
-            animationMapper: (MovableSharedElementData<*, T, R>) -> DeferredTargetAnimation<*, *>
+        private fun <T, R : Node> MovableSharedElementState<*, T, R>.isInProgress(
+            animationMapper: (MovableSharedElementState<*, T, R>) -> DeferredTargetAnimation<*, *>
         ): Boolean {
             val animation = remember { animationMapper(this) }
             val paneState = paneScope.paneState.also(::updatePaneStateSeen)

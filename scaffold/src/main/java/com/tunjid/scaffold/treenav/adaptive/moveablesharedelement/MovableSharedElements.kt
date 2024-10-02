@@ -72,7 +72,7 @@ class MovableSharedElementHostState<T, R : Node>(
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements =
-        mutableStateMapOf<Any, MovableSharedElementData<*, T, R>>()
+        mutableStateMapOf<Any, MovableSharedElementState<*, T, R>>()
 
     /**
      * Returns true is a given shared element under a given key is currently being shared.
@@ -89,8 +89,8 @@ class MovableSharedElementHostState<T, R : Node>(
         key: Any,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
-        val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
-            MovableSharedElementData(
+        val movableSharedElementState = keysToMovableSharedElements.getOrPut(key) {
+            MovableSharedElementState(
                 paneScope = this,
                 sharedTransitionScope = sharedTransitionScope,
                 sharedElement = sharedElement,
@@ -100,7 +100,7 @@ class MovableSharedElementHostState<T, R : Node>(
         }.also { it.paneScope = this }
 
         // Can't really guarantee that the caller will use the same key for the right type
-        return movableSharedElementData.moveableSharedElement
+        return movableSharedElementState.moveableSharedElement
     }
 }
 
