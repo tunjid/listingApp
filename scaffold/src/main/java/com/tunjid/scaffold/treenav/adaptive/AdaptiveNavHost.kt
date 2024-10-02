@@ -21,6 +21,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
+/**
+ * Creates a host for adaptive navigation for panes [T] and destinations [R].
+ *
+ * @param state the [AdaptiveNavHostState] producing the [AdaptiveNavHostScope] that provides
+ * context about the panes in [AdaptiveNavHost].
+ * @param modifier The modifier to be applied to the layout.
+ * @param content [AdaptiveNavHostScope] receiving lambda allowing for placing each pane in its
+ * appropriate slot.
+ *
+ */
 @Composable
 fun <T, R : Node> AdaptiveNavHost(
     state: AdaptiveNavHostState<T, R>,

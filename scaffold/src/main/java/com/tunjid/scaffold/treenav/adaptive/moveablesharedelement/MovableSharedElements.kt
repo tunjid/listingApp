@@ -13,17 +13,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.strings.Route
 
 internal interface SharedElementOverlay {
     fun ContentDrawScope.drawInOverlay()
 }
 
+/**
+ * Creates movable shared elements that may be shared amongst different [AdaptivePaneScope]
+ * instances.
+ */
 interface MovableSharedElementScope {
 
+    /**
+     * Creates a movable shared element that accepts a single argument [T] and a [Modifier].
+     *
+     * NOTE: It is an error to compose the movable shared element in different locations
+     * simultaneously, and the behavior of the shared element is undefined in this case.
+     *
+     * @param key the shared element key to identify the movable shared element.
+     * @param sharedElement a factory function to create the shared element if it does not
+     * currently exist.
+     */
     @Composable
     fun <T> movableSharedElementOf(
         key: Any,
@@ -31,6 +44,9 @@ interface MovableSharedElementScope {
     ): @Composable (T, Modifier) -> Unit
 }
 
+/**
+ * State for managing movable shared elements within a single [AdaptiveNavHost].
+ */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class MovableSharedElementHostState<T, R : Node>(
@@ -38,6 +54,11 @@ class MovableSharedElementHostState<T, R : Node>(
     private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
 ) {
 
+    // TODO: This should be unnecessary. Figure out a way to participate arbitrarily in the
+    //  overlays already implemented in [SharedTransitionScope].
+    /**
+     * A [Modifier] for drawing the movable shared element in overlays over existing content.
+     */
     val modifier = Modifier.drawWithContent {
         drawContent()
         overlays.forEach { overlay ->
@@ -51,17 +72,25 @@ class MovableSharedElementHostState<T, R : Node>(
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements =
-        mutableStateMapOf<Any, MovableSharedElementData<*, T, R>>()
+        mutableStateMapOf<Any, MovableSharedElementState<*, T, R>>()
 
+    /**
+     * Returns true is a given shared element under a given key is currently being shared.
+     */
     fun isCurrentlyShared(key: Any): Boolean =
         keysToMovableSharedElements.contains(key)
 
+    /**
+     * Provides a movable shared element that can be rendered in a given [AdaptivePaneScope].
+     * It is the callers responsibility to perform other verifications on the ability
+     * of the calling [AdaptivePaneScope] to render the movable shared element.
+     */
     fun <S> AdaptivePaneScope<T, R>.createOrUpdateSharedElement(
         key: Any,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
-        val movableSharedElementData = keysToMovableSharedElements.getOrPut(key) {
-            MovableSharedElementData(
+        val movableSharedElementState = keysToMovableSharedElements.getOrPut(key) {
+            MovableSharedElementState(
                 paneScope = this,
                 sharedTransitionScope = sharedTransitionScope,
                 sharedElement = sharedElement,
@@ -71,12 +100,16 @@ class MovableSharedElementHostState<T, R : Node>(
         }.also { it.paneScope = this }
 
         // Can't really guarantee that the caller will use the same key for the right type
-        return movableSharedElementData.moveableSharedElement
+        return movableSharedElementState.moveableSharedElement
     }
 }
 
 /**
- * An implementation of [AdaptivePaneScope] that supports animations and shared elements
+ * An implementation of [MovableSharedElementScope] that ensures shared elements are only rendered
+ * in an [AdaptivePaneScope] when it is active.
+ *
+ * Other implementations of [MovableSharedElementScope] may delegate to this for their own
+ * movable shared element implementations.
  */
 @Stable
 internal class AdaptiveMovableSharedElementScope<T, R : Node>(

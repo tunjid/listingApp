@@ -18,6 +18,8 @@ package com.tunjid.treenav.adaptive
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -31,19 +33,24 @@ import com.tunjid.treenav.Node
 @Stable
 sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
 
+    /**
+     * Provides information about the adaptive context that created this [AdaptivePaneScope].
+     */
     val paneState: AdaptivePaneState<T, R>
 
+    /**
+     * Whether or not this [AdaptivePaneScope] is active in its current pane. It is inactive when
+     * it is animating out of its [AnimatedVisibilityScope].
+     */
     val isActive: Boolean
-}
 
-/**
- * Information about content in a pane
- */
-@Stable
-sealed interface AdaptivePaneState<T, R : Node> {
-    val currentNode: R?
-    val pane: T?
-    val adaptation: Adaptation
+    /**
+     * Describes how a destination transitions after an adaptive change
+     */
+    data class Transitions(
+        val enter: EnterTransition,
+        val exit: ExitTransition,
+    )
 }
 
 /**
@@ -60,3 +67,30 @@ internal class AnimatedAdaptivePaneScope<T, R : Node>(
 
     override val isActive: Boolean by activeState
 }
+
+/**
+ * Information about content in a pane
+ */
+@Stable
+sealed interface AdaptivePaneState<T, R : Node> {
+    val currentNode: R?
+    val pane: T?
+    val adaptation: Adaptation
+}
+
+/**
+ * [Slot] based implementation of [AdaptivePaneState]
+ */
+internal data class SlotPaneState<T, R : Node>(
+    val slot: Slot?,
+    val previousNode: R?,
+    override val currentNode: R?,
+    override val pane: T?,
+    override val adaptation: Adaptation,
+) : AdaptivePaneState<T, R>
+
+/**
+ * A spot taken by an [AdaptivePaneStrategy] that may be moved in from pane to pane.
+ */
+@JvmInline
+internal value class Slot internal constructor(val index: Int)

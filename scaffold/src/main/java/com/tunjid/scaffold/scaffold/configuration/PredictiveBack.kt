@@ -37,7 +37,7 @@ import com.tunjid.scaffold.scaffold.rememberUpdatedStateIf
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.adaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.adaptivePaneStrategy
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.paneMapping
 import com.tunjid.treenav.adaptive.threepane.ThreePane
@@ -46,21 +46,28 @@ import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.Route
 import kotlin.math.roundToInt
 
+/**
+ * An [AdaptiveNavHostConfiguration] that moves the destination in a [ThreePane.Primary] pane, to
+ * to the [ThreePane.TransientPrimary] pane when a predictive back gesture is in progress.
+ *
+ * @param windowSizeClassState provides the current [WindowSizeClass] of the display.
+ * @param backStatusState provides the state of the predictive back gesture.
+ */
 fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBackConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,
 ) = delegated(
-    currentNode = derivedStateOf {
-        val current = currentNode.value
-        if (backStatusState.value.isPreviewing) navigationState.value.pop().current as Route
+    destinationTransform = { multiStackNav ->
+        val current = multiStackNav.current as Route
+        if (backStatusState.value.isPreviewing) multiStackNav.pop().current as Route
         else current
     },
-    configuration = { node ->
-        val originalConfiguration = configuration(node)
-        adaptiveNodeConfiguration(
-            transitions = originalConfiguration.transitions,
+    strategyTransform = { destination  ->
+        val originalStrategy = strategyTransform(destination)
+        adaptivePaneStrategy(
+            transitions = originalStrategy.transitions,
             paneMapping = paneMapper@{ inner ->
-                val originalMapping = originalConfiguration.paneMapper(inner)
+                val originalMapping = originalStrategy.paneMapper(inner)
                 val isPreviewingBack by remember {
                     derivedStateOf { backStatusState.value.isPreviewing }
                 }
@@ -82,7 +89,7 @@ fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBack
                     )
                 )
                 {
-                    originalConfiguration.render.invoke(this@paneScope, toRender)
+                    originalStrategy.render.invoke(this@paneScope, toRender)
                 }
             }
         )

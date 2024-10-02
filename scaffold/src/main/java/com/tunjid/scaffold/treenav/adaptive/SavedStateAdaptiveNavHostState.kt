@@ -27,18 +27,29 @@ import com.tunjid.treenav.adaptive.lifecycle.NodeViewModelStoreCreator
 import com.tunjid.treenav.traverse
 
 
+/**
+ * A host for adaptive navigation for panes [T] and destinations [R].
+ */
 @Stable
 interface AdaptiveNavHostState<T, R : Node> {
 
+    /**
+     * Creates the scope that provides context about individual panes [T] in an [AdaptiveNavHost].
+     */
     @Composable
     fun scope(): AdaptiveNavHostScope<T, R>
 }
 
+/**
+ * Scope that provides context about individual panes [T] in an [AdaptiveNavHost].
+ */
 @Stable
 interface AdaptiveNavHostScope<T, R : Node> {
 
     @Composable
-    fun Destination(pane: T)
+    fun Destination(
+        pane: T
+    )
 
     fun adaptationIn(
         pane: T,
@@ -49,7 +60,16 @@ interface AdaptiveNavHostScope<T, R : Node> {
     ): R?
 }
 
-
+/**
+ * An implementation of an [AdaptiveNavHostState] that provides a [SaveableStateHolder] for each
+ * navigation destination that shows up in its panes.
+ *
+ * @param panes a list of panes that is possible to show in the [AdaptiveNavHost] in all
+ * possible configurations. The panes should consist of enum class instances, or a sealed class
+ * hierarchy of kotlin objects.
+ * @param configuration the [AdaptiveNavHostConfiguration] that applies adaptive semantics and
+ * strategies for each navigation destination shown in the [AdaptiveNavHost].
+ */
 @Stable
 class SavedStateAdaptiveNavHostState<T, R : Node>(
     private val panes: List<T>,
@@ -94,7 +114,10 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 rootNodeProvider = navHostConfiguration.navigationState::value
             )
 
-            val slots = List(panes.size, Adaptive::Slot).toSet()
+            val slots = List(
+                size = panes.size,
+                init = ::Slot
+            ).toSet()
 
             var adaptiveNavigationState by mutableStateOf(
                 value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
@@ -105,7 +128,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             )
 
             private val slotsToRoutes =
-                mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
+                mutableStateMapOf<Slot?, @Composable () -> Unit>().also { map ->
                     map[null] = {}
                     slots.forEach { slot ->
                         map[slot] = movableContentOf { Render(slot) }
@@ -145,7 +168,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
              */
             @Composable
             private fun Render(
-                slot: Adaptive.Slot,
+                slot: Slot,
             ) {
                 val paneTransition = updateTransition(
                     targetState = adaptiveNavigationState.paneStateFor(slot),
@@ -227,6 +250,5 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             mutableSetOf<String>().apply {
                 traverse(Order.DepthFirst) { add(it.id) }
             }
-
     }
 }

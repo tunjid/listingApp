@@ -40,7 +40,7 @@ internal data class SlotBasedAdaptiveNavigationState<T, R : Node>(
     /**
      * A mapping of node ids to the adaptive slots they are currently in.
      */
-    val nodeIdsToAdaptiveSlots: Map<String?, Adaptive.Slot>,
+    val nodeIdsToAdaptiveSlots: Map<String?, Slot>,
     /**
      * A set of node ids that may be returned to.
      */
@@ -52,12 +52,12 @@ internal data class SlotBasedAdaptiveNavigationState<T, R : Node>(
 ) : AdaptiveNavigationState<T, R> {
     companion object {
         internal fun <T, R : Node> initial(
-            slots: Collection<Adaptive.Slot>,
+            slots: Collection<Slot>,
         ): SlotBasedAdaptiveNavigationState<T, R> = SlotBasedAdaptiveNavigationState(
             swapAdaptations = emptySet(),
             panesToNodes = emptyMap(),
             nodeIdsToAdaptiveSlots = slots.associateBy(
-                keySelector = Adaptive.Slot::toString
+                keySelector = Slot::toString
             ),
             backStackIds = emptySet(),
             nodeIdsAnimatingOut = emptySet(),
@@ -69,11 +69,11 @@ internal data class SlotBasedAdaptiveNavigationState<T, R : Node>(
         get() = backStackIds
 
     internal fun paneStateFor(
-        slot: Adaptive.Slot
+        slot: Slot
     ): AdaptivePaneState<T, R> {
         val node = nodeFor(slot)
         val pane = node?.let(::paneFor)
-        return Adaptive.SlotPaneState(
+        return SlotPaneState(
             slot = slot,
             currentNode = node,
             previousNode = previousPanesToNodes[pane],
@@ -85,7 +85,7 @@ internal data class SlotBasedAdaptiveNavigationState<T, R : Node>(
 
     internal fun slotFor(
         pane: T
-    ): Adaptive.Slot? = nodeIdsToAdaptiveSlots[
+    ): Slot? = nodeIdsToAdaptiveSlots[
         panesToNodes[pane]?.id
     ]
 
@@ -96,7 +96,7 @@ internal data class SlotBasedAdaptiveNavigationState<T, R : Node>(
     }
 
     private fun nodeFor(
-        slot: Adaptive.Slot
+        slot: Slot
     ): R? = nodeIdsToAdaptiveSlots.firstNotNullOfOrNull { (nodeId, nodeSlot) ->
         if (nodeSlot == slot) panesToNodes.firstNotNullOfOrNull { (_, node) ->
             if (node?.id == nodeId) node
@@ -119,7 +119,7 @@ internal data class SlotBasedAdaptiveNavigationState<T, R : Node>(
  * to be animated easily.
  */
 internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
-    slots: Set<Adaptive.Slot>,
+    slots: Set<Slot>,
     panesToNodes: Map<T, R?>,
     backStackIds: Set<String>,
 ): SlotBasedAdaptiveNavigationState<T, R> {
@@ -128,7 +128,7 @@ internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
     val availableSlots = slots.toMutableSet()
     val unplacedRouteIds = panesToNodes.values.mapNotNull { it?.id }.toMutableSet()
 
-    val routeIdsToAdaptiveSlots = mutableMapOf<String?, Adaptive.Slot>()
+    val routeIdsToAdaptiveSlots = mutableMapOf<String?, Slot>()
     val swapAdaptations = mutableSetOf<Adaptation.Swap<T>>()
 
     for ((toPane, toNode) in panesToNodes.entries) {
@@ -187,7 +187,7 @@ internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.hasConflicting
         }
 
 /**
- * Trims unneeded metadata from the [Adaptive.NavigationState]
+ * Trims unneeded metadata from the [AdaptiveNavigationState]
  */
 internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.prune(): SlotBasedAdaptiveNavigationState<T, R> =
     copy(
