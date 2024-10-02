@@ -7,7 +7,7 @@ import androidx.compose.runtime.Stable
 import com.tunjid.treenav.Node
 
 /**
- * Route implementation with adaptive semantics
+ * Provides adaptive strategy in panes [T] for a given navigation destination [R].
  */
 @Stable
 class AdaptivePaneStrategy<T, R : Node> internal constructor(
@@ -20,7 +20,7 @@ class AdaptivePaneStrategy<T, R : Node> internal constructor(
 )
 
 /**
- * Allows for defining the pane adaptation strategy for a given navigation destination [R].
+ * Allows for defining the adaptation strategy in panes [T] for a given navigation destination [R].
  *
  * @param transitions the transitions to run within each [AdaptivePaneScope].
  * @param paneMapping provides the mapping of panes to destinations for a given destination [R].

@@ -2,6 +2,9 @@ package com.tunjid.treenav.adaptive
 
 import com.tunjid.treenav.Node
 
+/**
+ * State providing details about data in each pane [T] it hosts.
+ */
 interface AdaptiveNavigationState<T, R : Node> {
 
     fun nodeFor(
@@ -18,18 +21,21 @@ interface AdaptiveNavigationState<T, R : Node> {
  */
 sealed class Adaptation {
     /**
-     * Routes were changed in panes
+     * Destinations were changed in panes
      */
     data object Change : Adaptation()
 
     /**
-     * Routes were swapped in between panes
+     * Destinations were swapped in between panes
      */
     data class Swap<T>(
         val from: T,
         val to: T?,
     ) : Adaptation()
 
+    /**
+     * Checks if a [Swap] [Adaptation] involved [pane].
+     */
     operator fun <T> Swap<T>.contains(pane: T?): Boolean = pane == from || pane == to
 
 }

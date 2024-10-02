@@ -53,6 +53,8 @@ class AdaptiveNavHostConfiguration<T, S : Node, R : Node> internal constructor(
  *
  * @param navigationState the navigation state to be adapted into various panes.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * It is read inside a [derivedStateOf] block, so reads of snapshot
+ * state objects will be observed.
  * @param strategyTransform provides the strategy used to adapt the current destination to the
  * panes available.
  */

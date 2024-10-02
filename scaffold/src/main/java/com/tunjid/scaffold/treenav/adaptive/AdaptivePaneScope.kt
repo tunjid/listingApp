@@ -33,8 +33,15 @@ import com.tunjid.treenav.Node
 @Stable
 sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
 
+    /**
+     * Provides information about the adaptive context that created this [AdaptivePaneScope].
+     */
     val paneState: AdaptivePaneState<T, R>
 
+    /**
+     * Whether or not this [AdaptivePaneScope] is active in its current pane. It is inactive when
+     * it is animating out of its [AnimatedVisibilityScope].
+     */
     val isActive: Boolean
 
     /**
@@ -44,6 +51,21 @@ sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
         val enter: EnterTransition,
         val exit: ExitTransition,
     )
+}
+
+/**
+ * An implementation of [AdaptivePaneScope] that supports animations and shared elements
+ */
+@Stable
+internal class AnimatedAdaptivePaneScope<T, R : Node>(
+    paneState: AdaptivePaneState<T, R>,
+    activeState: State<Boolean>,
+    val animatedContentScope: AnimatedContentScope
+) : AdaptivePaneScope<T, R>, AnimatedVisibilityScope by animatedContentScope {
+
+    override var paneState by mutableStateOf(paneState)
+
+    override val isActive: Boolean by activeState
 }
 
 /**
@@ -71,19 +93,4 @@ internal data class SlotPaneState<T, R : Node>(
  * A spot taken by an [AdaptivePaneStrategy] that may be moved in from pane to pane.
  */
 @JvmInline
-value class Slot internal constructor(val index: Int)
-
-/**
- * An implementation of [AdaptivePaneScope] that supports animations and shared elements
- */
-@Stable
-internal class AnimatedAdaptivePaneScope<T, R : Node>(
-    paneState: AdaptivePaneState<T, R>,
-    activeState: State<Boolean>,
-    val animatedContentScope: AnimatedContentScope
-) : AdaptivePaneScope<T, R>, AnimatedVisibilityScope by animatedContentScope {
-
-    override var paneState by mutableStateOf(paneState)
-
-    override val isActive: Boolean by activeState
-}
+internal value class Slot internal constructor(val index: Int)
