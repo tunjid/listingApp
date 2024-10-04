@@ -135,7 +135,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                         lookaheadScope = state,
                         placementScope = this,
                         coroutineScope = coroutineScope,
-                        includeMotionFrameOfReference = false,
+                        includeMotionFrameOfReference = true,
                         boundsTransform = state.boundsTransform,
                     )
                     state.boundsAnimInProgress
@@ -168,7 +168,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                             lookaheadScopeCoordinates.localPositionOf(
                                 sourceCoordinates = currentCoordinates,
                                 relativeToSource = Offset.Zero,
-                                includeMotionFrameOfReference = false
+                                includeMotionFrameOfReference = true,
                             )
                         }
 
