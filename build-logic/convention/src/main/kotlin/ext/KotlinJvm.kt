@@ -45,6 +45,7 @@ private fun org.gradle.api.Project.configureKotlin() {
 
 private val compilerArgs = listOf(
     "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
+    "-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
     "-opt-in=androidx.compose.animation.ExperimentalUiApi",
     "-opt-in=androidx.compose.material.ExperimentalMaterialApi",
     "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
