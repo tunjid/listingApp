@@ -49,9 +49,9 @@ interface MovableSharedElementScope {
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-class MovableSharedElementHostState<T, R : Node>(
+class MovableSharedElementHostState<Pane, Destination : Node>(
     private val sharedTransitionScope: SharedTransitionScope,
-    private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
+    private val canAnimateOnStartingFrames: (AdaptivePaneState<Pane, Destination>) -> Boolean,
 ) {
 
     // TODO: This should be unnecessary. Figure out a way to participate arbitrarily in the
@@ -72,7 +72,7 @@ class MovableSharedElementHostState<T, R : Node>(
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements =
-        mutableStateMapOf<Any, MovableSharedElementState<*, T, R>>()
+        mutableStateMapOf<Any, MovableSharedElementState<*, Pane, Destination>>()
 
     /**
      * Returns true is a given shared element under a given key is currently being shared.
@@ -85,7 +85,7 @@ class MovableSharedElementHostState<T, R : Node>(
      * It is the callers responsibility to perform other verifications on the ability
      * of the calling [AdaptivePaneScope] to render the movable shared element.
      */
-    fun <S> AdaptivePaneScope<T, R>.createOrUpdateSharedElement(
+    fun <S> AdaptivePaneScope<Pane, Destination>.createOrUpdateSharedElement(
         key: Any,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {

@@ -93,8 +93,8 @@ fun <T, S : Node, R : Node> AdaptiveNavHostConfiguration<T, S, R>.delegated(
 internal fun <T, R : Node> AdaptiveNavHostConfiguration<T, *, R>.Destination(
     paneScope: AdaptivePaneScope<T, R>
 ) {
-    val current = remember(paneScope.paneState.currentNode) {
-        paneScope.paneState.currentNode
+    val current = remember(paneScope.paneState.currentDestination) {
+        paneScope.paneState.currentDestination
     } ?: return
     with(strategyTransform(current)) {
         val enterAndExit = transitions(paneScope)

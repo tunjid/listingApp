@@ -44,13 +44,13 @@ import kotlinx.coroutines.flow.first
 
 @Stable
 @OptIn(ExperimentalSharedTransitionApi::class)
-internal class MovableSharedElementState<S, T, R : Node>(
-    paneScope: AdaptivePaneScope<T, R>,
+internal class MovableSharedElementState<State, Pane, Destination : Node>(
+    paneScope: AdaptivePaneScope<Pane, Destination>,
     sharedTransitionScope: SharedTransitionScope,
-    sharedElement: @Composable (S, Modifier) -> Unit,
+    sharedElement: @Composable (State, Modifier) -> Unit,
     onRemoved: () -> Unit,
     private val boundsTransform: BoundsTransform = DefaultBoundsTransform,
-    private val canAnimateOnStartingFrames: AdaptivePaneState<T, R>.() -> Boolean
+    private val canAnimateOnStartingFrames: AdaptivePaneState<Pane, Destination>.() -> Boolean
 ) : SharedElementOverlay, SharedTransitionScope by sharedTransitionScope {
 
     var paneScope by mutableStateOf(paneScope)
@@ -75,7 +75,7 @@ internal class MovableSharedElementState<S, T, R : Node>(
             sharedElement(
                 // The shared element composable will be created by the first screen and reused by
                 // subsequent screens. This updates the state from other screens so changes are seen.
-                state as S,
+                state as State,
                 Modifier
                     .movableSharedElement(
                         state = this,
@@ -116,8 +116,8 @@ internal class MovableSharedElementState<S, T, R : Node>(
             ExperimentalSharedTransitionApi::class
         )
         @Composable
-        internal fun <T, R : Node> Modifier.movableSharedElement(
-            state: MovableSharedElementState<*, T, R>,
+        internal fun <Pane, Destination : Node> Modifier.movableSharedElement(
+            state: MovableSharedElementState<*, Pane, Destination>,
         ): Modifier {
             val coroutineScope = rememberCoroutineScope()
             state.isInProgress().also { state.boundsAnimInProgress = it }
@@ -201,7 +201,7 @@ internal class MovableSharedElementState<S, T, R : Node>(
 
 
         @Composable
-        private fun <T, R : Node> MovableSharedElementState<*, T, R>.isInProgress(): Boolean {
+        private fun <Pane, Destination : Node> MovableSharedElementState<*, Pane, Destination>.isInProgress(): Boolean {
             val paneState = paneScope.paneState.also(::updatePaneStateSeen)
 
             val (laggingScopeKey, animationInProgressTillFirstIdle) = produceState(
@@ -234,7 +234,7 @@ internal class MovableSharedElementState<S, T, R : Node>(
     }
 }
 
-private val AdaptivePaneState<*, *>.key get() = "${currentNode?.id}-$pane"
+private val AdaptivePaneState<*, *>.key get() = "${currentDestination?.id}-$pane"
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 internal val DefaultBoundsTransform = BoundsTransform { _, _ ->
