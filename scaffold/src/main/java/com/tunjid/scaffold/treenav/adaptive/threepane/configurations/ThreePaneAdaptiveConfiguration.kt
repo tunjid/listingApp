@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.adaptivePaneStrategy
 import com.tunjid.treenav.adaptive.delegated
@@ -17,9 +16,9 @@ import com.tunjid.treenav.adaptive.threepane.ThreePane
  *
  * @param windowSizeClassState provides the current [WindowSizeClass] of the display.
  */
-fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.threePaneAdaptiveConfiguration(
+fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination>.threePaneAdaptiveConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
-): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
+): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
     val originalStrategy = this@threePaneAdaptiveConfiguration.strategyTransform(node)
     adaptivePaneStrategy(
         render = originalStrategy.render,
@@ -33,11 +32,11 @@ fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.threePane
                 ThreePane.Primary to primaryNode,
                 ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryDestination ->
                     secondaryDestination?.id != primaryNode?.id
-                            && windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
+                            && windowSizeClass.minWidthDp >= WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
                 },
                 ThreePane.Tertiary to originalMapping[ThreePane.Tertiary].takeIf { tertiaryDestination ->
                     tertiaryDestination?.id != primaryNode?.id
-                            && windowSizeClass.minWidthDp > TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP
+                            && windowSizeClass.minWidthDp >= TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP
                 },
             )
         }

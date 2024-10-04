@@ -28,9 +28,9 @@ import com.tunjid.treenav.strings.Route
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
  * There should be one instance of this per [AdaptiveNavHost].
  */
-fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSharedElementConfiguration(
-    movableSharedElementHostState: MovableSharedElementHostState<ThreePane, R>,
-): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
+fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination>.movableSharedElementConfiguration(
+    movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
+): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
     val originalStrategy = this@movableSharedElementConfiguration.strategyTransform(node)
     AdaptivePaneStrategy(
         transitions = originalStrategy.transitions,
