@@ -123,55 +123,71 @@ internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
     panesToNodes: Map<T, R?>,
     backStackIds: Set<String>,
 ): SlotBasedAdaptiveNavigationState<T, R> {
-    val old = this
+    val previous = this
 
-    val availableSlots = slots.toMutableSet()
-    val unplacedRouteIds = panesToNodes.values.mapNotNull { it?.id }.toMutableSet()
+    val previouslyUsedSlots = previous.nodeIdsToAdaptiveSlots
+        .filter { it.key != null }
+        .values
+        .toSet()
 
-    val routeIdsToAdaptiveSlots = mutableMapOf<String?, Slot>()
+    // Sort by most recently used to makes sure most recently used slots
+    // are reused so animations run.
+    val availableSlots = slots
+        .sortedByDescending(previouslyUsedSlots::contains)
+        .toMutableSet()
+
+    val unplacedNodeIds = panesToNodes.values.mapNotNull { it?.id }.toMutableSet()
+
+    val nodeIdsToAdaptiveSlots = mutableMapOf<String?, Slot>()
     val swapAdaptations = mutableSetOf<Adaptation.Swap<T>>()
 
+    // Process nodes that swapped panes from old to new
     for ((toPane, toNode) in panesToNodes.entries) {
         if (toNode == null) continue
-        for ((fromPane, fromNode) in old.panesToNodes.entries) {
+        for ((fromPane, fromNode) in previous.panesToNodes.entries) {
+            // Find a previous node from the last state
             if (toNode.id != fromNode?.id) continue
             val swap = Adaptation.Swap(
                 from = fromPane,
                 to = toPane
             )
+            // The panes are different, a swap occurred
             if (toPane != fromPane) {
                 swapAdaptations.add(swap)
             }
 
-            val fromNodeId = old.nodeFor(swap.from)?.id
-                ?.also(unplacedRouteIds::remove)
-                ?: throw IllegalArgumentException("A swap cannot occur from a null route")
-
-            val movedSlot = old.nodeIdsToAdaptiveSlots[old.nodeFor(swap.from)?.id]
-                ?.also(availableSlots::remove)
-                ?: throw IllegalArgumentException("A swap cannot occur from a null slot")
-
-            routeIdsToAdaptiveSlots[fromNodeId] = movedSlot
+            // Since this node was swapped, preserve its existing slot
+            val fromNodeId = checkNotNull(fromNode.id)
+            check(unplacedNodeIds.remove(fromNodeId)) {
+                "A swap cannot have occurred if the node did not exist in the previous state"
+            }
+            val reusedSlot = previous.nodeIdsToAdaptiveSlots.getValue(fromNodeId)
+            check(availableSlots.remove(reusedSlot)) {
+                "A swap cannot have occurred if the node did not exist in the previous state"
+            }
+            nodeIdsToAdaptiveSlots[fromNodeId] = reusedSlot
             break
         }
     }
 
-    unplacedRouteIds.forEach { routeId ->
-        routeIdsToAdaptiveSlots[routeId] = availableSlots.first().also(availableSlots::remove)
+    // All swaps have been processed; place remaining changes nodes in slots available.
+    unplacedNodeIds.forEach { nodeId ->
+        nodeIdsToAdaptiveSlots[nodeId] = availableSlots.first().also(availableSlots::remove)
     }
 
     return SlotBasedAdaptiveNavigationState(
-        swapAdaptations = when (old.panesToNodes.mapValues { it.value?.id }) {
-            panesToNodes.mapValues { it.value?.id } -> old.swapAdaptations
+        // If the values of the nodes to panes are the same, no swaps occurred.
+        swapAdaptations = when (previous.panesToNodes.mapValues { it.value?.id }) {
+            panesToNodes.mapValues { it.value?.id } -> previous.swapAdaptations
             else -> swapAdaptations
         },
-        previousPanesToNodes = old.previousPanesToNodes.keys.associateWith(
-            valueSelector = old::nodeFor
+        previousPanesToNodes = previous.previousPanesToNodes.keys.associateWith(
+            valueSelector = previous::nodeFor
         ),
-        nodeIdsToAdaptiveSlots = routeIdsToAdaptiveSlots,
+        nodeIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots,
         backStackIds = backStackIds,
         panesToNodes = panesToNodes,
-        nodeIdsAnimatingOut = old.nodeIdsAnimatingOut,
+        nodeIdsAnimatingOut = previous.nodeIdsAnimatingOut,
     )
 
 }
