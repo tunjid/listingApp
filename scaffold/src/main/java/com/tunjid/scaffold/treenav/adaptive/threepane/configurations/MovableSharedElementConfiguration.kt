@@ -1,5 +1,6 @@
 package com.tunjid.scaffold.treenav.adaptive.threepane.configurations
 
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -67,6 +68,7 @@ private class ThreePaneMovableSharedElementScope<R : Node>(
     @Composable
     override fun <T> movableSharedElementOf(
         key: Any,
+        boundsTransform: BoundsTransform,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
         val paneScope = delegate.paneScope
@@ -85,12 +87,14 @@ private class ThreePaneMovableSharedElementScope<R : Node>(
                 // Share the element
                 else -> delegate.movableSharedElementOf(
                     key = key,
+                    boundsTransform = boundsTransform,
                     sharedElement = sharedElement
                 )
             }
             // Share the element when in the transient pane
             ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
                 key = key,
+                boundsTransform = boundsTransform,
                 sharedElement = sharedElement
             )
 

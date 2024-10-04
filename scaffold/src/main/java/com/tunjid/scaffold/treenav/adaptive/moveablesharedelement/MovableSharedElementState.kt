@@ -3,9 +3,6 @@ package com.tunjid.scaffold.treenav.adaptive.moveablesharedelement
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
@@ -49,7 +46,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     sharedTransitionScope: SharedTransitionScope,
     sharedElement: @Composable (State, Modifier) -> Unit,
     onRemoved: () -> Unit,
-    private val boundsTransform: BoundsTransform = DefaultBoundsTransform,
+    private val boundsTransform: BoundsTransform,
     private val canAnimateOnStartingFrames: AdaptivePaneState<Pane, Destination>.() -> Boolean
 ) : SharedElementOverlay, SharedTransitionScope by sharedTransitionScope {
 
@@ -235,12 +232,3 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
 }
 
 private val AdaptivePaneState<*, *>.key get() = "${currentDestination?.id}-$pane"
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-internal val DefaultBoundsTransform = BoundsTransform { _, _ ->
-    spring(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessMediumLow,
-        visibilityThreshold = Rect.VisibilityThreshold
-    )
-}
