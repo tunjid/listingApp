@@ -30,10 +30,11 @@ import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.scaffold.dragToPop
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 
 @Composable
 fun FullscreenGalleryScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit
@@ -62,6 +63,7 @@ fun FullscreenGalleryScreen(
     ) { index ->
         val item = updatedItems[index]
         DebugVideo(
+            movableSharedElementScope = movableSharedElementScope,
             item = item,
             isDebugging = isDebugging
         )
@@ -75,6 +77,7 @@ fun FullscreenGalleryScreen(
 
 @Composable
 private fun DebugVideo(
+    movableSharedElementScope: MovableSharedElementScope,
     item: GalleryItem,
     isDebugging: Boolean,
 ) {
@@ -121,7 +124,7 @@ private fun DebugVideo(
             val transformableState = rememberTransformableState { _, offsetChange, _ ->
                 transformOffset = offsetChange
             }
-            val video = movableSharedElementOf<VideoState>(
+            val video = movableSharedElementScope.movableSharedElementOf<VideoState>(
                 key = thumbnailSharedElementKey(item.state.url),
                 sharedElement = { videoState, innerModifier ->
                     Video(

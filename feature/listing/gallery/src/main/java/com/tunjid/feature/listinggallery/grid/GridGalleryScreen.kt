@@ -33,11 +33,12 @@ import com.tunjid.listing.feature.listing.gallery.R
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
 
 @Composable
 fun GridGalleryScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit
@@ -89,7 +90,7 @@ fun GridGalleryScreen(
                     Box(
                         modifier = Modifier.aspectRatio(1f)
                     ) {
-                        val thumbnail = movableSharedElementOf<PhotoArgs>(
+                        val thumbnail = movableSharedElementScope.movableSharedElementOf<PhotoArgs>(
                             thumbnailSharedElementKey(item.url)
                         ) { args, innerModifier ->
                             Photo(

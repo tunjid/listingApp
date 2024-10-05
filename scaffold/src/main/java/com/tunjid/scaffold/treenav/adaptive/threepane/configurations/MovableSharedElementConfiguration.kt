@@ -4,12 +4,10 @@ import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.AdaptiveMovableSharedElementScope
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.LocalMovableSharedElementScope
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.Node
@@ -53,11 +51,7 @@ fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<Th
                     )
                 }
 
-                CompositionLocalProvider(
-                    LocalMovableSharedElementScope provides movableSharedElementScope
-                ) {
-                    originalStrategy.render(movableSharedElementScope, paneDestination)
-                }
+                originalStrategy.render(movableSharedElementScope, paneDestination)
             },
         )
     }

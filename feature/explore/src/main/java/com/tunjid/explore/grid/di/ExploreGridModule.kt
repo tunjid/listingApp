@@ -15,6 +15,7 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
+import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -54,7 +55,7 @@ object ExploreGridModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ExploreGridModelFactory
-    ) = threePaneAdaptiveNodeConfiguration<Route> { route ->
+    ) = threePaneAdaptiveNodeConfiguration { route ->
         val viewModel = viewModel<ExploreGridViewModel> {
             factory.create(
                 scope = viewModelCoroutineScope(),
@@ -69,6 +70,7 @@ object ExploreGridModule {
             )
         )
         ExploreGridScreen(
+            movableSharedElementScope = movableSharedElementScope(),
             modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
