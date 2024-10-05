@@ -28,36 +28,36 @@ import com.tunjid.treenav.traverse
 
 
 /**
- * A host for adaptive navigation for panes [T] and destinations [R].
+ * A host for adaptive navigation for panes [Pane] and destinations [Destination].
  */
 @Stable
-interface AdaptiveNavHostState<T, R : Node> {
+interface AdaptiveNavHostState<Pane, Destination : Node> {
 
     /**
-     * Creates the scope that provides context about individual panes [T] in an [AdaptiveNavHost].
+     * Creates the scope that provides context about individual panes [Pane] in an [AdaptiveNavHost].
      */
     @Composable
-    fun scope(): AdaptiveNavHostScope<T, R>
+    fun scope(): AdaptiveNavHostScope<Pane, Destination>
 }
 
 /**
- * Scope that provides context about individual panes [T] in an [AdaptiveNavHost].
+ * Scope that provides context about individual panes [Pane] in an [AdaptiveNavHost].
  */
 @Stable
-interface AdaptiveNavHostScope<T, R : Node> {
+interface AdaptiveNavHostScope<Pane, Destination : Node> {
 
     @Composable
     fun Destination(
-        pane: T
+        pane: Pane
     )
 
     fun adaptationIn(
-        pane: T,
+        pane: Pane,
     ): Adaptation?
 
     fun nodeFor(
-        pane: T,
-    ): R?
+        pane: Pane,
+    ): Destination?
 }
 
 /**
@@ -71,13 +71,13 @@ interface AdaptiveNavHostScope<T, R : Node> {
  * strategies for each navigation destination shown in the [AdaptiveNavHost].
  */
 @Stable
-class SavedStateAdaptiveNavHostState<T, R : Node>(
-    private val panes: List<T>,
-    private val configuration: AdaptiveNavHostConfiguration<T, *, R>,
-) : AdaptiveNavHostState<T, R> {
+class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
+    private val panes: List<Pane>,
+    private val configuration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
+) : AdaptiveNavHostState<Pane, Destination> {
 
     @Composable
-    override fun scope(): AdaptiveNavHostScope<T, R> {
+    override fun scope(): AdaptiveNavHostScope<Pane, Destination> {
         val navigationState by configuration.navigationState
         val panesToNodes = configuration.paneMapping()
         val saveableStateHolder = rememberSaveableStateHolder()
@@ -103,12 +103,12 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
 
     companion object {
         @Stable
-        private class SavedStateAdaptiveNavHostScope<T, R : Node>(
-            panes: List<T>,
-            initialPanesToNodes: Map<T, R?>,
+        private class SavedStateAdaptiveNavHostScope<Pane, Destination : Node>(
+            panes: List<Pane>,
+            initialPanesToNodes: Map<Pane, Destination?>,
             saveableStateHolder: SaveableStateHolder,
-            val navHostConfiguration: AdaptiveNavHostConfiguration<T, *, R>,
-        ) : AdaptiveNavHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
+            val navHostConfiguration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
+        ) : AdaptiveNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
             private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
                 rootNodeProvider = navHostConfiguration.navigationState::value
@@ -120,7 +120,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             ).toSet()
 
             var adaptiveNavigationState by mutableStateOf(
-                value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
+                value = SlotBasedAdaptiveNavigationState.initial<Pane, Destination>(slots = slots).adaptTo(
                     slots = slots,
                     panesToNodes = initialPanesToNodes,
                     backStackIds = navHostConfiguration.navigationState.value.backStackIds(),
@@ -136,22 +136,22 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 }
 
             @Composable
-            override fun Destination(pane: T) {
+            override fun Destination(pane: Pane) {
                 val slot = adaptiveNavigationState.slotFor(pane)
                 slotsToRoutes[slot]?.invoke()
             }
 
             override fun adaptationIn(
-                pane: T
+                pane: Pane
             ): Adaptation? = adaptiveNavigationState.adaptationIn(pane)
 
             override fun nodeFor(
-                pane: T
-            ): R? = adaptiveNavigationState.nodeFor(pane)
+                pane: Pane
+            ): Destination? = adaptiveNavigationState.destinationFor(pane)
 
             fun onNewNavigationState(
                 navigationState: Node,
-                panesToNodes: Map<T, R?>,
+                panesToNodes: Map<Pane, Destination?>,
             ) {
                 updateAdaptiveNavigationState {
                     adaptTo(
@@ -175,7 +175,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     label = "$slot-PaneTransition",
                 )
                 paneTransition.AnimatedContent(
-                    contentKey = { it.currentNode?.id },
+                    contentKey = { it.currentDestination?.id },
                     transitionSpec = {
                         ContentTransform(
                             targetContentEnter = EnterTransition.None,
@@ -189,7 +189,7 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                             paneState = targetPaneState,
                             activeState = derivedStateOf {
                                 val activePaneState = adaptiveNavigationState.paneStateFor(slot)
-                                activePaneState.currentNode?.id == targetPaneState.currentNode?.id
+                                activePaneState.currentDestination?.id == targetPaneState.currentDestination?.id
                             },
                             animatedContentScope = this@AnimatedContent,
                         )
@@ -199,18 +199,18 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     // correct at first composition
                     scope.paneState = targetPaneState
 
-                    when (val node = targetPaneState.currentNode) {
+                    when (val destination = targetPaneState.currentDestination) {
                         null -> Unit
                         else -> CompositionLocalProvider(
                             LocalViewModelStoreOwner
-                                    provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(node),
+                                    provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(destination),
                         ) {
-                            SaveableStateProvider(node.id) {
+                            SaveableStateProvider(destination.id) {
                                 navHostConfiguration.Destination(paneScope = scope)
                                 DisposableEffect(Unit) {
                                     onDispose {
-                                        val routeIds = adaptiveNavigationState.nodeIds
-                                        if (!routeIds.contains(node.id)) removeState(node.id)
+                                        val destinationIds = adaptiveNavigationState.destinationIds
+                                        if (!destinationIds.contains(destination.id)) removeState(destination.id)
                                     }
                                 }
                             }
@@ -220,27 +220,27 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     // Add routes ids that are animating out
                     LaunchedEffect(transition.isRunning) {
                         if (transition.targetState == EnterExitState.PostExit) {
-                            val routeId = targetPaneState.currentNode?.id ?: return@LaunchedEffect
+                            val destinationId = targetPaneState.currentDestination?.id ?: return@LaunchedEffect
                             updateAdaptiveNavigationState {
-                                copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut + routeId)
+                                copy(destinationIdsAnimatingOut = destinationIdsAnimatingOut + destinationId)
                             }
                         }
                     }
                     // Remove route ids that have animated out
                     DisposableEffect(Unit) {
                         onDispose {
-                            val routeId = targetPaneState.currentNode?.id ?: return@onDispose
+                            val routeId = targetPaneState.currentDestination?.id ?: return@onDispose
                             updateAdaptiveNavigationState {
-                                copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut - routeId).prune()
+                                copy(destinationIdsAnimatingOut = destinationIdsAnimatingOut - routeId).prune()
                             }
-                            targetPaneState.currentNode?.let(nodeViewModelStoreCreator::clearStoreFor)
+                            targetPaneState.currentDestination?.let(nodeViewModelStoreCreator::clearStoreFor)
                         }
                     }
                 }
             }
 
             private inline fun updateAdaptiveNavigationState(
-                block: SlotBasedAdaptiveNavigationState<T, R>.() -> SlotBasedAdaptiveNavigationState<T, R>
+                block: SlotBasedAdaptiveNavigationState<Pane, Destination>.() -> SlotBasedAdaptiveNavigationState<Pane, Destination>
             ) {
                 adaptiveNavigationState = adaptiveNavigationState.block()
             }

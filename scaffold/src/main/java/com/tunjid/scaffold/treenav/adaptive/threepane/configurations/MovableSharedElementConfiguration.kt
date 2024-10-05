@@ -1,5 +1,6 @@
 package com.tunjid.scaffold.treenav.adaptive.threepane.configurations
 
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -27,9 +28,9 @@ import com.tunjid.treenav.strings.Route
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
  * There should be one instance of this per [AdaptiveNavHost].
  */
-fun <S : Node, R : Node> AdaptiveNavHostConfiguration<ThreePane, S, R>.movableSharedElementConfiguration(
-    movableSharedElementHostState: MovableSharedElementHostState<ThreePane, R>,
-): AdaptiveNavHostConfiguration<ThreePane, S, R> = delegated { node ->
+fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination>.movableSharedElementConfiguration(
+    movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
+): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
     val originalStrategy = this@movableSharedElementConfiguration.strategyTransform(node)
     AdaptivePaneStrategy(
         transitions = originalStrategy.transitions,
@@ -67,6 +68,7 @@ private class ThreePaneMovableSharedElementScope<R : Node>(
     @Composable
     override fun <T> movableSharedElementOf(
         key: Any,
+        boundsTransform: BoundsTransform,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
         val paneScope = delegate.paneScope
@@ -85,12 +87,14 @@ private class ThreePaneMovableSharedElementScope<R : Node>(
                 // Share the element
                 else -> delegate.movableSharedElementOf(
                     key = key,
+                    boundsTransform = boundsTransform,
                     sharedElement = sharedElement
                 )
             }
             // Share the element when in the transient pane
             ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
                 key = key,
+                boundsTransform = boundsTransform,
                 sharedElement = sharedElement
             )
 

@@ -31,12 +31,12 @@ import com.tunjid.treenav.Node
  * Scope for adaptive content that can show up in an arbitrary pane.
  */
 @Stable
-sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
+sealed interface AdaptivePaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 
     /**
      * Provides information about the adaptive context that created this [AdaptivePaneScope].
      */
-    val paneState: AdaptivePaneState<T, R>
+    val paneState: AdaptivePaneState<Pane, Destination>
 
     /**
      * Whether or not this [AdaptivePaneScope] is active in its current pane. It is inactive when
@@ -57,11 +57,11 @@ sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
  * An implementation of [AdaptivePaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedAdaptivePaneScope<T, R : Node>(
-    paneState: AdaptivePaneState<T, R>,
+internal class AnimatedAdaptivePaneScope<Pane, Destination : Node>(
+    paneState: AdaptivePaneState<Pane, Destination>,
     activeState: State<Boolean>,
     val animatedContentScope: AnimatedContentScope
-) : AdaptivePaneScope<T, R>, AnimatedVisibilityScope by animatedContentScope {
+) : AdaptivePaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
     override var paneState by mutableStateOf(paneState)
 
@@ -72,22 +72,22 @@ internal class AnimatedAdaptivePaneScope<T, R : Node>(
  * Information about content in a pane
  */
 @Stable
-sealed interface AdaptivePaneState<T, R : Node> {
-    val currentNode: R?
-    val pane: T?
+sealed interface AdaptivePaneState<Pane, Destination : Node> {
+    val currentDestination: Destination?
+    val pane: Pane?
     val adaptation: Adaptation
 }
 
 /**
  * [Slot] based implementation of [AdaptivePaneState]
  */
-internal data class SlotPaneState<T, R : Node>(
+internal data class SlotPaneState<Pane, Destination : Node>(
     val slot: Slot?,
-    val previousNode: R?,
-    override val currentNode: R?,
-    override val pane: T?,
+    val previousDestination: Destination?,
+    override val currentDestination: Destination?,
+    override val pane: Pane?,
     override val adaptation: Adaptation,
-) : AdaptivePaneState<T, R>
+) : AdaptivePaneState<Pane, Destination>
 
 /**
  * A spot taken by an [AdaptivePaneStrategy] that may be moved in from pane to pane.

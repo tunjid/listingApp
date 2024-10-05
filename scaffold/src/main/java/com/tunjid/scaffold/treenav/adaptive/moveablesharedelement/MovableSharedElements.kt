@@ -1,7 +1,11 @@
 package com.tunjid.scaffold.treenav.adaptive.moveablesharedelement
 
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -11,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
@@ -40,6 +45,7 @@ interface MovableSharedElementScope {
     @Composable
     fun <T> movableSharedElementOf(
         key: Any,
+        boundsTransform: BoundsTransform,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit
 }
@@ -49,9 +55,9 @@ interface MovableSharedElementScope {
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-class MovableSharedElementHostState<T, R : Node>(
+class MovableSharedElementHostState<Pane, Destination : Node>(
     private val sharedTransitionScope: SharedTransitionScope,
-    private val canAnimateOnStartingFrames: (AdaptivePaneState<T, R>) -> Boolean,
+    private val canAnimateOnStartingFrames: (AdaptivePaneState<Pane, Destination>) -> Boolean,
 ) {
 
     // TODO: This should be unnecessary. Figure out a way to participate arbitrarily in the
@@ -72,7 +78,7 @@ class MovableSharedElementHostState<T, R : Node>(
         get() = keysToMovableSharedElements.values
 
     private val keysToMovableSharedElements =
-        mutableStateMapOf<Any, MovableSharedElementState<*, T, R>>()
+        mutableStateMapOf<Any, MovableSharedElementState<*, Pane, Destination>>()
 
     /**
      * Returns true is a given shared element under a given key is currently being shared.
@@ -85,8 +91,9 @@ class MovableSharedElementHostState<T, R : Node>(
      * It is the callers responsibility to perform other verifications on the ability
      * of the calling [AdaptivePaneScope] to render the movable shared element.
      */
-    fun <S> AdaptivePaneScope<T, R>.createOrUpdateSharedElement(
+    fun <S> AdaptivePaneScope<Pane, Destination>.createOrUpdateSharedElement(
         key: Any,
+        boundsTransform: BoundsTransform,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
         val movableSharedElementState = keysToMovableSharedElements.getOrPut(key) {
@@ -94,6 +101,7 @@ class MovableSharedElementHostState<T, R : Node>(
                 paneScope = this,
                 sharedTransitionScope = sharedTransitionScope,
                 sharedElement = sharedElement,
+                boundsTransform = boundsTransform,
                 canAnimateOnStartingFrames = canAnimateOnStartingFrames,
                 onRemoved = { keysToMovableSharedElements.remove(key) }
             )
@@ -122,6 +130,7 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
     @Composable
     override fun <T> movableSharedElementOf(
         key: Any,
+        boundsTransform: BoundsTransform,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit {
         // This pane state may be animating out. Look up the actual current route
@@ -131,6 +140,7 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
         return with(movableSharedElementHostState) {
             paneScope.createOrUpdateSharedElement(
                 key = key,
+                boundsTransform = boundsTransform,
                 sharedElement = sharedElement
             )
         }
@@ -146,10 +156,12 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 @Composable
 fun <T> movableSharedElementOf(
     key: Any,
+    boundsTransform: BoundsTransform = DefaultBoundsTransform,
     sharedElement: @Composable (T, Modifier) -> Unit
 ): @Composable (T, Modifier) -> Unit =
     LocalMovableSharedElementScope.current.movableSharedElementOf(
         key = key,
+        boundsTransform = boundsTransform,
         sharedElement = sharedElement,
     )
 
@@ -161,3 +173,12 @@ val LocalMovableSharedElementScope =
 private fun <T> emptyComposable(): @Composable (T, Modifier) -> Unit = EMPTY_COMPOSABLE
 
 private val EMPTY_COMPOSABLE: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+private val DefaultBoundsTransform = BoundsTransform { _, _ ->
+    spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessMediumLow,
+        visibilityThreshold = Rect.VisibilityThreshold
+    )
+}

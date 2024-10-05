@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
 /**
- * Creates a host for adaptive navigation for panes [T] and destinations [R].
+ * Creates a host for adaptive navigation for panes [Pane] and destinations [Destination].
  *
  * @param state the [AdaptiveNavHostState] producing the [AdaptiveNavHostScope] that provides
  * context about the panes in [AdaptiveNavHost].
@@ -32,10 +32,10 @@ import com.tunjid.treenav.Node
  *
  */
 @Composable
-fun <T, R : Node> AdaptiveNavHost(
-    state: AdaptiveNavHostState<T, R>,
+fun <Pane, Destination : Node> AdaptiveNavHost(
+    state: AdaptiveNavHostState<Pane, Destination>,
     modifier: Modifier = Modifier,
-    content: @Composable AdaptiveNavHostScope<T, R>.() -> Unit
+    content: @Composable AdaptiveNavHostScope<Pane, Destination>.() -> Unit
 ) {
     Box(
         modifier = modifier
