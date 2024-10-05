@@ -1,6 +1,7 @@
 package com.tunjid.scaffold.treenav.adaptive.threepane.configurations
 
 import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,7 +20,7 @@ import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
 import com.tunjid.treenav.adaptive.delegated
 import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.strings.Route
+
 
 /**
  * An [AdaptiveNavHostConfiguration] that applies semantics of movable shared elements to
@@ -30,42 +31,56 @@ import com.tunjid.treenav.strings.Route
  */
 fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination>.movableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
-    val originalStrategy = this@movableSharedElementConfiguration.strategyTransform(node)
-    AdaptivePaneStrategy(
-        transitions = originalStrategy.transitions,
-        paneMapper = originalStrategy.paneMapper,
-        render = { inner ->
-            val delegate = remember {
-                AdaptiveMovableSharedElementScope(
-                    paneScope = this,
-                    movableSharedElementHostState = movableSharedElementHostState,
-                )
-            }
-            delegate.paneScope = this
+): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> =
+    delegated { destination ->
+        val originalStrategy = this@movableSharedElementConfiguration.strategyTransform(destination)
+        AdaptivePaneStrategy(
+            transitions = originalStrategy.transitions,
+            paneMapper = originalStrategy.paneMapper,
+            render = { paneDestination ->
+                val delegate = remember {
+                    AdaptiveMovableSharedElementScope(
+                        paneScope = this,
+                        movableSharedElementHostState = movableSharedElementHostState,
+                    )
+                }
+                delegate.paneScope = this
 
-            val movableSharedElementScope = remember {
-                ThreePaneMovableSharedElementScope(
-                    hostState = movableSharedElementHostState,
-                    delegate = delegate,
-                )
-            }
+                val movableSharedElementScope = remember {
+                    ThreePaneMovableSharedElementScope(
+                        hostState = movableSharedElementHostState,
+                        delegate = delegate,
+                    )
+                }
 
-            CompositionLocalProvider(
-                LocalMovableSharedElementScope provides movableSharedElementScope
-            ) {
-                originalStrategy.render(this, inner)
-            }
-        },
-    )
+                CompositionLocalProvider(
+                    LocalMovableSharedElementScope provides movableSharedElementScope
+                ) {
+                    originalStrategy.render(movableSharedElementScope, paneDestination)
+                }
+            },
+        )
+    }
+
+fun <Destination : Node> AdaptivePaneScope<ThreePane, Destination>.movableSharedElementScope(): MovableSharedElementScope {
+    check(this is ThreePaneMovableSharedElementScope) {
+        """
+            The current AdaptivePaneScope (${this::class.qualifiedName}) is not an instance of
+            a ThreePaneMovableSharedElementScope. You must configure your ThreePane AdaptiveNavHost with
+            AdaptiveNavHostConfiguration.movableSharedElementConfiguration(movableSharedElementHostState).
+           
+        """.trimIndent()
+    }
+    return this
 }
 
 @Stable
-private class ThreePaneMovableSharedElementScope<R : Node>(
-    private val hostState: MovableSharedElementHostState<ThreePane, R>,
-    private val delegate: AdaptiveMovableSharedElementScope<ThreePane, R>,
-) : MovableSharedElementScope {
-    @Composable
+private class ThreePaneMovableSharedElementScope<Destination : Node>(
+    private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
+    private val delegate: AdaptiveMovableSharedElementScope<ThreePane, Destination>,
+) : MovableSharedElementScope,
+    AdaptivePaneScope<ThreePane, Destination> by delegate.paneScope {
+    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,
@@ -106,7 +121,7 @@ private class ThreePaneMovableSharedElementScope<R : Node>(
     }
 }
 
-fun AdaptivePaneState<ThreePane, Route>?.canAnimateOnStartingFrames() =
+fun AdaptivePaneState<ThreePane, *>?.canAnimateOnStartingFrames() =
     this?.pane != ThreePane.TransientPrimary
 
 private val AdaptivePaneScope<ThreePane, *>.isPreviewingBack: Boolean

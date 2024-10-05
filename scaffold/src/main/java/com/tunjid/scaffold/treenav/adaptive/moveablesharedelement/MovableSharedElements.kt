@@ -42,7 +42,6 @@ interface MovableSharedElementScope {
      * @param sharedElement a factory function to create the shared element if it does not
      * currently exist.
      */
-    @Composable
     fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,
@@ -127,7 +126,7 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 
     var paneScope by mutableStateOf(paneScope)
 
-    @Composable
+//    @Composable
     override fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,
