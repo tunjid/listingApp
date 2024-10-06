@@ -209,8 +209,8 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                                 navHostConfiguration.Destination(paneScope = scope)
                                 DisposableEffect(Unit) {
                                     onDispose {
-                                        val destinationIds = adaptiveNavigationState.destinationIds
-                                        if (!destinationIds.contains(destination.id)) removeState(destination.id)
+                                        val backstackIds = adaptiveNavigationState.backStackIds
+                                        if (!backstackIds.contains(destination.id)) removeState(destination.id)
                                     }
                                 }
                             }

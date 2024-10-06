@@ -65,9 +65,6 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
         )
     }
 
-    internal val destinationIds: Collection<String>
-        get() = backStackIds
-
     internal fun paneStateFor(
         slot: Slot
     ): AdaptivePaneState<Pane, Destination> {
