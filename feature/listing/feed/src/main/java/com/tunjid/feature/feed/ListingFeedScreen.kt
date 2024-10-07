@@ -67,13 +67,14 @@ import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
 import com.tunjid.ui.FastScrollbar
 import kotlinx.coroutines.flow.first
 
 @Composable
 fun ListingFeedScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit,
@@ -125,6 +126,7 @@ fun ListingFeedScreen(
                     },
                     itemContent = { feedItem ->
                         FeedItemCard(
+                            movableSharedElementScope = movableSharedElementScope,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .animateItem(fadeInSpec = null),
@@ -183,6 +185,7 @@ fun ListingFeedScreen(
 
 @Composable
 private fun FeedItemCard(
+    movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
     feedItem: FeedItem,
     actions: (Action) -> Unit,
@@ -205,6 +208,7 @@ private fun FeedItemCard(
                         },
                 ) {
                     FeedMediaPager(
+                        movableSharedElementScope = movableSharedElementScope,
                         pagerState = pagerState,
                         feedItem = feedItem,
                         actions = actions
@@ -261,6 +265,7 @@ private fun EmptyView(
 
 @Composable
 private fun FeedMediaPager(
+    movableSharedElementScope: MovableSharedElementScope,
     pagerState: PagerState,
     feedItem: FeedItem,
     actions: (Action) -> Unit
@@ -270,7 +275,7 @@ private fun FeedMediaPager(
         key = { index -> feedItem.media[index].url }
     ) { index ->
         val media = feedItem.media[index]
-        val thumbnail = movableSharedElementOf<PhotoArgs>(
+        val thumbnail = movableSharedElementScope.movableSharedElementOf<PhotoArgs>(
             thumbnailSharedElementKey(media.url)
         ) { args, innerModifier ->
             Photo(

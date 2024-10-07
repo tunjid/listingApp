@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
@@ -42,10 +41,9 @@ interface MovableSharedElementScope {
      * @param sharedElement a factory function to create the shared element if it does not
      * currently exist.
      */
-    @Composable
     fun <T> movableSharedElementOf(
         key: Any,
-        boundsTransform: BoundsTransform,
+        boundsTransform: BoundsTransform = DefaultBoundsTransform,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit
 }
@@ -127,7 +125,6 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 
     var paneScope by mutableStateOf(paneScope)
 
-    @Composable
     override fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,
@@ -146,29 +143,6 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
         }
     }
 }
-
-/**
- * Creates a shared element composable that can be moved across compositions
- *
- * @param key the key for the shared element
- * @param sharedElement the element to be shared and moved
- */
-@Composable
-fun <T> movableSharedElementOf(
-    key: Any,
-    boundsTransform: BoundsTransform = DefaultBoundsTransform,
-    sharedElement: @Composable (T, Modifier) -> Unit
-): @Composable (T, Modifier) -> Unit =
-    LocalMovableSharedElementScope.current.movableSharedElementOf(
-        key = key,
-        boundsTransform = boundsTransform,
-        sharedElement = sharedElement,
-    )
-
-val LocalMovableSharedElementScope =
-    staticCompositionLocalOf<MovableSharedElementScope> {
-        throw IllegalArgumentException("LocalMovableSharedElementScope not set")
-    }
 
 private fun <T> emptyComposable(): @Composable (T, Modifier) -> Unit = EMPTY_COMPOSABLE
 

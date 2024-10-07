@@ -15,6 +15,7 @@ import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
+import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -80,6 +81,7 @@ object PagerGalleryModule {
             )
         )
         FullscreenGalleryScreen(
+            movableSharedElementScope = movableSharedElementScope(),
             modifier = Modifier,
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept

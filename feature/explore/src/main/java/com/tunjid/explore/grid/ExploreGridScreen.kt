@@ -36,13 +36,14 @@ import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.movableSharedElementOf
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 @Composable
 fun ExploreGridScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit,
@@ -83,7 +84,7 @@ fun ExploreGridScreen(
                             .aspectRatio(9f / 16)
                             .animateItem()
                     ) {
-                        val video = movableSharedElementOf<VideoState>(
+                        val video = movableSharedElementScope.movableSharedElementOf<VideoState>(
                             key = thumbnailSharedElementKey(item.state.url),
                             sharedElement = { videoState, innerModifier ->
                                 Video(

@@ -31,7 +31,7 @@ import com.tunjid.treenav.Node
  * Scope for adaptive content that can show up in an arbitrary pane.
  */
 @Stable
-sealed interface AdaptivePaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
+interface AdaptivePaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 
     /**
      * Provides information about the adaptive context that created this [AdaptivePaneScope].
