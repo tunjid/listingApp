@@ -54,9 +54,9 @@ interface AdaptiveNavHostScope<Pane, Destination : Node> {
         pane: Pane
     )
 
-    fun adaptationIn(
+    fun adaptationsIn(
         pane: Pane,
-    ): Adaptation?
+    ): Set<Adaptation>
 
     fun nodeFor(
         pane: Pane,
@@ -145,9 +145,9 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                 slotsToRoutes[slot]?.invoke()
             }
 
-            override fun adaptationIn(
+            override fun adaptationsIn(
                 pane: Pane
-            ): Adaptation? = adaptiveNavigationState.adaptationIn(pane)
+            ): Set<Adaptation> = adaptiveNavigationState.adaptationsIn(pane)
 
             override fun nodeFor(
                 pane: Pane

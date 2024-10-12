@@ -62,15 +62,14 @@ fun <R : Node> threePaneAdaptiveNodeConfiguration(
         val state = paneState
         when (state.pane) {
             ThreePane.Primary,
-            ThreePane.Secondary -> when (state.adaptation) {
-                ThreePane.PrimaryToSecondary,
-                ThreePane.SecondaryToPrimary -> NoTransition
-
+            ThreePane.Secondary -> when {
+                ThreePane.PrimaryToSecondary in state.adaptations -> NoTransition
+                ThreePane.SecondaryToPrimary in state.adaptations -> NoTransition
                 else -> DefaultTransition
             }
 
-            ThreePane.TransientPrimary -> when (state.adaptation) {
-                ThreePane.PrimaryToTransient -> when (state.pane) {
+            ThreePane.TransientPrimary -> when {
+                ThreePane.PrimaryToTransient in state.adaptations -> when (state.pane) {
                     ThreePane.Secondary -> DefaultTransition
                     else -> NoTransition
                 }

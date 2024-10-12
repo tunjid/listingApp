@@ -46,6 +46,7 @@ dependencies {
 
     implementation(libs.tunjid.composables)
 
+    implementation(libs.tunjid.treenav.compose.common)
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)
 
