@@ -20,13 +20,13 @@ import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackConfiguration
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementConfiguration
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
-import com.tunjid.treenav.adaptive.AdaptiveNavHost
-import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
+import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
+import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
+import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.strings.Route
 
 /**
@@ -60,11 +60,11 @@ fun ListingApp(
                     val movableSharedElementHostState = remember {
                         MovableSharedElementHostState(
                             sharedTransitionScope = this@SharedTransitionScope,
-                            canAnimateOnStartingFrames = AdaptivePaneState<ThreePane, Route>::canAnimateOnStartingFrames
+                            canAnimateOnStartingFrames = PaneState<ThreePane, Route>::canAnimateOnStartingFrames
                         )
                     }
-                    AdaptiveNavHost(
-                        state = listingAppState.rememberAdaptiveNavHostState {
+                    PanedNavHost(
+                        state = listingAppState.rememberPanedNavHostState {
                             val windowSizeClassState = derivedStateOf {
                                 listingAppState.globalUi.windowSizeClass
                             }
@@ -72,14 +72,16 @@ fun ListingApp(
                                 listingAppState.globalUi.backStatus
                             }
                             this
-                                .threePaneAdaptiveConfiguration(
-                                    windowSizeClassState = windowSizeClassState
+                                .threePanedNavHostConfiguration(
+                                    windowWidthDpState = derivedStateOf { 
+                                        windowSizeClassState.value.minWidthDp
+                                    }
                                 )
                                 .predictiveBackConfiguration(
                                     windowSizeClassState = windowSizeClassState,
                                     backStatusState = backStatusState,
                                 )
-                                .movableSharedElementConfiguration(
+                                .threePanedMovableSharedElementConfiguration(
                                     movableSharedElementHostState
                                 )
                         },

@@ -14,8 +14,8 @@ import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -62,7 +62,7 @@ object ExplorePagerModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ExplorePagerStateHolderFactory
-    ) = threePaneAdaptiveNodeConfiguration { route ->
+    ) = threePaneListDetailStrategy { route ->
         val viewModel = viewModel<ExplorePagerViewModel> {
             factory.create(
                 scope = viewModelCoroutineScope(),

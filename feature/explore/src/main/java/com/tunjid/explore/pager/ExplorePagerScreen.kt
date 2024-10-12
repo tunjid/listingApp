@@ -30,7 +30,7 @@ import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.scaffold.dragToPop
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 
 @Composable
 fun FullscreenGalleryScreen(

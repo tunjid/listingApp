@@ -62,11 +62,11 @@ import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.UiChromeState
-import com.tunjid.treenav.adaptive.Adaptation
-import com.tunjid.treenav.adaptive.AdaptiveNavHostScope
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.PrimaryToSecondary
-import com.tunjid.treenav.adaptive.threepane.ThreePane.Companion.SecondaryToPrimary
+import com.tunjid.treenav.compose.Adaptation
+import com.tunjid.treenav.compose.PanedNavHostScope
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.ThreePane.Companion.PrimaryToSecondary
+import com.tunjid.treenav.compose.threepane.ThreePane.Companion.SecondaryToPrimary
 import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -76,7 +76,7 @@ import kotlinx.coroutines.launch
  * Motionally intelligent, adaptive pane for the hosting the navigation routes
  */
 @Composable
-internal fun AdaptiveNavHostScope<ThreePane, Route>.ThreePaneLayout(
+internal fun PanedNavHostScope<ThreePane, Route>.ThreePaneLayout(
     uiChromeState: UiChromeState,
     onPaneAnchorChanged: (PaneAnchor) -> Unit,
 ) {

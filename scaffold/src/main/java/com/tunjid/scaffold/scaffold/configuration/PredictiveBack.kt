@@ -35,71 +35,79 @@ import com.tunjid.scaffold.globalui.touchX
 import com.tunjid.scaffold.globalui.touchY
 import com.tunjid.scaffold.scaffold.rememberUpdatedStateIf
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.adaptivePaneStrategy
-import com.tunjid.treenav.adaptive.delegated
-import com.tunjid.treenav.adaptive.paneMapping
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.delegated
+import com.tunjid.treenav.compose.paneStrategy
+import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.Route
 import kotlin.math.roundToInt
 
 /**
- * An [AdaptiveNavHostConfiguration] that moves the destination in a [ThreePane.Primary] pane, to
+ * An [PanedNavHostConfiguration] that moves the destination in a [ThreePane.Primary] pane, to
  * to the [ThreePane.TransientPrimary] pane when a predictive back gesture is in progress.
  *
  * @param windowSizeClassState provides the current [WindowSizeClass] of the display.
  * @param backStatusState provides the state of the predictive back gesture.
  */
-fun AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBackConfiguration(
+fun PanedNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBackConfiguration(
     windowSizeClassState: State<WindowSizeClass>,
     backStatusState: State<BackStatus>,
-) = delegated(
-    destinationTransform = { multiStackNav ->
-        val current = multiStackNav.current as Route
-        if (backStatusState.value.isPreviewing) multiStackNav.pop().current as Route
-        else current
-    },
-    strategyTransform = { destination  ->
-        val originalStrategy = strategyTransform(destination)
-        adaptivePaneStrategy(
-            transitions = originalStrategy.transitions,
-            paneMapping = paneMapper@{ inner ->
-                val originalMapping = originalStrategy.paneMapper(inner)
-                val isPreviewingBack by remember {
-                    derivedStateOf { backStatusState.value.isPreviewing }
-                }
-                if (!isPreviewingBack) return@paneMapper originalMapping
+): PanedNavHostConfiguration<ThreePane, MultiStackNav, Route> {
+    var lastPrimaryDestination by mutableStateOf<Route?>(null)
+    return delegated(
+        destinationTransform = { multiStackNav ->
+            val current = multiStackNav.current as Route
+            lastPrimaryDestination = current
+            if (backStatusState.value.isPreviewing) multiStackNav.pop().current as Route
+            else current
+        },
+        strategyTransform = { destination ->
+            val originalStrategy = strategyTransform(destination)
+            paneStrategy(
+                transitions = originalStrategy.transitions,
+                paneMapping = paneMapper@{ inner ->
+                    val originalMapping = originalStrategy.paneMapper(inner)
+                    val isPreviewingBack by remember {
+                        derivedStateOf { backStatusState.value.isPreviewing }
+                    }
+                    if (!isPreviewingBack) return@paneMapper originalMapping
 
-                // Back is being previewed, therefore the original mapping is already for back.
-                // Pass the previous primary value into transient.
-                val transient = this@predictiveBackConfiguration.paneMapping()[ThreePane.Primary]
-                originalMapping + (ThreePane.TransientPrimary to transient)
-            },
-            render = paneScope@{ toRender ->
-                val windowSizeClass by windowSizeClassState
-                val backStatus by backStatusState
-                Box(
-                    modifier = Modifier.adaptiveModifier(
-                        windowSizeClass = windowSizeClass,
-                        backStatus = backStatus,
-                        adaptivePaneScope = this@paneScope
+                    // Back is being previewed, therefore the original mapping is already for back.
+                    // Pass the previous primary value into transient.
+                    val paneMapping = lastPrimaryDestination
+                        ?.let { originalStrategy.paneMapper(it) }
+                        ?: throw IllegalStateException(
+                            "Attempted to show back destination without calling destination transform"
+                        )
+                    val transient = paneMapping[ThreePane.Primary]
+                    originalMapping + (ThreePane.TransientPrimary to transient)
+                },
+                render = paneScope@{ toRender ->
+                    val windowSizeClass by windowSizeClassState
+                    val backStatus by backStatusState
+                    Box(
+                        modifier = Modifier.adaptiveModifier(
+                            windowSizeClass = windowSizeClass,
+                            backStatus = backStatus,
+                            adaptivePaneScope = this@paneScope
+                        )
                     )
-                )
-                {
-                    originalStrategy.render.invoke(this@paneScope, toRender)
+                    {
+                        originalStrategy.render.invoke(this@paneScope, toRender)
+                    }
                 }
-            }
-        )
-    })
+            )
+        })
+}
 
 @Composable
 private fun Modifier.adaptiveModifier(
     windowSizeClass: WindowSizeClass,
     backStatus: BackStatus,
-    adaptivePaneScope: AdaptivePaneScope<ThreePane, Route>,
+    adaptivePaneScope: PaneScope<ThreePane, Route>,
 ): Modifier = this then with(adaptivePaneScope) {
     when (paneState.pane) {
         ThreePane.Primary, ThreePane.Secondary -> FillSizeModifier
@@ -187,7 +195,7 @@ private fun Modifier.predictiveBackModifier(
 
 @Composable
 fun Modifier.predictiveBackBackgroundModifier(
-    paneScope: AdaptivePaneScope<ThreePane, *>
+    paneScope: PaneScope<ThreePane, *>
 ): Modifier {
     if (paneScope.paneState.pane != ThreePane.TransientPrimary)
         return this

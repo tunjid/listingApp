@@ -15,11 +15,11 @@ import com.tunjid.scaffold.navigation.navItemSelected
 import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
-import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
-import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.SavedStatePanedNavHostState
+import com.tunjid.treenav.compose.panedNavHostConfiguration
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.current
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
@@ -34,7 +34,7 @@ import javax.inject.Singleton
 @Stable
 @Singleton
 class ListingAppState @Inject constructor(
-    private val routeConfigurationMap: Map<String, @JvmSuppressWildcards AdaptivePaneStrategy<ThreePane, Route>>,
+    private val routeConfigurationMap: Map<String, @JvmSuppressWildcards PaneStrategy<ThreePane, Route>>,
     private val navigationStateHolder: NavigationStateHolder,
     private val globalUiStateHolder: GlobalUiStateHolder
 ) {
@@ -45,13 +45,13 @@ class ListingAppState @Inject constructor(
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
 
-    private val configurationTrie = RouteTrie<AdaptivePaneStrategy<ThreePane, Route>>().apply {
+    private val configurationTrie = RouteTrie<PaneStrategy<ThreePane, Route>>().apply {
         routeConfigurationMap
             .mapKeys { (template) -> PathPattern(template) }
             .forEach(::set)
     }
 
-    private val adaptiveNavHostConfiguration = adaptiveNavHostConfiguration(
+    private val navHostConfiguration = panedNavHostConfiguration(
         navigationState = multiStackNavState,
         destinationTransform = { multiStackNav ->
             multiStackNav.current as? Route ?: unknownRoute("")
@@ -62,13 +62,17 @@ class ListingAppState @Inject constructor(
     )
 
     @Composable
-    fun rememberAdaptiveNavHostState(
-        configurationBlock: AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, Route>
-    ): SavedStateAdaptiveNavHostState<ThreePane, Route> {
+    fun rememberPanedNavHostState(
+        configurationBlock: PanedNavHostConfiguration<
+                ThreePane,
+                MultiStackNav, 
+                Route
+                >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, Route>
+    ): SavedStatePanedNavHostState<ThreePane, Route> {
         val adaptiveNavHostState = remember {
-            SavedStateAdaptiveNavHostState(
+            SavedStatePanedNavHostState(
                 panes = ThreePane.entries.toList(),
-                configuration = adaptiveNavHostConfiguration.configurationBlock(),
+                configuration = navHostConfiguration.configurationBlock(),
             )
         }
         DisposableEffect(Unit) {

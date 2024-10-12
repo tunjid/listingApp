@@ -16,8 +16,8 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -67,7 +67,7 @@ object GridGalleryModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: GridGalleryStateHolderFactory
-    ) = threePaneAdaptiveNodeConfiguration { route ->
+    ) = threePaneListDetailStrategy { route ->
         val viewModel = viewModel<GridGalleryViewModel> {
             factory.create(
                 scope = viewModelCoroutineScope(),
