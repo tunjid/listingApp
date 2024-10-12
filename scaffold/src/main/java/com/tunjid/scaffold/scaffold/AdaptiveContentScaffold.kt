@@ -108,7 +108,7 @@ internal fun AdaptiveNavHostScope<ThreePane, Route>.ThreePaneLayout(
                 // Secondary pane content
                 Box(
                     modifier = Modifier.secondaryPaneModifier(
-                        adaptation = adaptationIn(ThreePane.Secondary),
+                        adaptations = adaptationsIn(ThreePane.Secondary),
                         width = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() },
                     ),
@@ -120,7 +120,7 @@ internal fun AdaptiveNavHostScope<ThreePane, Route>.ThreePaneLayout(
                 Box(
                     modifier = Modifier.primaryPaneModifier(
                         windowSizeClass = windowSizeClass,
-                        adaptation = adaptationIn(ThreePane.Primary),
+                        adaptations = adaptationsIn(ThreePane.Primary),
                         secondaryContentWidth = with(density) { paneSplitState.width.toDp() },
                         maxWidth = with(density) { paneSplitState.maxWidth.toDp() }
                     ),
@@ -237,7 +237,7 @@ private fun BoxScope.DraggableThumb(
 
 private fun Modifier.primaryPaneModifier(
     windowSizeClass: WindowSizeClass,
-    adaptation: Adaptation?,
+    adaptations: Set<Adaptation>,
     secondaryContentWidth: Dp,
     maxWidth: Dp,
 ) = composed {
@@ -251,11 +251,11 @@ private fun Modifier.primaryPaneModifier(
     }
     var complete by remember { mutableStateOf(false) }
 
-    LaunchedEffect(windowSizeClass, adaptation) {
+    LaunchedEffect(windowSizeClass, adaptations) {
         try {
             // Maintain max width on smaller devices
             if (windowSizeClass.minWidthDp <= WindowSizeClass.COMPACT.minWidthDp
-                || adaptation != SecondaryToPrimary
+                || !adaptations.contains(SecondaryToPrimary)
             ) {
                 complete = true
                 return@LaunchedEffect
@@ -277,17 +277,17 @@ private fun Modifier.primaryPaneModifier(
         .width(if (complete) maxWidth else widthAnimatable.value)
         .padding(
             start = updatedSecondaryContentWidth.countIf(
-                condition = adaptation != SecondaryToPrimary
+                condition = !adaptations.contains(SecondaryToPrimary)
                         && windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp
             )
         )
         .restrictedSizePlacement(
-            atStart = adaptation == SecondaryToPrimary
+            atStart = adaptations.contains(SecondaryToPrimary)
         )
 }
 
 private fun Modifier.secondaryPaneModifier(
-    adaptation: Adaptation?,
+    adaptations: Set<Adaptation>,
     width: Dp,
     maxWidth: Dp,
 ) = composed {
@@ -302,8 +302,8 @@ private fun Modifier.secondaryPaneModifier(
     }
     var complete by remember { mutableStateOf(true) }
 
-    LaunchedEffect(adaptation) {
-        complete = adaptation != PrimaryToSecondary
+    LaunchedEffect(adaptations) {
+        complete = !adaptations.contains(PrimaryToSecondary)
     }
 
     LaunchedEffect(complete) {
@@ -329,7 +329,7 @@ private fun Modifier.secondaryPaneModifier(
         .zIndex(if (complete) SecondaryPaneZIndex else SecondaryPaneAnimationZIndex)
         .width(if (complete) updatedWidth.value else widthAnimatable.value)
         .restrictedSizePlacement(
-            atStart = adaptation == PrimaryToSecondary
+            atStart = adaptations.contains(PrimaryToSecondary)
         )
 }
 

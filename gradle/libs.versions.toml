@@ -113,6 +113,7 @@ tunjid-tiler-compose = { group = "com.tunjid.tiler", name = "compose", version.r
 tunjid-tiler-tiler = { group = "com.tunjid.tiler", name = "tiler", version.ref = "tunjidTiler" }
 tunjid-treenav-core-common = { group = "com.tunjid.treenav", name = "treenav", version.ref = "tunjidTreeNav" }
 tunjid-treenav-strings-common = { group = "com.tunjid.treenav", name = "strings", version.ref = "tunjidTreeNav" }
+tunjid-treenav-compose-common = { group = "com.tunjid.treenav", name = "compose", version.ref = "tunjidTreeNav" }
 tunjid-composables = { group = "com.tunjid.composables", name = "composables", version.ref = "tunjidComposables" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }

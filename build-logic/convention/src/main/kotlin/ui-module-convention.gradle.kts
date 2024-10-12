@@ -43,6 +43,7 @@ dependencies {
 
     "implementation"(libs.findLibrary("tunjid.treenav.core.common").get())
     "implementation"(libs.findLibrary("tunjid.treenav.strings.common").get())
+    "implementation"(libs.findLibrary("tunjid.treenav.compose.common").get())
 
     "implementation"(libs.findLibrary("tunjid.mutator.core.common").get())
     "implementation"(libs.findLibrary("tunjid.mutator.coroutines.common").get())
