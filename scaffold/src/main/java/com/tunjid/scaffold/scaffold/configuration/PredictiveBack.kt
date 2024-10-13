@@ -77,11 +77,11 @@ fun PanedNavHostConfiguration<ThreePane, MultiStackNav, Route>.predictiveBackCon
 
                     // Back is being previewed, therefore the original mapping is already for back.
                     // Pass the previous primary value into transient.
-                    val paneMapping = lastPrimaryDestination
-                        ?.let { originalStrategy.paneMapper(it) }
-                        ?: throw IllegalStateException(
-                            "Attempted to show back destination without calling destination transform"
-                        )
+                    val transientDestination = checkNotNull(lastPrimaryDestination) {
+                        "Attempted to show last destination without calling destination transform"
+                    }
+                    val paneMapping = strategyTransform(transientDestination)
+                        .paneMapper(transientDestination)
                     val transient = paneMapping[ThreePane.Primary]
                     originalMapping + (ThreePane.TransientPrimary to transient)
                 },
