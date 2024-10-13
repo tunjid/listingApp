@@ -1,6 +1,8 @@
 package com.tunjid.explore.grid.di
 
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.explore.grid.ExploreGridModelFactory
 import com.tunjid.explore.grid.ExploreGridScreen
@@ -13,11 +15,9 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
-import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -55,10 +55,11 @@ object ExploreGridModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ExploreGridModelFactory
-    ) = threePaneAdaptiveNodeConfiguration { route ->
+    ) = threePaneListDetailStrategy { route ->
+        val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ExploreGridViewModel> {
             factory.create(
-                scope = viewModelCoroutineScope(),
+                scope = lifecycleCoroutineScope,
                 route = route,
             )
         }

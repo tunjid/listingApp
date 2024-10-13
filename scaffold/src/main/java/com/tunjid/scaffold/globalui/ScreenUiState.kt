@@ -6,15 +6,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import com.tunjid.mutator.mutationOf
-import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
  * Provides a way of composing the [UiState] on a global level.
  * This allows for coordination of the UI across navigation destinations.
  */
 @Composable
-fun AdaptivePaneScope<ThreePane, *>.ScreenUiState(state: UiState) {
+fun PaneScope<ThreePane, *>.ScreenUiState(state: UiState) {
     val uiStateHolder = LocalGlobalUiStateHolder.current
     val updatedState by rememberUpdatedState(state)
 

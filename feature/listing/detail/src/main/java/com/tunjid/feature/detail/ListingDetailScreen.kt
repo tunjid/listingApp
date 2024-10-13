@@ -52,7 +52,7 @@ import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.SecondaryPaneCloseBackHandler
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
 
 @Composable

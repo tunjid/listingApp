@@ -36,7 +36,7 @@ import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.min
 import kotlin.math.roundToInt

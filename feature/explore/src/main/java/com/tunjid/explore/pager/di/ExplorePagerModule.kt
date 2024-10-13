@@ -1,6 +1,8 @@
 package com.tunjid.explore.pager.di
 
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.explore.pager.ExplorePagerStateHolderFactory
 import com.tunjid.explore.pager.ExplorePagerViewModel
@@ -13,9 +15,8 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
-import com.tunjid.scaffold.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -62,10 +63,11 @@ object ExplorePagerModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ExplorePagerStateHolderFactory
-    ) = threePaneAdaptiveNodeConfiguration { route ->
+    ) = threePaneListDetailStrategy { route ->
+        val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ExplorePagerViewModel> {
             factory.create(
-                scope = viewModelCoroutineScope(),
+                scope = lifecycleCoroutineScope,
                 route = route,
             )
         }
