@@ -3,6 +3,8 @@ package com.tunjid.feature.detail.di
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailViewModel
@@ -16,10 +18,9 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
-import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -88,9 +89,10 @@ object ListingDetailModule {
             )
         },
         render = { route ->
+            val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
             val viewModel = viewModel<ListingDetailViewModel> {
                 factory.create(
-                    scope = viewModelCoroutineScope(),
+                    scope = lifecycleCoroutineScope,
                     route = route,
                 )
             }

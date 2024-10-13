@@ -1,6 +1,8 @@
 package com.tunjid.feature.listinggallery.grid.di
 
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.listinggallery.grid.GridGalleryScreen
 import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolderFactory
@@ -14,7 +16,6 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
-import com.tunjid.scaffold.lifecycle.viewModelCoroutineScope
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
@@ -68,9 +69,10 @@ object GridGalleryModule {
     fun routeAdaptiveConfiguration(
         factory: GridGalleryStateHolderFactory
     ) = threePaneListDetailStrategy { route ->
+        val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<GridGalleryViewModel> {
             factory.create(
-                scope = viewModelCoroutineScope(),
+                scope = lifecycleCoroutineScope,
                 route = route,
             )
         }
