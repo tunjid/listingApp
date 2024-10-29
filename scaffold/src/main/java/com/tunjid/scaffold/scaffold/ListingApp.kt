@@ -2,32 +2,43 @@ package com.tunjid.scaffold.scaffold
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import com.tunjid.composables.dragtodismiss.DragToDismissState
+import com.tunjid.composables.splitlayout.SplitLayout
+import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
-import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.globalui.slices.bottomNavPositionalState
 import com.tunjid.scaffold.globalui.slices.fabState
 import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
 import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.DraggableThumb
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackConfiguration
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
 import com.tunjid.treenav.compose.PaneState
-import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.configurations.animatePaneBoundsConfiguration
+import com.tunjid.treenav.compose.configurations.paneModifierConfiguration
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
 import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.strings.Route
+import kotlin.math.roundToInt
 
 /**
  * Root scaffold for the app
@@ -40,9 +51,28 @@ fun ListingApp(
     navStateHolder: NavigationStateHolder,
     globalUiStateHolder: GlobalUiStateHolder,
 ) {
+    val order = remember {
+        listOf(
+            ThreePane.Secondary,
+            ThreePane.Primary,
+        )
+    }
+    val splitLayoutState = remember {
+        SplitLayoutState(
+            orientation = Orientation.Horizontal,
+            maxCount = order.size,
+            minSize = 1.dp,
+        )
+    }
+    val density = LocalDensity.current
+    val paneAnchorState = remember { PaneAnchorState(density) }
+    val dragToDismissState = remember { DragToDismissState() }
+
     CompositionLocalProvider(
         LocalGlobalUiStateHolder provides globalUiStateHolder,
         LocalNavigationStateHolder provides navStateHolder,
+        LocalPaneAnchorState provides paneAnchorState,
+        LocalDragToDismissState provides dragToDismissState,
     ) {
         Surface {
             Box(
@@ -65,42 +95,84 @@ fun ListingApp(
                     }
                     PanedNavHost(
                         state = listingAppState.rememberPanedNavHostState {
-                            val windowSizeClassState = derivedStateOf {
-                                listingAppState.globalUi.windowSizeClass
-                            }
-                            val backStatusState = derivedStateOf {
-                                listingAppState.globalUi.backStatus
-                            }
                             this
                                 .threePanedNavHostConfiguration(
-                                    windowWidthDpState = derivedStateOf { 
-                                        windowSizeClassState.value.minWidthDp
+                                    windowWidthDpState = derivedStateOf {
+                                        splitLayoutState.size.value.roundToInt()
                                     }
                                 )
                                 .predictiveBackConfiguration(
-                                    windowSizeClassState = windowSizeClassState,
-                                    backStatusState = backStatusState,
+                                    windowSizeClassState = derivedStateOf {
+                                        listingAppState.globalUi.windowSizeClass
+                                    },
+                                    backStatusState = derivedStateOf {
+                                        listingAppState.globalUi.backStatus
+                                    },
                                 )
                                 .threePanedMovableSharedElementConfiguration(
                                     movableSharedElementHostState
                                 )
+                                .paneModifierConfiguration {
+                                    Modifier.restrictedSizePlacement(
+                                        atStart = paneState.pane == ThreePane.Secondary
+                                    )
+                                }
+                                .animatePaneBoundsConfiguration(
+                                    lookaheadScope = this@SharedTransitionScope,
+                                    shouldAnimatePane = {
+                                        when (paneState.pane) {
+                                            ThreePane.Primary,
+                                            ThreePane.Secondary,
+                                            ThreePane.Tertiary -> isActive
+
+                                            ThreePane.TransientPrimary,
+                                            ThreePane.Overlay,
+                                            null -> false
+                                        }
+                                    }
+                                )
                         },
                         modifier = Modifier.fillMaxSize()
-                                then movableSharedElementHostState.modifier
-                                then sharedElementModifier
                     ) {
-                        ThreePaneLayout(
-                            uiChromeState = remember {
-                                derivedStateOf { listingAppState.globalUi.uiChromeState }
-                            }.value,
-                            onPaneAnchorChanged = remember {
-                                { paneAnchor: PaneAnchor ->
-                                    listingAppState.updateGlobalUi {
-                                        copy(paneAnchor = paneAnchor)
-                                    }
-                                }
-                            },
+                        val filteredOrder by remember {
+                            derivedStateOf { order.filter { nodeFor(it) != null } }
+                        }
+                        splitLayoutState.visibleCount = filteredOrder.size
+                        paneAnchorState.updateMaxWidth(
+                            with(density) { splitLayoutState.size.roundToPx() }
                         )
+                        SplitLayout(
+                            state = splitLayoutState,
+                            modifier = modifier
+                                .fillMaxSize()
+                                .routePanePadding(
+                                    listingAppState.globalUi.uiChromeState
+                                )
+                                    then movableSharedElementHostState.modifier
+                                    then sharedElementModifier,
+                            itemSeparators = { _, offset ->
+                                DraggableThumb(
+                                    splitLayoutState = splitLayoutState,
+                                    paneAnchorState = paneAnchorState,
+                                    offset = offset
+                                )
+                            },
+                            itemContent = { index ->
+                                DragToPopLayout(
+                                    state = dragToDismissState,
+                                    pane = filteredOrder[index]
+                                )
+                            }
+                        )
+                        LaunchedEffect(paneAnchorState.currentPaneAnchor) {
+                            listingAppState.updateGlobalUi {
+                                copy(paneAnchor = paneAnchorState.currentPaneAnchor)
+                            }
+                        }
+                        LaunchedEffect(filteredOrder) {
+                            if (filteredOrder.size != 1) return@LaunchedEffect
+                            paneAnchorState.onClosed()
+                        }
                     }
                 }
                 AppFab(
