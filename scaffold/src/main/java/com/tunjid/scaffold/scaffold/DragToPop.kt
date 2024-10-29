@@ -1,18 +1,26 @@
 package com.tunjid.scaffold.scaffold
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.dragtodismiss.dragToDismiss
 import com.tunjid.scaffold.globalui.BackStatus
 import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
+import com.tunjid.treenav.compose.PanedNavHostScope
+import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.pop
+import com.tunjid.treenav.strings.Route
 
 @Composable
 fun Modifier.dragToPop(): Modifier {
@@ -25,7 +33,39 @@ fun Modifier.dragToPop(): Modifier {
 }
 
 @Composable
-internal fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
+internal fun PanedNavHostScope<ThreePane, Route>.DragToPopLayout(
+    state: DragToDismissState,
+    pane: ThreePane,
+) {
+    if (pane == ThreePane.Primary) {
+        Box(
+            modifier = Modifier
+                .dragToPopInternal(state)
+        ) {
+            Destination(pane)
+        }
+        // TODO: This should not be necessary. Figure out why a frame renders with
+        //  an offset of zero while the content in the transient primary container
+        //  is still visible.
+        val dragToDismissOffset by rememberUpdatedStateIf(
+            value = state.offset.round(),
+            predicate = {
+                it != IntOffset.Zero || nodeFor(ThreePane.TransientPrimary) == null
+            }
+        )
+        Box(
+            modifier = Modifier
+                .offset { dragToDismissOffset }
+        ) {
+            Destination(ThreePane.TransientPrimary)
+        }
+    } else {
+        Destination(pane)
+    }
+}
+
+@Composable
+private fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
     val globalUiStateHolder = LocalGlobalUiStateHolder.current
     val navigationStateHolder = LocalNavigationStateHolder.current
     val density = LocalDensity.current

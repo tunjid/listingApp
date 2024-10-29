@@ -51,7 +51,7 @@ fun ListingApp(
     navStateHolder: NavigationStateHolder,
     globalUiStateHolder: GlobalUiStateHolder,
 ) {
-    val order = remember {
+    val paneRenderOrder = remember {
         listOf(
             ThreePane.Secondary,
             ThreePane.Primary,
@@ -60,7 +60,7 @@ fun ListingApp(
     val splitLayoutState = remember {
         SplitLayoutState(
             orientation = Orientation.Horizontal,
-            maxCount = order.size,
+            maxCount = paneRenderOrder.size,
             minSize = 1.dp,
         )
     }
@@ -135,7 +135,7 @@ fun ListingApp(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         val filteredOrder by remember {
-                            derivedStateOf { order.filter { nodeFor(it) != null } }
+                            derivedStateOf { paneRenderOrder.filter { nodeFor(it) != null } }
                         }
                         splitLayoutState.visibleCount = filteredOrder.size
                         paneAnchorState.updateMaxWidth(

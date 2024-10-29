@@ -4,8 +4,6 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,51 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
-import androidx.compose.ui.unit.round
-import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.scaffold.countIf
 import com.tunjid.scaffold.globalui.bottomNavSize
 import com.tunjid.scaffold.globalui.keyboardSize
 import com.tunjid.scaffold.globalui.navRailWidth
 import com.tunjid.scaffold.globalui.slices.UiChromeState
-import com.tunjid.treenav.compose.PanedNavHostScope
-import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.strings.Route
 
-@Composable
-internal fun PanedNavHostScope<ThreePane, Route>.DragToPopLayout(
-    state: DragToDismissState,
-    pane: ThreePane,
-) {
-    if (pane == ThreePane.Primary) {
-        Box(
-            modifier = Modifier
-                .dragToPopInternal(state)
-        ) {
-            Destination(pane)
-        }
-        // TODO: This should not be necessary. Figure out why a frame renders with
-        //  an offset of zero while the content in the transient primary container
-        //  is still visible.
-        val dragToDismissOffset by rememberUpdatedStateIf(
-            value = state.offset.round(),
-            predicate = {
-                it != IntOffset.Zero || nodeFor(ThreePane.TransientPrimary) == null
-            }
-        )
-        Box(
-            modifier = Modifier
-                .offset { dragToDismissOffset }
-        ) {
-            Destination(ThreePane.TransientPrimary)
-        }
-    } else {
-        Destination(pane)
-    }
-}
 
 @Composable
 internal fun Modifier.routePanePadding(
@@ -80,6 +41,7 @@ internal fun Modifier.routePanePadding(
     } countIf state.insetDescriptor.hasBottomInset
 
     val bottomClearance by animateDpAsState(
+        label = "Bottom clearance animation",
         targetValue = insetClearance + navBarClearance,
         animationSpec = PaneSizeSpring
     )
@@ -87,6 +49,7 @@ internal fun Modifier.routePanePadding(
     val navRailSize = state.windowSizeClass.navRailWidth() countIf state.navRailVisible
 
     val startClearance by animateDpAsState(
+        label = "Start clearance animation",
         targetValue = navRailSize,
         animationSpec = PaneSizeSpring
     )
