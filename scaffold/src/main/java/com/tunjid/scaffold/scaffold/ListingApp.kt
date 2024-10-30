@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.splitlayout.SplitLayout
@@ -61,7 +62,7 @@ fun ListingApp(
         SplitLayoutState(
             orientation = Orientation.Horizontal,
             maxCount = paneRenderOrder.size,
-            minSize = 1.dp,
+            minSize = Dp.Hairline,
         )
     }
     val density = LocalDensity.current
@@ -94,6 +95,7 @@ fun ListingApp(
                         )
                     }
                     PanedNavHost(
+                        modifier = Modifier.fillMaxSize(),
                         state = listingAppState.rememberPanedNavHostState {
                             this
                                 .threePanedNavHostConfiguration(
@@ -132,7 +134,6 @@ fun ListingApp(
                                     }
                                 )
                         },
-                        modifier = Modifier.fillMaxSize()
                     ) {
                         val filteredOrder by remember {
                             derivedStateOf { paneRenderOrder.filter { nodeFor(it) != null } }
