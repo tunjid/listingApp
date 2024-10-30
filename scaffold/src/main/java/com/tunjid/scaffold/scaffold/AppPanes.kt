@@ -80,6 +80,9 @@ internal class PaneAnchorState(
 
     val targetPaneAnchor get() = anchoredDraggableState.targetValue
 
+    var hasInteractions by mutableStateOf(false)
+        internal set
+
     val currentPaneAnchor: PaneAnchor
         get() {
             val cappedFraction = max(
@@ -170,8 +173,10 @@ internal class PaneAnchorState(
             val isHovered by paneAnchorState.thumbInteractionSource.collectIsHoveredAsState()
             val isPressed by paneAnchorState.thumbInteractionSource.collectIsPressedAsState()
             val isDragged by paneAnchorState.thumbInteractionSource.collectIsDraggedAsState()
+            val active = isHovered || isPressed || isDragged
+
             val thumbWidth by animateDpAsState(
-                if (isHovered || isPressed || isDragged) DraggableDividerSizeDp
+                if (active) DraggableDividerSizeDp
                 else when (paneAnchorState.targetPaneAnchor) {
                     PaneAnchor.Zero -> DraggableDividerSizeDp
                     PaneAnchor.OneThirds,
@@ -229,6 +234,9 @@ internal class PaneAnchorState(
                 val weight = percentage * splitLayoutState.weightSum
                 splitLayoutState.setWeightAt(index = 0, weight = weight)
             }
+            LaunchedEffect(active) {
+                paneAnchorState.hasInteractions = active
+            }
         }
     }
 }
@@ -238,7 +246,7 @@ internal class PaneAnchorState(
  */
 @Composable
 fun SecondaryPaneCloseBackHandler(enabled: Boolean) {
-    val paneSplitState = LocalPaneAnchorState.current
+    val paneAnchorState = LocalPaneAnchorState.current
     var started by remember { mutableStateOf(false) }
     var widthAtStart by remember { mutableIntStateOf(0) }
     var desiredPaneWidth by remember { mutableFloatStateOf(0f) }
@@ -250,38 +258,41 @@ fun SecondaryPaneCloseBackHandler(enabled: Boolean) {
     BackHandler(
         enabled = enabled,
         onStarted = {
-            widthAtStart = paneSplitState.width
+            paneAnchorState.hasInteractions = true
+            widthAtStart = paneAnchorState.width
             started = true
         },
         onProgressed = { backStatus ->
             val backProgress = backStatus.progress
-            val distanceToCover = paneSplitState.maxWidth - widthAtStart
+            val distanceToCover = paneAnchorState.maxWidth - widthAtStart
             desiredPaneWidth = (backProgress * distanceToCover) + widthAtStart
         },
         onCancelled = {
+            paneAnchorState.hasInteractions = false
             started = false
         },
         onBack = {
+            paneAnchorState.hasInteractions = false
             started = false
         }
     )
 
     // Make sure desiredPaneWidth is synced with paneSplitState.width before the back gesture
-    LaunchedEffect(started, paneSplitState.width) {
+    LaunchedEffect(started, paneAnchorState.width) {
         if (started) return@LaunchedEffect
-        desiredPaneWidth = paneSplitState.width.toFloat()
+        desiredPaneWidth = paneAnchorState.width.toFloat()
     }
 
     // Dispatch changes as the user presses back
     LaunchedEffect(started, animatedDesiredPanelWidth) {
         if (!started) return@LaunchedEffect
-        paneSplitState.dispatch(delta = animatedDesiredPanelWidth - paneSplitState.width.toFloat())
+        paneAnchorState.dispatch(delta = animatedDesiredPanelWidth - paneAnchorState.width.toFloat())
     }
 
     // Fling to settle
     LaunchedEffect(started) {
         if (started) return@LaunchedEffect
-        paneSplitState.completeDispatch()
+        paneAnchorState.completeDispatch()
     }
 }
 

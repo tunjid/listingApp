@@ -123,7 +123,7 @@ fun ListingApp(
                                         when (paneState.pane) {
                                             ThreePane.Primary,
                                             ThreePane.Secondary,
-                                            ThreePane.Tertiary -> isActive
+                                            ThreePane.Tertiary -> !paneAnchorState.hasInteractions
 
                                             ThreePane.TransientPrimary,
                                             ThreePane.Overlay,
@@ -146,7 +146,9 @@ fun ListingApp(
                             modifier = modifier
                                 .fillMaxSize()
                                 .routePanePadding(
-                                    listingAppState.globalUi.uiChromeState
+                                    state = remember {
+                                        derivedStateOf { listingAppState.globalUi.uiChromeState }
+                                    }
                                 )
                                     then movableSharedElementHostState.modifier
                                     then sharedElementModifier,
