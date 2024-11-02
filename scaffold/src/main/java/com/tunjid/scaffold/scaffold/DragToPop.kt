@@ -29,7 +29,16 @@ fun Modifier.dragToPop(): Modifier {
         state.enabled = true
         onDispose { state.enabled = false }
     }
-    return this
+    // TODO: This should not be necessary. Figure out why a frame renders with
+    //  an offset of zero while the content in the transient primary container
+    //  is still visible.
+    val dragToDismissOffset by rememberUpdatedStateIf(
+        value = state.offset.round(),
+        predicate = {
+            it != IntOffset.Zero
+        }
+    )
+    return offset { dragToDismissOffset }
 }
 
 @Composable
@@ -37,28 +46,15 @@ internal fun PanedNavHostScope<ThreePane, Route>.DragToPopLayout(
     state: DragToDismissState,
     pane: ThreePane,
 ) {
+    // Only place the DragToDismiss Modifier on the Primary pane
     if (pane == ThreePane.Primary) {
         Box(
-            modifier = Modifier
-                .dragToPopInternal(state)
+            modifier = Modifier.dragToPopInternal(state)
         ) {
             Destination(pane)
         }
-        // TODO: This should not be necessary. Figure out why a frame renders with
-        //  an offset of zero while the content in the transient primary container
-        //  is still visible.
-        val dragToDismissOffset by rememberUpdatedStateIf(
-            value = state.offset.round(),
-            predicate = {
-                it != IntOffset.Zero || nodeFor(ThreePane.TransientPrimary) == null
-            }
-        )
-        Box(
-            modifier = Modifier
-                .offset { dragToDismissOffset }
-        ) {
-            Destination(ThreePane.TransientPrimary)
-        }
+        // Place the transient primary screen above  the primary
+        Destination(ThreePane.TransientPrimary)
     } else {
         Destination(pane)
     }
@@ -82,7 +78,7 @@ private fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
                 copy(backStatus = BackStatus.DragDismiss)
             }
         },
-        onReset = {
+        onCancelled = {
             // Dismiss back preview
             globalUiStateHolder.accept {
                 copy(backStatus = BackStatus.None)

@@ -15,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
@@ -39,7 +38,6 @@ import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingF
 import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.strings.Route
-import kotlin.math.roundToInt
 
 /**
  * Root scaffold for the app
@@ -63,6 +61,10 @@ fun ListingApp(
             orientation = Orientation.Horizontal,
             maxCount = paneRenderOrder.size,
             minSize = Dp.Hairline,
+            keyAtIndex = { index ->
+                val indexDiff = paneRenderOrder.size - visibleCount
+                paneRenderOrder[index + indexDiff]
+            }
         )
     }
     val density = LocalDensity.current
@@ -99,8 +101,8 @@ fun ListingApp(
                         state = listingAppState.rememberPanedNavHostState {
                             this
                                 .threePanedNavHostConfiguration(
-                                    windowWidthDpState = derivedStateOf {
-                                        splitLayoutState.size.value.roundToInt()
+                                    windowWidthState = derivedStateOf {
+                                        splitLayoutState.size
                                     }
                                 )
                                 .predictiveBackConfiguration(
@@ -127,7 +129,7 @@ fun ListingApp(
                                             ThreePane.Secondary,
                                             ThreePane.Tertiary -> !paneAnchorState.hasInteractions
 
-                                            ThreePane.TransientPrimary,
+                                            ThreePane.TransientPrimary -> true
                                             ThreePane.Overlay,
                                             null -> false
                                         }
@@ -146,13 +148,14 @@ fun ListingApp(
                             state = splitLayoutState,
                             modifier = modifier
                                 .fillMaxSize()
+                                .then(sharedElementModifier)
+                                .then(movableSharedElementHostState.modifier)
                                 .routePanePadding(
                                     state = remember {
                                         derivedStateOf { listingAppState.globalUi.uiChromeState }
                                     }
                                 )
-                                    then movableSharedElementHostState.modifier
-                                    then sharedElementModifier,
+                            ,
                             itemSeparators = { _, offset ->
                                 DraggableThumb(
                                     splitLayoutState = splitLayoutState,
