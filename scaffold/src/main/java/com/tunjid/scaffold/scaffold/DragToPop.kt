@@ -67,7 +67,7 @@ private fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
     val density = LocalDensity.current
     val dismissThreshold = remember { with(density) { 200.dp.toPx().let { it * it } } }
 
-    return this then Modifier.dragToDismiss(
+    return dragToDismiss(
         state = state,
         dragThresholdCheck = { offset, _ ->
             offset.getDistanceSquared() > dismissThreshold
