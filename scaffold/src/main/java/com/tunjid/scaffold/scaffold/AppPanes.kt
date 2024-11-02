@@ -163,6 +163,8 @@ internal class PaneAnchorState(
 
     companion object {
 
+        internal val MinPaneWidth = 1.dp
+
         @Composable
         internal fun DraggableThumb(
             splitLayoutState: SplitLayoutState,
@@ -176,6 +178,8 @@ internal class PaneAnchorState(
             val active = isHovered || isPressed || isDragged
 
             val thumbWidth by animateDpAsState(
+                label = "App Pane Draggable thumb",
+                targetValue =
                 if (active) DraggableDividerSizeDp
                 else when (paneAnchorState.targetPaneAnchor) {
                     PaneAnchor.Zero -> DraggableDividerSizeDp
@@ -223,17 +227,20 @@ internal class PaneAnchorState(
             }
 
             val density = LocalDensity.current
+
             LaunchedEffect(
                 paneAnchorState.width,
                 splitLayoutState.size,
                 splitLayoutState.weightSum,
                 density
             ) {
-                val percentage =
-                    (paneAnchorState.width.toFloat() / with(density) { splitLayoutState.size.roundToPx() })
-                val weight = percentage * splitLayoutState.weightSum
+                val fullWidthPx = with(density) { splitLayoutState.size.roundToPx() }
+                val percentage = paneAnchorState.width.toFloat() / fullWidthPx
+                val minPercentage = with(density) { MinPaneWidth.toPx() / fullWidthPx }
+                val weight = max(percentage, minPercentage) * splitLayoutState.weightSum
                 splitLayoutState.setWeightAt(index = 0, weight = weight)
             }
+
             LaunchedEffect(active) {
                 paneAnchorState.hasInteractions = active
             }

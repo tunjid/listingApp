@@ -76,7 +76,7 @@ internal fun Modifier.routePanePadding(
 internal fun Modifier.restrictedSizePlacement(
     atStart: Boolean
 ) = layout { measurable, constraints ->
-    val minPanWidth = MinPaneWidth.roundToPx()
+    val minPanWidth = MinPaneLayoutWidth.roundToPx()
     val actualConstraints = when {
         constraints.maxWidth < minPanWidth -> constraints.copy(maxWidth = minPanWidth)
         else -> constraints
@@ -93,7 +93,7 @@ internal fun Modifier.restrictedSizePlacement(
     }
 }
 
-private val MinPaneWidth = 120.dp
+private val MinPaneLayoutWidth = 120.dp
 
 private val PaneSizeSpring = spring(
     stiffness = Spring.StiffnessMediumLow,

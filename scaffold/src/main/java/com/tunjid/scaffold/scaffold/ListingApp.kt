@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
@@ -27,6 +26,7 @@ import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.DraggableThumb
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackConfiguration
 import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.PanedNavHost
@@ -60,7 +60,7 @@ fun ListingApp(
         SplitLayoutState(
             orientation = Orientation.Horizontal,
             maxCount = paneRenderOrder.size,
-            minSize = Dp.Hairline,
+            minSize = MinPaneWidth,
             keyAtIndex = { index ->
                 val indexDiff = paneRenderOrder.size - visibleCount
                 paneRenderOrder[index + indexDiff]
@@ -154,8 +154,7 @@ fun ListingApp(
                                     state = remember {
                                         derivedStateOf { listingAppState.globalUi.uiChromeState }
                                     }
-                                )
-                            ,
+                                ),
                             itemSeparators = { _, offset ->
                                 DraggableThumb(
                                     splitLayoutState = splitLayoutState,
