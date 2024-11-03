@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import com.tunjid.mutator.mutationOf
+import com.tunjid.scaffold.scaffold.LocalAppState
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 
@@ -15,14 +16,14 @@ import com.tunjid.treenav.compose.threepane.ThreePane
  */
 @Composable
 fun PaneScope<ThreePane, *>.ScreenUiState(state: UiState) {
-    val uiStateHolder = LocalGlobalUiStateHolder.current
+    val appState = LocalAppState.current
     val updatedState by rememberUpdatedState(state)
 
     val fabClickListener = MutableFunction(state.fabClickListener)
     val snackbarMessageConsumer = MutableFunction(state.snackbarMessageConsumer)
 
     LaunchedEffect(updatedState, paneState) {
-        if (paneState.pane == ThreePane.Primary && isActive) uiStateHolder.accept(
+        if (paneState.pane == ThreePane.Primary && isActive) appState.updateGlobalUi(
             mutationOf {
                 // Preserve things that should not be overwritten
                 updatedState.copy(

@@ -14,17 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
-import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.slices.bottomNavPositionalState
 import com.tunjid.scaffold.globalui.slices.fabState
 import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
 import com.tunjid.scaffold.globalui.slices.uiChromeState
-import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
-import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.DraggableThumb
 import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackConfiguration
@@ -47,8 +42,6 @@ import com.tunjid.treenav.strings.Route
 fun ListingApp(
     modifier: Modifier,
     listingAppState: ListingAppState,
-    navStateHolder: NavigationStateHolder,
-    globalUiStateHolder: GlobalUiStateHolder,
 ) {
     val paneRenderOrder = remember {
         listOf(
@@ -68,14 +61,8 @@ fun ListingApp(
         )
     }
     val density = LocalDensity.current
-    val paneAnchorState = remember { PaneAnchorState(density) }
-    val dragToDismissState = remember { DragToDismissState() }
-
     CompositionLocalProvider(
-        LocalGlobalUiStateHolder provides globalUiStateHolder,
-        LocalNavigationStateHolder provides navStateHolder,
-        LocalPaneAnchorState provides paneAnchorState,
-        LocalDragToDismissState provides dragToDismissState,
+        LocalAppState provides listingAppState,
     ) {
         Surface {
             Box(
@@ -127,7 +114,7 @@ fun ListingApp(
                                         when (paneState.pane) {
                                             ThreePane.Primary,
                                             ThreePane.Secondary,
-                                            ThreePane.Tertiary -> !paneAnchorState.hasInteractions
+                                            ThreePane.Tertiary -> !listingAppState.paneAnchorState.hasInteractions
 
                                             ThreePane.TransientPrimary -> true
                                             ThreePane.Overlay,
@@ -141,7 +128,7 @@ fun ListingApp(
                             derivedStateOf { paneRenderOrder.filter { nodeFor(it) != null } }
                         }
                         splitLayoutState.visibleCount = filteredOrder.size
-                        paneAnchorState.updateMaxWidth(
+                        listingAppState.paneAnchorState.updateMaxWidth(
                             with(density) { splitLayoutState.size.roundToPx() }
                         )
                         SplitLayout(
@@ -158,25 +145,25 @@ fun ListingApp(
                             itemSeparators = { _, offset ->
                                 DraggableThumb(
                                     splitLayoutState = splitLayoutState,
-                                    paneAnchorState = paneAnchorState,
+                                    paneAnchorState = listingAppState.paneAnchorState,
                                     offset = offset
                                 )
                             },
                             itemContent = { index ->
                                 DragToPopLayout(
-                                    state = dragToDismissState,
+                                    state = listingAppState,
                                     pane = filteredOrder[index]
                                 )
                             }
                         )
-                        LaunchedEffect(paneAnchorState.currentPaneAnchor) {
+                        LaunchedEffect(listingAppState.paneAnchorState.currentPaneAnchor) {
                             listingAppState.updateGlobalUi {
-                                copy(paneAnchor = paneAnchorState.currentPaneAnchor)
+                                copy(paneAnchor = listingAppState.paneAnchorState.currentPaneAnchor)
                             }
                         }
                         LaunchedEffect(filteredOrder) {
                             if (filteredOrder.size != 1) return@LaunchedEffect
-                            paneAnchorState.onClosed()
+                            listingAppState.paneAnchorState.onClosed()
                         }
                     }
                 }

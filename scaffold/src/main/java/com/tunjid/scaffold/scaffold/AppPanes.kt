@@ -35,7 +35,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -57,10 +56,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-
-internal val LocalPaneAnchorState = staticCompositionLocalOf<PaneAnchorState> {
-    TODO()
-}
 
 private val PaneSpring = adaptiveSpringSpec(
     visibilityThreshold = 0.1f
@@ -253,7 +248,7 @@ internal class PaneAnchorState(
  */
 @Composable
 fun SecondaryPaneCloseBackHandler(enabled: Boolean) {
-    val paneAnchorState = LocalPaneAnchorState.current
+    val paneAnchorState = LocalAppState.current.paneAnchorState
     var started by remember { mutableStateOf(false) }
     var widthAtStart by remember { mutableIntStateOf(0) }
     var desiredPaneWidth by remember { mutableFloatStateOf(0f) }

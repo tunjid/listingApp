@@ -42,8 +42,6 @@ class MainActivity : ComponentActivity() {
                     ListingApp(
                         modifier = Modifier,
                         listingAppState = listingApp.appState,
-                        navStateHolder = listingApp.navigationStateHolder,
-                        globalUiStateHolder = listingApp.globalUiStateHolder,
                     )
                 }
                 AdaptNavigation(globalUiStateHolder = listingApp.globalUiStateHolder)
