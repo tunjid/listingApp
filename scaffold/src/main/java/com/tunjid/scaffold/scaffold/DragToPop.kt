@@ -6,25 +6,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
-import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.dragtodismiss.dragToDismiss
 import com.tunjid.scaffold.globalui.BackStatus
-import com.tunjid.scaffold.globalui.LocalGlobalUiStateHolder
-import com.tunjid.scaffold.navigation.LocalNavigationStateHolder
 import com.tunjid.treenav.compose.PanedNavHostScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.Route
 
 @Composable
 fun Modifier.dragToPop(): Modifier {
-    val state = LocalDragToDismissState.current
+    val state = LocalAppState.current.dragToDismissState
     DisposableEffect(state) {
         state.enabled = true
         onDispose { state.enabled = false }
@@ -43,7 +38,7 @@ fun Modifier.dragToPop(): Modifier {
 
 @Composable
 internal fun PanedNavHostScope<ThreePane, Route>.DragToPopLayout(
-    state: DragToDismissState,
+    state: ListingAppState,
     pane: ThreePane,
 ) {
     // Only place the DragToDismiss Modifier on the Primary pane
@@ -61,42 +56,34 @@ internal fun PanedNavHostScope<ThreePane, Route>.DragToPopLayout(
 }
 
 @Composable
-private fun Modifier.dragToPopInternal(state: DragToDismissState): Modifier {
-    val globalUiStateHolder = LocalGlobalUiStateHolder.current
-    val navigationStateHolder = LocalNavigationStateHolder.current
+private fun Modifier.dragToPopInternal(state: ListingAppState): Modifier {
     val density = LocalDensity.current
     val dismissThreshold = remember { with(density) { 200.dp.toPx().let { it * it } } }
 
     return dragToDismiss(
-        state = state,
+        state = state.dragToDismissState,
         dragThresholdCheck = { offset, _ ->
             offset.getDistanceSquared() > dismissThreshold
         },
         // Enable back preview
         onStart = {
-            globalUiStateHolder.accept {
+            state.updateGlobalUi {
                 copy(backStatus = BackStatus.DragDismiss)
             }
         },
         onCancelled = {
             // Dismiss back preview
-            globalUiStateHolder.accept {
+            state.updateGlobalUi {
                 copy(backStatus = BackStatus.None)
             }
         },
         onDismissed = {
             // Dismiss back preview
-            globalUiStateHolder.accept {
+            state.updateGlobalUi {
                 copy(backStatus = BackStatus.None)
             }
             // Pop navigation
-            navigationStateHolder.accept {
-                navState.pop()
-            }
+            state.pop()
         }
     )
-}
-
-internal val LocalDragToDismissState = staticCompositionLocalOf {
-    DragToDismissState()
 }

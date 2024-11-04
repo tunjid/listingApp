@@ -7,6 +7,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.navigation.NavItem
@@ -21,6 +25,7 @@ import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.current
+import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteTrie
@@ -45,6 +50,10 @@ class ListingAppState @Inject constructor(
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
 
+    private var density = Density(1f)
+    internal val paneAnchorState by lazy { PaneAnchorState(density) }
+    internal val dragToDismissState = DragToDismissState()
+
     private val configurationTrie = RouteTrie<PaneStrategy<ThreePane, Route>>().apply {
         routeConfigurationMap
             .mapKeys { (template) -> PathPattern(template) }
@@ -65,10 +74,11 @@ class ListingAppState @Inject constructor(
     fun rememberPanedNavHostState(
         configurationBlock: PanedNavHostConfiguration<
                 ThreePane,
-                MultiStackNav, 
+                MultiStackNav,
                 Route
                 >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, Route>
     ): SavedStatePanedNavHostState<ThreePane, Route> {
+        LocalDensity.current.also { density = it }
         val adaptiveNavHostState = remember {
             SavedStatePanedNavHostState(
                 panes = ThreePane.entries.toList(),
@@ -100,4 +110,13 @@ class ListingAppState @Inject constructor(
     fun onNavItemSelected(navItem: NavItem) {
         navigationStateHolder.accept { navState.navItemSelected(item = navItem) }
     }
+
+    fun pop() =
+        navigationStateHolder.accept {
+            navState.pop()
+        }
+}
+
+internal val LocalAppState = staticCompositionLocalOf<ListingAppState> {
+    TODO()
 }

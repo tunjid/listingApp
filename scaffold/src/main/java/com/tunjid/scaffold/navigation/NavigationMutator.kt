@@ -33,10 +33,6 @@ import javax.inject.Singleton
 typealias NavigationStateHolder = ActionStateMutator<@JvmSuppressWildcards NavigationMutation, @JvmSuppressWildcards StateFlow<MultiStackNav>>
 typealias NavigationMutation = NavigationContext.() -> MultiStackNav
 
-internal val LocalNavigationStateHolder = staticCompositionLocalOf<NavigationStateHolder> {
-    throw IllegalStateException("No NavigationStateHolder provided ")
-}
-
 /**
  * An action that causes mutations to navigation
  */

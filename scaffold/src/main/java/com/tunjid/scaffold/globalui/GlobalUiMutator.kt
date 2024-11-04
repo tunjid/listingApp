@@ -1,10 +1,8 @@
 package com.tunjid.scaffold.globalui
 
-import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
-import com.tunjid.mutator.coroutines.asNoOpStateFlowMutator
 import com.tunjid.mutator.mutationOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -23,10 +21,6 @@ class ActualGlobalUiStateHolder @Inject constructor(
     initialState = UiState(),
     actionTransform = { it }
 )
-
-internal val LocalGlobalUiStateHolder = staticCompositionLocalOf {
-    UiState().asNoOpStateFlowMutator<Mutation<UiState>, UiState>()
-}
 
 fun <State : Any> StateFlow<UiState>.navBarSizeMutations(
     mutation: State.(navbarSize: Int) -> State
