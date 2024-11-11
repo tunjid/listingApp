@@ -2,6 +2,7 @@ package com.tunjid.scaffold.scaffold
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -18,6 +19,8 @@ import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.navItemSelected
 import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
+import com.tunjid.scaffold.savedstate.SavedState
+import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PaneStrategy
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
@@ -40,6 +43,7 @@ import javax.inject.Singleton
 @Singleton
 class ListingAppState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards PaneStrategy<ThreePane, Route>>,
+    private val savedStateRepository: SavedStateRepository,
     private val navigationStateHolder: NavigationStateHolder,
     private val globalUiStateHolder: GlobalUiStateHolder
 ) {
@@ -49,6 +53,7 @@ class ListingAppState @Inject constructor(
 
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
+    val navigation by multiStackNavState
 
     private var density = Density(1f)
     internal val paneAnchorState by lazy { PaneAnchorState(density) }
@@ -79,7 +84,7 @@ class ListingAppState @Inject constructor(
                 >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, Route>
     ): SavedStatePanedNavHostState<ThreePane, Route> {
         LocalDensity.current.also { density = it }
-        val adaptiveNavHostState = remember {
+        val panedNavHostState = remember {
             SavedStatePanedNavHostState(
                 panes = ThreePane.entries.toList(),
                 configuration = navHostConfiguration.configurationBlock(),
@@ -98,7 +103,10 @@ class ListingAppState @Inject constructor(
             }
             onDispose { job.cancel() }
         }
-        return adaptiveNavHostState
+        LaunchedEffect(multiStackNavState.value) {
+            savedStateRepository.saveState(multiStackNavState.value.toSavedState())
+        }
+        return panedNavHostState
     }
 
     fun updateGlobalUi(
@@ -120,3 +128,18 @@ class ListingAppState @Inject constructor(
 internal val LocalAppState = staticCompositionLocalOf<ListingAppState> {
     TODO()
 }
+
+private fun MultiStackNav.toSavedState() = SavedState(
+    isEmpty = false,
+    activeNav = currentIndex,
+    navigation = stacks.fold(listOf()) { listOfLists, stackNav ->
+        listOfLists.plus(
+            element = stackNav.children
+                .filterIsInstance<Route>()
+                .fold(listOf()) { stackList, route ->
+                    stackList + route.routeParams.pathAndQueries
+                }
+        )
+    },
+    routeStates = emptyMap()
+)
