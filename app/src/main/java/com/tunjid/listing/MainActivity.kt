@@ -5,22 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.listing.ui.theme.ListingAppTheme
-import com.tunjid.mutator.mutationOf
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.NavMode
+import com.tunjid.scaffold.globalui.PredictiveBackEffects
 import com.tunjid.scaffold.globalui.insetMutations
-import com.tunjid.scaffold.globalui.integrateBackActions
-import com.tunjid.scaffold.lifecycle.LocalLifecycleStateHolder
+import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.scaffold.ListingApp
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import com.tunjid.scaffold.scaffold.ListingAppState
+import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.strings.Route
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -28,47 +26,38 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val app = applicationContext as ListingApplication
         val listingApp = app.listingApp
-
-        integrateBackActions(
-            globalUiStateHolder = listingApp.globalUiStateHolder,
-            navStateHolder = listingApp.navigationStateHolder,
-        )
+        val appState = listingApp.appState
 
         setContent {
             ListingAppTheme {
-                CompositionLocalProvider(
-                    LocalLifecycleStateHolder provides listingApp.lifecycleStateHolder,
-                ) {
-                    ListingApp(
-                        modifier = Modifier,
-                        listingAppState = listingApp.appState,
-                    )
+                ListingApp(
+                    modifier = Modifier,
+                    listingAppState = appState,
+                )
+                AdaptNavigation(appState = appState)
+                PredictiveBackEffects(
+                    appState = appState,
+                )
+                LaunchedEffect(appState.globalUi.statusBarColor) {
+                    window.statusBarColor = appState.globalUi.statusBarColor
                 }
-                AdaptNavigation(globalUiStateHolder = listingApp.globalUiStateHolder)
+                LaunchedEffect(appState.globalUi.navBarColor) {
+                    window.navigationBarColor = appState.globalUi.navBarColor
+                }
             }
         }
-
         lifecycleScope.launch {
-            insetMutations().collect(listingApp.globalUiStateHolder.accept)
-        }
-        lifecycleScope.launch {
-            listingApp.globalUiStateHolder.state
-                .map { it.statusBarColor to it.navBarColor }
-                .distinctUntilChanged()
-                .collect { (statusBarColor, navBarColor) ->
-                    window.statusBarColor = statusBarColor
-                    window.navigationBarColor = navBarColor
-                }
+            insetMutations().collect(appState::updateGlobalUi)
         }
     }
 }
 
 @Composable
-private fun AdaptNavigation(globalUiStateHolder: GlobalUiStateHolder) {
+private fun AdaptNavigation(appState: ListingAppState) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     LaunchedEffect(windowSizeClass) {
-        globalUiStateHolder.accept(mutationOf {
+        appState.updateGlobalUi {
             copy(
                 windowSizeClass = windowSizeClass,
                 navMode = when (windowSizeClass.minWidthDp) {
@@ -76,6 +65,6 @@ private fun AdaptNavigation(globalUiStateHolder: GlobalUiStateHolder) {
                     else -> NavMode.BottomNav
                 }
             )
-        })
+        }
     }
 }

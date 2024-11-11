@@ -1,21 +1,13 @@
 package com.tunjid.scaffold.globalui
 
 import androidx.activity.BackEventCompat
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.scaffold.scaffold.ListingAppState
 import com.tunjid.treenav.pop
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectIndexed
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 interface BackStatus {
     data object None : BackStatus
@@ -60,50 +52,26 @@ internal fun BackEventCompat.toBackStatus() = PreviewBackStatus(
     isFromLeft = swipeEdge == BackEventCompat.EDGE_LEFT
 )
 
-fun ComponentActivity.integrateBackActions(
-    globalUiStateHolder: GlobalUiStateHolder,
-    navStateHolder: NavigationStateHolder,
+@Composable
+fun PredictiveBackEffects(
+    appState: ListingAppState,
 ) {
-    val backPressedCallback = BackPreviewBackPressedCallback(
-        globalUiStateHolder = globalUiStateHolder,
-        navStateHolder = navStateHolder
-    )
-    onBackPressedDispatcher.addCallback(backPressedCallback)
-
-    lifecycleScope.launch {
-        repeatOnLifecycle(Lifecycle.State.STARTED) {
-            navStateHolder.state.map { navState ->
-                // If the nav stack can be popped, then this callback is enabled
-                navState != navState.pop()
+    PredictiveBackHandler(
+        enabled = appState.navigation.let { it != it.pop() },
+        onBack = {
+            try {
+                it.collect { backEvent ->
+                    appState.updateGlobalUi { copy(backStatus = backEvent.toBackStatus()) }
+                }
+                // Dismiss back preview
+                appState.updateGlobalUi { copy(backStatus = BackStatus.None) }
+                // Pop navigation
+                appState.pop()
+            } catch (e: CancellationException) {
+                appState.updateGlobalUi { copy(backStatus = BackStatus.None) }
             }
-                .distinctUntilChanged()
-                .collect(backPressedCallback::isEnabled::set)
         }
-    }
-}
-
-private class BackPreviewBackPressedCallback(
-    private val globalUiStateHolder: GlobalUiStateHolder,
-    private val navStateHolder: NavigationStateHolder,
-) : OnBackPressedCallback(true) {
-    override fun handleOnBackProgressed(backEvent: BackEventCompat) {
-        globalUiStateHolder.accept { copy(backStatus = backEvent.toBackStatus()) }
-    }
-
-    override fun handleOnBackPressed() {
-        // Dismiss back preview
-        globalUiStateHolder.accept {
-            copy(backStatus = BackStatus.None)
-        }
-        // Pop navigation
-        navStateHolder.accept { navState.pop() }
-    }
-
-    override fun handleOnBackCancelled() {
-        globalUiStateHolder.accept {
-            copy(backStatus = BackStatus.None)
-        }
-    }
+    )
 }
 
 val BackStatus.touchX: Float

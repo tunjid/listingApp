@@ -10,9 +10,6 @@ import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.lifecycle.ActualLifecycleStateHolder
-import com.tunjid.scaffold.lifecycle.Lifecycle
-import com.tunjid.scaffold.lifecycle.LifecycleStateHolder
 import com.tunjid.scaffold.media.ExoPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -136,11 +133,6 @@ object ScaffoldModule {
     fun globalUiActions(
         globalUiStateHolder: GlobalUiStateHolder
     ): (Mutation<UiState>) -> Unit = globalUiStateHolder.accept
-
-    @Provides
-    fun lifecycleStateStream(
-        lifecycleStateHolder: LifecycleStateHolder
-    ): StateFlow<Lifecycle> = lifecycleStateHolder.state
 }
 
 @Module
@@ -165,11 +157,6 @@ interface ScaffoldBindModule {
     fun bindGlobalUiStateHolder(
         actualGlobalUiStateHolder: ActualGlobalUiStateHolder
     ): GlobalUiStateHolder
-
-    @Binds
-    fun bindLifecycleStateHolder(
-        actualLifecycleStateHolder: ActualLifecycleStateHolder
-    ): LifecycleStateHolder
 
     @Binds
     fun bindSavedStateRepository(

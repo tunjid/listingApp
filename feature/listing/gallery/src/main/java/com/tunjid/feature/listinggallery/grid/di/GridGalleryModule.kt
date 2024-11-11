@@ -2,6 +2,7 @@ package com.tunjid.feature.listinggallery.grid.di
 
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.listinggallery.grid.GridGalleryScreen
@@ -15,7 +16,6 @@ import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.lifecycle.collectAsStateWithLifecycle
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
