@@ -12,6 +12,7 @@ import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.dragToPop
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun FullscreenGalleryScreen(
@@ -30,22 +31,20 @@ fun FullscreenGalleryScreen(
         key = { index -> state.items[index].url }
     ) { index ->
         val item = state.items[index]
-        val thumbnail = movableSharedElementScope.movableSharedElementOf<PhotoArgs>(
-            thumbnailSharedElementKey(item.url)
-        ) { args, innerModifier ->
-            Photo(
-                modifier = innerModifier,
-                args = args
-            )
-        }
-
-        thumbnail(
-            PhotoArgs(
+        movableSharedElementScope.updatedMovableSharedElementOf(
+            key = thumbnailSharedElementKey(item.url),
+            state = PhotoArgs(
                 url = item.url,
                 contentScale = ContentScale.Fit
             ),
-            Modifier
+            modifier = Modifier
                 .fillMaxSize(),
+            sharedElement = { state, innerModifier ->
+                Photo(
+                    modifier = innerModifier,
+                    args = state
+                )
+            }
         )
     }
 

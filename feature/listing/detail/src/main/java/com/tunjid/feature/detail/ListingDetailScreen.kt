@@ -52,8 +52,9 @@ import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.SecondaryPaneCloseBackHandler
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun ListingDetailScreen(
@@ -142,21 +143,13 @@ private fun ListingMediaPager(
             key = { index -> listingItems[index].url }
         ) { index ->
             val item = listingItems[index]
-            val thumbnail = movableSharedElementScope.movableSharedElementOf<PhotoArgs>(
-                thumbnailSharedElementKey(item.url)
-            ) { args, innerModifier ->
-                Photo(
-                    modifier = innerModifier,
-                    args = args
-                )
-            }
-
-            thumbnail(
-                PhotoArgs(
+            movableSharedElementScope.updatedMovableSharedElementOf(
+                key = thumbnailSharedElementKey(item.url),
+                state = PhotoArgs(
                     url = item.url,
                     contentScale = ContentScale.Crop
                 ),
-                Modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .clickable {
                         if (listingId != null) actions(
@@ -166,6 +159,12 @@ private fun ListingMediaPager(
                             )
                         )
                     },
+                sharedElement = { state, innerModifier ->
+                    Photo(
+                        modifier = innerModifier,
+                        args = state
+                    )
+                }
             )
         }
         if (listingItems.isNotEmpty() && totalItemCount != null) PageIndicator(

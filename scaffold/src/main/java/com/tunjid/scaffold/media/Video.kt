@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
-import com.tunjid.composables.ui.interpolate
+import com.tunjid.composables.ui.animate
 import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
@@ -52,8 +52,8 @@ private fun VideoPlayer(
     modifier: Modifier = Modifier,
 ) {
     val graphicsLayer = rememberGraphicsLayer()
-    val alignment = state.alignment.interpolate()
-    val contentScale = state.contentScale.interpolate()
+    val alignment = state.alignment.animate()
+    val contentScale = state.contentScale.animate()
 
     Box(modifier = modifier) {
         // Note its important the embedded Surface is removed from the composition when it is scrolled
