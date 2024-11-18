@@ -1,5 +1,6 @@
 package com.tunjid.explore.grid
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -84,18 +86,10 @@ fun ExploreGridScreen(
                             .aspectRatio(9f / 16)
                             .animateItem()
                     ) {
-                        val video = movableSharedElementScope.movableSharedElementOf<VideoState>(
+                        movableSharedElementScope.updatedMovableSharedElementOf(
                             key = thumbnailSharedElementKey(item.state.url),
-                            sharedElement = { videoState, innerModifier ->
-                                Video(
-                                    state = videoState,
-                                    modifier = innerModifier
-                                )
-                            }
-                        )
-                        video(
-                            item.state,
-                            Modifier
+                            state = item.state,
+                            modifier = Modifier
                                 .aspectRatio(9f / 16)
                                 .clip(RoundedCornerShape(16.dp))
                                 .clickable {
@@ -107,7 +101,22 @@ fun ExploreGridScreen(
                                             urls = updatedItems.map { it.state.url }
                                         )
                                     )
+                                },
+                            alternateOutgoingSharedElement = { videoState, innerModifier ->
+                                videoState.videoStill?.let {
+                                    Image(
+                                        bitmap = it,
+                                        modifier = innerModifier,
+                                        contentDescription = null,
+                                    )
                                 }
+                            },
+                            sharedElement = { videoState, innerModifier ->
+                                Video(
+                                    state = videoState,
+                                    modifier = innerModifier
+                                )
+                            }
                         )
                     }
                 }

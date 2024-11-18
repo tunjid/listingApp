@@ -67,8 +67,9 @@ import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import com.tunjid.ui.FastScrollbar
 import kotlinx.coroutines.flow.first
 
@@ -275,20 +276,13 @@ private fun FeedMediaPager(
         key = { index -> feedItem.media[index].url }
     ) { index ->
         val media = feedItem.media[index]
-        val thumbnail = movableSharedElementScope.movableSharedElementOf<PhotoArgs>(
-            thumbnailSharedElementKey(media.url)
-        ) { args, innerModifier ->
-            Photo(
-                modifier = innerModifier,
-                args = args
-            )
-        }
-        thumbnail(
-            PhotoArgs(
+        movableSharedElementScope.updatedMovableSharedElementOf(
+            key = thumbnailSharedElementKey(media.url),
+            state = PhotoArgs(
                 url = media.url,
                 contentScale = ContentScale.Crop
             ),
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .clickable {
                     if (feedItem is FeedItem.Loaded) actions(
@@ -298,6 +292,12 @@ private fun FeedMediaPager(
                         )
                     )
                 },
+            sharedElement = { state, innerModifier ->
+                Photo(
+                    modifier = innerModifier,
+                    args = state
+                )
+            }
         )
     }
 }

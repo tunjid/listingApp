@@ -33,8 +33,9 @@ import com.tunjid.listing.feature.listing.gallery.R
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun GridGalleryScreen(
@@ -90,21 +91,13 @@ fun GridGalleryScreen(
                     Box(
                         modifier = Modifier.aspectRatio(1f)
                     ) {
-                        val thumbnail = movableSharedElementScope.movableSharedElementOf<PhotoArgs>(
-                            thumbnailSharedElementKey(item.url)
-                        ) { args, innerModifier ->
-                            Photo(
-                                modifier = innerModifier,
-                                args = args
-                            )
-                        }
-
-                        thumbnail(
-                            PhotoArgs(
+                        movableSharedElementScope.updatedMovableSharedElementOf(
+                            key = thumbnailSharedElementKey(item.url),
+                            state = PhotoArgs(
                                 url = item.url,
                                 contentScale = ContentScale.Crop
                             ),
-                            Modifier
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
                                 .clickable {
@@ -115,6 +108,12 @@ fun GridGalleryScreen(
                                         )
                                     )
                                 },
+                            sharedElement = { state, innerModifier ->
+                                Photo(
+                                    modifier = innerModifier,
+                                    args = state
+                                )
+                            }
                         )
                     }
                 }

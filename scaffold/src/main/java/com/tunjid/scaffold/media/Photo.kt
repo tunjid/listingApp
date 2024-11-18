@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
-import com.tunjid.composables.ui.interpolate
+import com.tunjid.composables.ui.animate
 
 
 @Composable
@@ -26,7 +26,7 @@ fun Photo(
                 modifier = Modifier.fillMaxSize(),
                 model = url,
                 contentDescription = null,
-                contentScale = args.contentScale.interpolate()
+                contentScale = args.contentScale.animate()
             )
         }
     }

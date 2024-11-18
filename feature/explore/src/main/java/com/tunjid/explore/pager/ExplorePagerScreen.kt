@@ -2,6 +2,7 @@ package com.tunjid.explore.pager
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -28,9 +29,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.min
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Video
-import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.scaffold.dragToPop
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun FullscreenGalleryScreen(
@@ -124,23 +125,30 @@ private fun DebugVideo(
             val transformableState = rememberTransformableState { _, offsetChange, _ ->
                 transformOffset = offsetChange
             }
-            val video = movableSharedElementScope.movableSharedElementOf<VideoState>(
+            movableSharedElementScope.updatedMovableSharedElementOf(
                 key = thumbnailSharedElementKey(item.state.url),
-                sharedElement = { videoState, innerModifier ->
-                    Video(
-                        state = videoState,
-                        modifier = innerModifier
-                    )
-                }
-            )
-            video(
-                item.state,
-                Modifier
+                state = item.state,
+                modifier = Modifier
                     .fillMaxSize()
                     .transformable(
                         state = transformableState,
                         enabled = isDebugging
                     ),
+                alternateOutgoingSharedElement = { videoState, innerModifier ->
+                    videoState.videoStill?.let {
+                        Image(
+                            bitmap = it,
+                            modifier = innerModifier,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                sharedElement = { state, innerModifier ->
+                    Video(
+                        modifier = innerModifier,
+                        state = state
+                    )
+                }
             )
             Box(
                 modifier = Modifier
