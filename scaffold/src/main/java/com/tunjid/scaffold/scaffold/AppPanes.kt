@@ -51,7 +51,6 @@ import com.tunjid.scaffold.adaptiveSpringSpec
 import com.tunjid.scaffold.globalui.BackHandler
 import com.tunjid.scaffold.globalui.EXPANDED
 import com.tunjid.scaffold.globalui.PaneAnchor
-import com.tunjid.scaffold.globalui.progress
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
@@ -264,10 +263,9 @@ fun SecondaryPaneCloseBackHandler(enabled: Boolean) {
             widthAtStart = paneAnchorState.width
             started = true
         },
-        onProgressed = { backStatus ->
-            val backProgress = backStatus.progress
+        onProgressed = { progress ->
             val distanceToCover = paneAnchorState.maxWidth - widthAtStart
-            desiredPaneWidth = (backProgress * distanceToCover) + widthAtStart
+            desiredPaneWidth = (progress * distanceToCover) + widthAtStart
         },
         onCancelled = {
             paneAnchorState.hasInteractions = false

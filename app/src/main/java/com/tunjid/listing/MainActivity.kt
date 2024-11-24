@@ -14,11 +14,8 @@ import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.NavMode
 import com.tunjid.scaffold.globalui.PredictiveBackEffects
 import com.tunjid.scaffold.globalui.insetMutations
-import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.scaffold.ListingApp
-import com.tunjid.scaffold.scaffold.ListingAppState
-import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.strings.Route
+import com.tunjid.scaffold.scaffold.AppState
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -32,7 +29,7 @@ class MainActivity : ComponentActivity() {
             ListingAppTheme {
                 ListingApp(
                     modifier = Modifier,
-                    listingAppState = appState,
+                    appState = appState,
                 )
                 AdaptNavigation(appState = appState)
                 PredictiveBackEffects(
@@ -53,7 +50,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun AdaptNavigation(appState: ListingAppState) {
+private fun AdaptNavigation(appState: AppState) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     LaunchedEffect(windowSizeClass) {

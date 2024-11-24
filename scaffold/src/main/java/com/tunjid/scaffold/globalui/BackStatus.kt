@@ -3,30 +3,20 @@ package com.tunjid.scaffold.globalui
 import androidx.activity.BackEventCompat
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.runtime.Composable
-import com.tunjid.scaffold.scaffold.ListingAppState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.round
+import com.tunjid.scaffold.scaffold.AppState
 import com.tunjid.treenav.pop
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectIndexed
 
-interface BackStatus {
-    data object None : BackStatus
-    data object DragDismiss : BackStatus
-}
-
-data class PreviewBackStatus(
-    val touchX: Float,
-    val touchY: Float,
-    val progress: Float,
-    val isFromLeft: Boolean,
-    val isPreviewing: Boolean,
-) : BackStatus
-
 @Composable
 fun BackHandler(
     enabled: Boolean,
     onStarted: () -> Unit,
-    onProgressed: (BackStatus) -> Unit,
+    onProgressed: (progress: Float) -> Unit,
     onCancelled: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -34,8 +24,7 @@ fun BackHandler(
         try {
             progress.collectIndexed { index, backEvent ->
                 if (index == 0) onStarted()
-                val backStatus = backEvent.toBackStatus()
-                onProgressed(backStatus)
+                onProgressed(backEvent.progress)
             }
             onBack()
         } catch (e: CancellationException) {
@@ -44,56 +33,37 @@ fun BackHandler(
     }
 }
 
-internal fun BackEventCompat.toBackStatus() = PreviewBackStatus(
-    touchX = touchX,
-    touchY = touchY,
-    progress = progress,
-    isPreviewing = progress > Float.MIN_VALUE,
-    isFromLeft = swipeEdge == BackEventCompat.EDGE_LEFT
-)
-
 @Composable
 fun PredictiveBackEffects(
-    appState: ListingAppState,
+    appState: AppState,
 ) {
     PredictiveBackHandler(
         enabled = appState.navigation.let { it != it.pop() },
         onBack = {
             try {
                 it.collect { backEvent ->
-                    appState.updateGlobalUi { copy(backStatus = backEvent.toBackStatus()) }
+                    appState.backPreviewState.apply {
+                        atStart = backEvent.swipeEdge == BackEventCompat.EDGE_LEFT
+                        progress = backEvent.progress
+                        pointerOffset = Offset(
+                            x = backEvent.touchX,
+                            y = backEvent.touchY
+                        ).round()
+                    }
                 }
                 // Dismiss back preview
-                appState.updateGlobalUi { copy(backStatus = BackStatus.None) }
+                appState.backPreviewState.apply {
+                    progress = Float.NaN
+                    pointerOffset = IntOffset.Zero
+                }
                 // Pop navigation
                 appState.pop()
             } catch (e: CancellationException) {
-                appState.updateGlobalUi { copy(backStatus = BackStatus.None) }
+                appState.backPreviewState.apply {
+                    progress = Float.NaN
+                    pointerOffset = IntOffset.Zero
+                }
             }
         }
     )
 }
-
-val BackStatus.touchX: Float
-    get() =
-        if (this is PreviewBackStatus) touchX else 0F
-
-val BackStatus.touchY: Float
-    get() =
-        if (this is PreviewBackStatus) touchY else 0F
-
-val BackStatus.progress: Float
-    get() =
-        if (this is PreviewBackStatus) progress else 0F
-
-val BackStatus.isFromLeft: Boolean
-    get() =
-        if (this is PreviewBackStatus) isFromLeft else false
-
-val BackStatus.isPreviewing: Boolean
-    get() =
-        when (this) {
-            is PreviewBackStatus -> isPreviewing
-            is BackStatus.DragDismiss -> true
-            else -> false
-        }

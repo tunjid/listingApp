@@ -5,7 +5,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.VideoFrameDecoder
 import com.tunjid.listing.workmanager.initializers.Sync
-import com.tunjid.scaffold.scaffold.ListingAppState
+import com.tunjid.scaffold.scaffold.AppState
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -39,12 +39,12 @@ class ListingApplication : Application(), ImageLoaderFactory {
 }
 
 interface ListingApp {
-    val appState: ListingAppState
+    val appState: AppState
 }
 
 @Singleton
 class PersistedListingApp @Inject constructor(
-    override val appState: ListingAppState,
+    override val appState: AppState,
 ) : ListingApp
 
 
