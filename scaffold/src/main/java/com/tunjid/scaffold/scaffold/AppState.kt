@@ -1,5 +1,6 @@
 package com.tunjid.scaffold.scaffold
 
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -11,7 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import com.tunjid.composables.dragtodismiss.DragToDismissState
+import com.tunjid.composables.backpreview.BackPreviewState
+import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.navigation.NavItem
@@ -21,12 +23,14 @@ import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PanedNavHostScope
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.PathPattern
@@ -41,23 +45,48 @@ import javax.inject.Singleton
 
 @Stable
 @Singleton
-class ListingAppState @Inject constructor(
+class AppState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards PaneStrategy<ThreePane, Route>>,
     private val savedStateRepository: SavedStateRepository,
     private val navigationStateHolder: NavigationStateHolder,
     private val globalUiStateHolder: GlobalUiStateHolder
 ) {
 
+    private var density = Density(1f)
     private val multiStackNavState = mutableStateOf(navigationStateHolder.state.value)
     private val uiState = mutableStateOf(globalUiStateHolder.state.value)
+    private val paneRenderOrder = listOf(
+        ThreePane.Secondary,
+        ThreePane.Primary,
+    )
 
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
     val navigation by multiStackNavState
+    val backPreviewState = BackPreviewState()
+    val splitLayoutState = SplitLayoutState(
+        orientation = Orientation.Horizontal,
+        maxCount = paneRenderOrder.size,
+        minSize = MinPaneWidth,
+        keyAtIndex = { index ->
+            val indexDiff = paneRenderOrder.size - visibleCount
+            paneRenderOrder[index + indexDiff]
+        }
+    )
 
-    private var density = Density(1f)
     internal val paneAnchorState by lazy { PaneAnchorState(density) }
-    internal val dragToDismissState = DragToDismissState()
+    internal val dragToPopState = DragToPopState()
+
+    internal val isPreviewingBack
+        get() = !backPreviewState.progress.isNaN()
+                || dragToPopState.isDraggingToPop
+
+    fun filteredPaneOrder(
+        panedNavHostScope: PanedNavHostScope<ThreePane, Route>
+    ): List<ThreePane> {
+        val order = paneRenderOrder.filter { panedNavHostScope.nodeFor(it) != null }
+        return order
+    }
 
     private val configurationTrie = RouteTrie<PaneStrategy<ThreePane, Route>>().apply {
         routeConfigurationMap
@@ -125,7 +154,7 @@ class ListingAppState @Inject constructor(
         }
 }
 
-internal val LocalAppState = staticCompositionLocalOf<ListingAppState> {
+internal val LocalAppState = staticCompositionLocalOf<AppState> {
     TODO()
 }
 

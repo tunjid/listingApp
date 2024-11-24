@@ -17,7 +17,7 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
-import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -84,7 +84,7 @@ object GridGalleryModule {
             )
         )
         GridGalleryScreen(
-            movableSharedElementScope = movableSharedElementScope(),
+            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
             modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             actions = viewModel.accept
