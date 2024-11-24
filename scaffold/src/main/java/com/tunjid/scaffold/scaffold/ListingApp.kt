@@ -129,10 +129,10 @@ fun ListingApp(
                                 )
                         },
                     ) {
-                        val filteredOrder by remember {
-                            derivedStateOf { appState.paneRenderOrder.filter { nodeFor(it) != null } }
+                        val filteredPaneOrder by remember {
+                            derivedStateOf { appState.filteredPaneOrder(this) }
                         }
-                        appState.splitLayoutState.visibleCount = filteredOrder.size
+                        appState.splitLayoutState.visibleCount = filteredPaneOrder.size
                         appState.paneAnchorState.updateMaxWidth(
                             with(density) { appState.splitLayoutState.size.roundToPx() }
                         )
@@ -156,7 +156,7 @@ fun ListingApp(
                             itemContent = { index ->
                                 DragToPopLayout(
                                     state = appState,
-                                    pane = filteredOrder[index]
+                                    pane = filteredPaneOrder[index]
                                 )
                             }
                         )
@@ -165,8 +165,8 @@ fun ListingApp(
                                 copy(paneAnchor = appState.paneAnchorState.currentPaneAnchor)
                             }
                         }
-                        LaunchedEffect(filteredOrder) {
-                            if (filteredOrder.size != 1) return@LaunchedEffect
+                        LaunchedEffect(filteredPaneOrder) {
+                            if (filteredPaneOrder.size != 1) return@LaunchedEffect
                             appState.paneAnchorState.onClosed()
                         }
                     }

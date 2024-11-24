@@ -30,6 +30,7 @@ import com.tunjid.treenav.compose.SavedStatePanedNavHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PanedNavHostScope
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.PathPattern
@@ -51,16 +52,18 @@ class AppState @Inject constructor(
     private val globalUiStateHolder: GlobalUiStateHolder
 ) {
 
+    private var density = Density(1f)
     private val multiStackNavState = mutableStateOf(navigationStateHolder.state.value)
     private val uiState = mutableStateOf(globalUiStateHolder.state.value)
+    private val paneRenderOrder = listOf(
+        ThreePane.Secondary,
+        ThreePane.Primary,
+    )
 
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
     val navigation by multiStackNavState
-    val paneRenderOrder = listOf(
-        ThreePane.Secondary,
-        ThreePane.Primary,
-    )
+    val backPreviewState = BackPreviewState()
     val splitLayoutState = SplitLayoutState(
         orientation = Orientation.Horizontal,
         maxCount = paneRenderOrder.size,
@@ -70,15 +73,20 @@ class AppState @Inject constructor(
             paneRenderOrder[index + indexDiff]
         }
     )
-    val backPreviewState = BackPreviewState()
 
-    private var density = Density(1f)
     internal val paneAnchorState by lazy { PaneAnchorState(density) }
     internal val dragToPopState = DragToPopState()
 
     internal val isPreviewingBack
         get() = !backPreviewState.progress.isNaN()
                 || dragToPopState.isDraggingToPop
+
+    fun filteredPaneOrder(
+        panedNavHostScope: PanedNavHostScope<ThreePane, Route>
+    ): List<ThreePane> {
+        val order = paneRenderOrder.filter { panedNavHostScope.nodeFor(it) != null }
+        return order
+    }
 
     private val configurationTrie = RouteTrie<PaneStrategy<ThreePane, Route>>().apply {
         routeConfigurationMap
