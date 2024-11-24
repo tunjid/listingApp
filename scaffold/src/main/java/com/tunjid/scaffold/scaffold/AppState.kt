@@ -1,5 +1,6 @@
 package com.tunjid.scaffold.scaffold
 
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +13,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.tunjid.composables.backpreview.BackPreviewState
+import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.navigation.NavItem
@@ -21,6 +23,7 @@ import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.scaffold.navigation.unknownRoute
 import com.tunjid.scaffold.savedstate.SavedState
 import com.tunjid.scaffold.savedstate.SavedStateRepository
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PaneStrategy
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
@@ -54,14 +57,28 @@ class AppState @Inject constructor(
     val navItems by derivedStateOf { multiStackNavState.value.navItems }
     val globalUi by uiState
     val navigation by multiStackNavState
+    val paneRenderOrder = listOf(
+        ThreePane.Secondary,
+        ThreePane.Primary,
+    )
+    val splitLayoutState = SplitLayoutState(
+        orientation = Orientation.Horizontal,
+        maxCount = paneRenderOrder.size,
+        minSize = MinPaneWidth,
+        keyAtIndex = { index ->
+            val indexDiff = paneRenderOrder.size - visibleCount
+            paneRenderOrder[index + indexDiff]
+        }
+    )
     val backPreviewState = BackPreviewState()
 
     private var density = Density(1f)
     internal val paneAnchorState by lazy { PaneAnchorState(density) }
     internal val dragToPopState = DragToPopState()
 
-    internal val isPreviewingBack get() = !backPreviewState.progress.isNaN()
-            || dragToPopState.isDraggingToPop
+    internal val isPreviewingBack
+        get() = !backPreviewState.progress.isNaN()
+                || dragToPopState.isDraggingToPop
 
     private val configurationTrie = RouteTrie<PaneStrategy<ThreePane, Route>>().apply {
         routeConfigurationMap

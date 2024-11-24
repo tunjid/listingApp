@@ -22,14 +22,12 @@ import androidx.compose.ui.unit.dp
 import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.constrainedsize.constrainedSizePlacement
 import com.tunjid.composables.splitlayout.SplitLayout
-import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.composables.ui.skipIf
 import com.tunjid.scaffold.globalui.slices.bottomNavPositionalState
 import com.tunjid.scaffold.globalui.slices.fabState
 import com.tunjid.scaffold.globalui.slices.snackbarPositionalState
 import com.tunjid.scaffold.globalui.slices.uiChromeState
 import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.DraggableThumb
-import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.configurations.animatePaneBoundsConfiguration
@@ -51,23 +49,6 @@ fun ListingApp(
     modifier: Modifier,
     appState: AppState,
 ) {
-    val paneRenderOrder = remember {
-        listOf(
-            ThreePane.Secondary,
-            ThreePane.Primary,
-        )
-    }
-    val splitLayoutState = remember {
-        SplitLayoutState(
-            orientation = Orientation.Horizontal,
-            maxCount = paneRenderOrder.size,
-            minSize = MinPaneWidth,
-            keyAtIndex = { index ->
-                val indexDiff = paneRenderOrder.size - visibleCount
-                paneRenderOrder[index + indexDiff]
-            }
-        )
-    }
     val density = LocalDensity.current
     CompositionLocalProvider(
         LocalAppState provides appState,
@@ -96,7 +77,7 @@ fun ListingApp(
                             this
                                 .threePanedNavHostConfiguration(
                                     windowWidthState = derivedStateOf {
-                                        splitLayoutState.size
+                                        appState.splitLayoutState.size
                                     }
                                 )
                                 .predictiveBackConfiguration(
@@ -117,7 +98,9 @@ fun ListingApp(
                                             atStart = paneState.pane == ThreePane.Secondary,
                                         )
                                         .padding(
-                                            horizontal = if (splitLayoutState.visibleCount > 1) 16.dp else 0.dp
+                                            horizontal =
+                                            if (appState.splitLayoutState.visibleCount > 1) 16.dp
+                                            else 0.dp
                                         )
                                         .run {
                                             if (paneState.pane == ThreePane.TransientPrimary) backPreview(
@@ -147,14 +130,14 @@ fun ListingApp(
                         },
                     ) {
                         val filteredOrder by remember {
-                            derivedStateOf { paneRenderOrder.filter { nodeFor(it) != null } }
+                            derivedStateOf { appState.paneRenderOrder.filter { nodeFor(it) != null } }
                         }
-                        splitLayoutState.visibleCount = filteredOrder.size
+                        appState.splitLayoutState.visibleCount = filteredOrder.size
                         appState.paneAnchorState.updateMaxWidth(
-                            with(density) { splitLayoutState.size.roundToPx() }
+                            with(density) { appState.splitLayoutState.size.roundToPx() }
                         )
                         SplitLayout(
-                            state = splitLayoutState,
+                            state = appState.splitLayoutState,
                             modifier = modifier
                                 .fillMaxSize()
                                 .then(sharedElementModifier)
@@ -165,7 +148,7 @@ fun ListingApp(
                                 ),
                             itemSeparators = { _, offset ->
                                 DraggableThumb(
-                                    splitLayoutState = splitLayoutState,
+                                    splitLayoutState = appState.splitLayoutState,
                                     paneAnchorState = appState.paneAnchorState,
                                     offset = offset
                                 )
