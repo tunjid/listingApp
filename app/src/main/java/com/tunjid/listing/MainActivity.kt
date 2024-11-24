@@ -14,8 +14,8 @@ import com.tunjid.scaffold.globalui.MEDIUM
 import com.tunjid.scaffold.globalui.NavMode
 import com.tunjid.scaffold.globalui.PredictiveBackEffects
 import com.tunjid.scaffold.globalui.insetMutations
-import com.tunjid.scaffold.scaffold.ListingApp
 import com.tunjid.scaffold.scaffold.AppState
+import com.tunjid.scaffold.scaffold.ListingApp
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

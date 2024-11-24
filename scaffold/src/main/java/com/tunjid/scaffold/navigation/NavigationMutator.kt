@@ -1,6 +1,5 @@
 package com.tunjid.scaffold.navigation
 
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation

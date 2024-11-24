@@ -10,8 +10,8 @@ import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.dragToPop
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.tiler.compose.PivotedTilingEffect
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable

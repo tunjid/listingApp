@@ -26,11 +26,11 @@ import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PanedNavHostScope
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.PanedNavHostScope
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.strings.PathPattern
