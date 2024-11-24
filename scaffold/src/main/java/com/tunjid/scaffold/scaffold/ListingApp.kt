@@ -49,7 +49,6 @@ fun ListingApp(
     modifier: Modifier,
     appState: AppState,
 ) {
-    val density = LocalDensity.current
     CompositionLocalProvider(
         LocalAppState provides appState,
     ) {
@@ -134,7 +133,7 @@ fun ListingApp(
                         }
                         appState.splitLayoutState.visibleCount = filteredPaneOrder.size
                         appState.paneAnchorState.updateMaxWidth(
-                            with(density) { appState.splitLayoutState.size.roundToPx() }
+                            with(LocalDensity.current) { appState.splitLayoutState.size.roundToPx() }
                         )
                         SplitLayout(
                             state = appState.splitLayoutState,
