@@ -16,7 +16,6 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.ThreePane
@@ -96,13 +95,13 @@ object ListingDetailModule {
                     route = route,
                 )
             }
-            ScreenUiState(
-                UiState(
-                    navVisibility = NavVisibility.Gone,
-                    insetFlags = InsetFlags.NONE,
-                    statusBarColor = Color.Black.copy(alpha = 0.4f).toArgb()
-                )
-            )
+//            ScreenUiState(
+//                UiState(
+//                    navVisibility = NavVisibility.Gone,
+//                    insetFlags = InsetFlags.NONE,
+//                    statusBarColor = Color.Black.copy(alpha = 0.4f).toArgb()
+//                )
+//            )
             ListingDetailScreen(
                 movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
                 modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),

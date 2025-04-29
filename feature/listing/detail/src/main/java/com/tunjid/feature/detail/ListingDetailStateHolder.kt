@@ -55,7 +55,6 @@ class ListingDetailViewModel @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
-    uiStateFlow: StateFlow<UiState>,
     navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
@@ -66,7 +65,6 @@ class ListingDetailViewModel @AssistedInject constructor(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     userRepository = userRepository,
-    uiStateFlow = uiStateFlow,
     navStateFlow = navStateFlow,
     navigationActions = navigationActions,
     route = route
@@ -76,7 +74,6 @@ private fun CoroutineScope.listingDetailMutator(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
-    uiStateFlow: StateFlow<UiState>,
     navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
@@ -98,7 +95,6 @@ private fun CoroutineScope.listingDetailMutator(
             route = route,
             mutation = { copy(isInPrimaryNav = it) }
         ),
-        uiStateFlow.paneMutations()
     ),
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {

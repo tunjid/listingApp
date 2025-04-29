@@ -14,7 +14,6 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
@@ -75,13 +74,13 @@ object PagerGalleryModule {
                 route = route,
             )
         }
-        ScreenUiState(
-            UiState(
-                fabShows = false,
-                navVisibility = NavVisibility.Gone,
-                insetFlags = InsetFlags.NONE
-            )
-        )
+//        ScreenUiState(
+//            UiState(
+//                fabShows = false,
+//                navVisibility = NavVisibility.Gone,
+//                insetFlags = InsetFlags.NONE
+//            )
+//        )
         FullscreenGalleryScreen(
             movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
             modifier = Modifier,

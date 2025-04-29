@@ -42,16 +42,16 @@ include(":data:model:user:database")
 include(":data:network")
 
 include(":feature:listing:feed")
-//include(":feature:listing:detail")
-//include(":feature:listing:gallery")
-//
-//include(":feature:profile")
-//
-//include(":feature:favorites")
-//
-//include(":feature:messages")
-//
-//include(':feature:explore')
+include(":feature:listing:detail")
+include(":feature:listing:gallery")
+
+include(":feature:profile")
+
+include(":feature:favorites")
+
+include(":feature:messages")
+
+include(':feature:explore')
 
 include(":data:sync")
 include(":data:test")
