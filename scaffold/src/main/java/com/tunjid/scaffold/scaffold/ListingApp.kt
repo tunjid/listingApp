@@ -159,11 +159,6 @@ fun ListingApp(
                                 )
                             }
                         )
-                        LaunchedEffect(appState.paneAnchorState.currentPaneAnchor) {
-                            appState.updateGlobalUi {
-                                copy(paneAnchor = appState.paneAnchorState.currentPaneAnchor)
-                            }
-                        }
                         LaunchedEffect(filteredPaneOrder) {
                             if (filteredPaneOrder.size != 1) return@LaunchedEffect
                             appState.paneAnchorState.onClosed()
@@ -196,7 +191,6 @@ fun ListingApp(
                         appState.globalUi.snackbarMessageConsumer(message)
                     },
                     onSnackbarOffsetChanged = { offset ->
-                        appState.updateGlobalUi { copy(snackbarOffset = offset) }
                     },
                 )
             }

@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.tunjid.composables.backpreview.BackPreviewState
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.navigation.NavItem
 import com.tunjid.scaffold.navigation.NavigationStateHolder
@@ -38,7 +37,6 @@ import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteTrie
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -49,12 +47,11 @@ class AppState @Inject constructor(
     private val routeConfigurationMap: Map<String, @JvmSuppressWildcards PaneStrategy<ThreePane, Route>>,
     private val savedStateRepository: SavedStateRepository,
     private val navigationStateHolder: NavigationStateHolder,
-    private val globalUiStateHolder: GlobalUiStateHolder
 ) {
 
     private var density = Density(1f)
     private val multiStackNavState = mutableStateOf(navigationStateHolder.state.value)
-    private val uiState = mutableStateOf(globalUiStateHolder.state.value)
+    private val uiState = mutableStateOf(UiState())
     private val paneRenderOrder = listOf(
         ThreePane.Secondary,
         ThreePane.Primary,
@@ -121,14 +118,10 @@ class AppState @Inject constructor(
         }
         DisposableEffect(Unit) {
             val job = CoroutineScope(Dispatchers.Main.immediate).launch {
-                combine(
-                    navigationStateHolder.state,
-                    globalUiStateHolder.state,
-                    ::Pair,
-                ).collect { (multiStackNav, ui) ->
-                    uiState.value = ui
-                    multiStackNavState.value = multiStackNav
-                }
+                navigationStateHolder.state
+                    .collect { multiStackNav ->
+                        multiStackNavState.value = multiStackNav
+                    }
             }
             onDispose { job.cancel() }
         }
@@ -136,12 +129,6 @@ class AppState @Inject constructor(
             savedStateRepository.saveState(multiStackNavState.value.toSavedState())
         }
         return panedNavHostState
-    }
-
-    fun updateGlobalUi(
-        block: UiState.() -> UiState
-    ) {
-        globalUiStateHolder.accept(block)
     }
 
     fun onNavItemSelected(navItem: NavItem) {

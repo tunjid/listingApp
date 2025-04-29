@@ -2,14 +2,10 @@ package com.tunjid.scaffold.di
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.tunjid.mutator.Mutation
 import com.tunjid.scaffold.ByteSerializable
 import com.tunjid.scaffold.ByteSerializer
 import com.tunjid.scaffold.DelegatingByteSerializer
 import com.tunjid.scaffold.fromBytes
-import com.tunjid.scaffold.globalui.ActualGlobalUiStateHolder
-import com.tunjid.scaffold.globalui.GlobalUiStateHolder
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.media.ExoPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
@@ -124,15 +120,6 @@ object ScaffoldModule {
         navigationStateHolder: NavigationStateHolder
     ): (@JvmSuppressWildcards NavigationMutation) -> Unit = navigationStateHolder.accept
 
-    @Provides
-    fun globalUiStateStream(
-        globalUiStateHolder: GlobalUiStateHolder
-    ): StateFlow<UiState> = globalUiStateHolder.state
-
-    @Provides
-    fun globalUiActions(
-        globalUiStateHolder: GlobalUiStateHolder
-    ): (Mutation<UiState>) -> Unit = globalUiStateHolder.accept
 }
 
 @Module
@@ -152,11 +139,6 @@ interface ScaffoldBindModule {
     fun bindNavigationStateHolder(
         persistedNavigationStateHolder: PersistedNavigationStateHolder
     ): NavigationStateHolder
-
-    @Binds
-    fun bindGlobalUiStateHolder(
-        actualGlobalUiStateHolder: ActualGlobalUiStateHolder
-    ): GlobalUiStateHolder
 
     @Binds
     fun bindSavedStateRepository(

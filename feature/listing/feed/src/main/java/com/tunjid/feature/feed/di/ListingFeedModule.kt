@@ -15,7 +15,6 @@ import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.globalui.InsetFlags
 import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
@@ -96,13 +95,13 @@ object ListingFeedModule {
                 route = route,
             )
         }
-        ScreenUiState(
-            UiState(
-                fabShows = false,
-                navVisibility = NavVisibility.Visible,
-                insetFlags = InsetFlags.NONE
-            )
-        )
+//        ScreenUiState(
+//            UiState(
+//                fabShows = false,
+//                navVisibility = NavVisibility.Visible,
+//                insetFlags = InsetFlags.NONE
+//            )
+//        )
         ListingFeedScreen(
             movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
             modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
