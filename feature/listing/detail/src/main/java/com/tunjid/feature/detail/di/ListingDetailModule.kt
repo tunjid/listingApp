@@ -68,7 +68,7 @@ object ListingDetailModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ListingStateHolderFactory
-    ) = threePaneEntry(
+    ) = threePaneEntry<Route>(
         paneMapping = { route ->
             mapOf(
                 ThreePane.Primary to route,
@@ -102,11 +102,13 @@ object ListingDetailModule {
                         state = state,
                         actions = viewModel.accept
                     )
+                    // Close the secondary pane when invoking back since it contains the list view
+                    SecondaryPaneCloseBackHandler(
+                        enabled = paneState.pane == ThreePane.Primary
+                                && route.children.isNotEmpty()
+                                && isMediumScreenWidthOrWider
+                    )
                 },
-            )
-            // Close the secondary pane when invoking back since it contains the list view
-            SecondaryPaneCloseBackHandler(
-                enabled = state.isInPrimaryNav && state.hasSecondaryPanel
             )
         }
     )
