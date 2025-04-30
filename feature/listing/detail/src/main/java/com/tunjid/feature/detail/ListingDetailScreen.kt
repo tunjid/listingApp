@@ -84,12 +84,6 @@ fun ListingDetailScreen(
             actions(Action.LoadImagesAround(query = query ?: state.currentQuery))
         }
     )
-    // If the user fully expands the secondary pane, pop this destination back to the feed
-    LaunchedEffect(state.hasSecondaryPanel, state.paneAnchor) {
-        if (state.hasSecondaryPanel && state.paneAnchor == PaneAnchor.Full) {
-            actions(Action.Navigation.Pop())
-        }
-    }
 }
 
 @Composable
