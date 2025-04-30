@@ -17,13 +17,9 @@
 package com.tunjid.scaffold.scaffold
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
@@ -35,31 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.tunjid.listing.scaffold.R
-import com.tunjid.scaffold.scaffold.PaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-fun PaneScaffoldState.RootDestinationTopAppBar(
-    modifier: Modifier = Modifier,
-    title: @Composable () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {},
-) {
-    TopAppBar(
-        modifier = modifier,
-        navigationIcon = {
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .size(36.dp)
-            )
-        },
-        title = title,
-        actions = actions,
-    )
-}
 
 @Composable
 fun PaneScaffoldState.PoppableDestinationTopAppBar(

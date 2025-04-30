@@ -8,8 +8,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.explore.pager.ExplorePagerStateHolderFactory
 import com.tunjid.explore.pager.ExplorePagerViewModel
 import com.tunjid.explore.pager.FullscreenGalleryScreen
+import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
+import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -57,18 +58,18 @@ object ExplorePagerModule {
                 route = route,
             )
         }
-//        ScreenUiState(
-//            UiState(
-//                fabShows = false,
-//                navVisibility = NavVisibility.Gone,
-//                insetFlags = InsetFlags.NONE
-//            )
-//        )
-        FullscreenGalleryScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            modifier = Modifier,
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            actions = viewModel.accept
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(paneScope = this),
+            showNavigation = false,
+            content = {
+                FullscreenGalleryScreen(
+                    movableSharedElementScope = this,
+                    modifier = Modifier,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    actions = viewModel.accept
+                )
+            },
         )
     }
 }

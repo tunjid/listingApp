@@ -1,6 +1,10 @@
 package com.tunjid.feature.feed.di
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -8,16 +12,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.feed.ListingFeedScreen
 import com.tunjid.feature.feed.ListingFeedStateHolderFactory
 import com.tunjid.feature.feed.ListingFeedViewModel
-import com.tunjid.feature.feed.State
 import com.tunjid.listing.data.model.ListingQuery
+import com.tunjid.listing.feature.listing.feed.R
+import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.di.SavedStateType
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
-import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
+import com.tunjid.scaffold.scaffold.PaneBottomAppBar
+import com.tunjid.scaffold.scaffold.PaneNavigationRail
+import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -27,9 +29,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
-import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
-import kotlinx.serialization.modules.subclass
 
 internal const val FeedPattern = "/listings"
 internal const val FavoritesPattern = "/favorites"
@@ -89,18 +89,34 @@ object ListingFeedModule {
                 route = route,
             )
         }
-//        ScreenUiState(
-//            UiState(
-//                fabShows = false,
-//                navVisibility = NavVisibility.Visible,
-//                insetFlags = InsetFlags.NONE
-//            )
-//        )
-        ListingFeedScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            actions = viewModel.accept
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(paneScope = this),
+            showNavigation = false,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(text = stringResource(id = R.string.listing_app))
+                    },
+                )
+            },
+            content = { paddingValues ->
+                ListingFeedScreen(
+                    movableSharedElementScope = this,
+                    modifier = Modifier
+                        .padding(
+                            top = paddingValues.calculateTopPadding()
+                        ),
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    actions = viewModel.accept
+                )
+            },
+            navigationBar = {
+                PaneBottomAppBar()
+            },
+            navigationRail = {
+                PaneNavigationRail()
+            }
         )
     }
 

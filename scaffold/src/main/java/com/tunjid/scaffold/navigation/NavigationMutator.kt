@@ -94,6 +94,12 @@ class PersistedNavigationStateHolder @Inject constructor(
     }
 )
 
+operator fun NavigationMutation.plus(
+    edit: MultiStackNav.() -> MultiStackNav
+): NavigationMutation = {
+    edit(this@plus.invoke(this))
+}
+
 /**
  * A helper function for generic state producers to consume navigation actions
  */

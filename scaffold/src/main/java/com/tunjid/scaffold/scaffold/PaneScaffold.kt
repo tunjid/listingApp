@@ -102,7 +102,7 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
     showNavigation: Boolean = true,
     containerColor: Color = MaterialTheme.colorScheme.background,
     snackBarMessages: List<String> = emptyList(),
-    onSnackBarMessageConsumed: (String) -> Unit,
+    onSnackBarMessageConsumed: (String) -> Unit = {},
     topBar: @Composable PaneScaffoldState.() -> Unit = {},
     floatingActionButton: @Composable PaneScaffoldState.() -> Unit = {},
     navigationBar: @Composable PaneScaffoldState.() -> Unit = {},
@@ -121,7 +121,7 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
         )
     }
 
-    PaneScaffold(
+    RowPaneScaffold(
         modifier = modifier,
         navigationRail = {
             if (paneScaffoldState.canShowNavRail) Box(
@@ -203,7 +203,7 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
 }
 
 @Composable
-private inline fun PaneScaffold(
+private inline fun RowPaneScaffold(
     modifier: Modifier = Modifier,
     navigationRail: @Composable () -> Unit,
     content: @Composable () -> Unit,

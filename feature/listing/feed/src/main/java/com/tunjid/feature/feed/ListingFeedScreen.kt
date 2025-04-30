@@ -41,8 +41,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -94,49 +92,35 @@ fun ListingFeedScreen(
             state = pullRefreshState
         )
     ) {
-        Column(
+        LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
+            state = gridState,
+            columns = GridCells.Adaptive(300.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(
+                horizontal = 16.dp,
+                vertical = 8.dp,
+            )
         ) {
-            TopAppBar(
-                modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.statusBars),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                ),
-                title = {
-                    Text(text = stringResource(id = R.string.listing_app))
+            items(
+                items = state.listings,
+                key = FeedItem::key,
+                span = {
+                    actions(Action.LoadFeed.GridSize(maxLineSpan))
+                    GridItemSpan(currentLineSpan = 1)
+                },
+                itemContent = { feedItem ->
+                    FeedItemCard(
+                        movableSharedElementScope = movableSharedElementScope,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(fadeInSpec = null),
+                        feedItem = feedItem,
+                        actions = actions,
+                    )
                 }
             )
-            LazyVerticalGrid(
-                modifier = Modifier.fillMaxSize(),
-                state = gridState,
-                columns = GridCells.Adaptive(300.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(
-                    horizontal = 16.dp,
-                    vertical = 8.dp,
-                )
-            ) {
-                items(
-                    items = state.listings,
-                    key = FeedItem::key,
-                    span = {
-                        actions(Action.LoadFeed.GridSize(maxLineSpan))
-                        GridItemSpan(currentLineSpan = 1)
-                    },
-                    itemContent = { feedItem ->
-                        FeedItemCard(
-                            movableSharedElementScope = movableSharedElementScope,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem(fadeInSpec = null),
-                            feedItem = feedItem,
-                            actions = actions,
-                        )
-                    }
-                )
-            }
         }
         val scrollbarState = gridState.scrollbarState(
             itemsAvailable = state.listingsAvailable.toInt(),

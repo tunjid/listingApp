@@ -9,8 +9,10 @@ import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
+import com.tunjid.scaffold.scaffold.PaneBottomAppBar
+import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -61,18 +63,18 @@ object PagerGalleryModule {
                 route = route,
             )
         }
-//        ScreenUiState(
-//            UiState(
-//                fabShows = false,
-//                navVisibility = NavVisibility.Gone,
-//                insetFlags = InsetFlags.NONE
-//            )
-//        )
-        FullscreenGalleryScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            modifier = Modifier,
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            actions = viewModel.accept
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(paneScope = this),
+            showNavigation = false,
+            content = {
+                FullscreenGalleryScreen(
+                    movableSharedElementScope = this,
+                    modifier = Modifier,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    actions = viewModel.accept
+                )
+            },
         )
     }
 }
