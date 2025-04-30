@@ -1,6 +1,7 @@
 package com.tunjid.feature.listinggallery.pager.di
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -9,9 +10,7 @@ import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
-import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.scaffold.PaneBottomAppBar
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
@@ -64,9 +63,9 @@ object PagerGalleryModule {
             )
         }
         PaneScaffold(
-            modifier = Modifier
-                .predictiveBackBackgroundModifier(paneScope = this),
+            modifier = Modifier,
             showNavigation = false,
+            containerColor = Color.Transparent,
             content = {
                 FullscreenGalleryScreen(
                     movableSharedElementScope = this,

@@ -1,5 +1,6 @@
 package com.tunjid.feature.listinggallery.grid.di
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -82,17 +83,16 @@ object GridGalleryModule {
                     }
                 )
             },
-            content = {
+            content = { paddingValues ->
                 GridGalleryScreen(
                     movableSharedElementScope = this,
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            top = paddingValues.calculateTopPadding()
+                        ),
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     actions = viewModel.accept
                 )
-            },
-
-            navigationBar = {
-                PaneBottomAppBar()
             },
         )
     }

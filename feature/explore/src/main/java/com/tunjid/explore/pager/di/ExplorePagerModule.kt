@@ -1,6 +1,7 @@
 package com.tunjid.explore.pager.di
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -8,7 +9,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.explore.pager.ExplorePagerStateHolderFactory
 import com.tunjid.explore.pager.ExplorePagerViewModel
 import com.tunjid.explore.pager.FullscreenGalleryScreen
-import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.treenav.compose.threepane.threePaneEntry
@@ -59,9 +59,9 @@ object ExplorePagerModule {
             )
         }
         PaneScaffold(
-            modifier = Modifier
-                .predictiveBackBackgroundModifier(paneScope = this),
+            modifier = Modifier,
             showNavigation = false,
+            containerColor = Color.Transparent,
             content = {
                 FullscreenGalleryScreen(
                     movableSharedElementScope = this,

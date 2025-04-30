@@ -1,5 +1,6 @@
 package com.tunjid.explore.grid.di
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
@@ -63,10 +64,13 @@ object ExploreGridModule {
                     },
                 )
             },
-            content = {
+            content = { paddingValues ->
                 ExploreGridScreen(
                     movableSharedElementScope = this,
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(
+                            top = paddingValues.calculateTopPadding()
+                        ),
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     actions = viewModel.accept
                 )
