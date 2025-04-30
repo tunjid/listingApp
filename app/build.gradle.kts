@@ -79,7 +79,10 @@ dependencies {
     implementation(libs.androidx.window.window)
 
     implementation(libs.coil.kt.compose)
+    implementation(libs.coil.kt.ktor)
     implementation(libs.coil.kt.video)
+
+    implementation(libs.ktor.client)
 
     implementation(libs.tunjid.treenav.core.common)
     implementation(libs.tunjid.treenav.strings.common)

@@ -23,6 +23,8 @@ dependencies {
     implementation(project(":ui"))
 
     implementation(libs.coil.kt.compose)
+implementation(libs.coil.kt.ktor)
+implementation(libs.ktor.client)
     implementation(libs.tunjid.tiler.compose)
     implementation(libs.tunjid.tiler.tiler)
     implementation(libs.tunjid.composables)
