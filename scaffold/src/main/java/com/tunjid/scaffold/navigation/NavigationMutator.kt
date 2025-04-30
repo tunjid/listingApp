@@ -167,7 +167,7 @@ private val InitialNavigationState = MultiStackNav(
     name = "splash-app",
     stacks = listOf(
         StackNav(
-            name = AppStack.Articles.stackName,
+            name = AppStack.Listings.stackName,
             children = listOf(routeOf("/listings"))
         ),
     )
@@ -177,23 +177,23 @@ private val SignedInNavigationState = MultiStackNav(
     name = "signed-in-app",
     stacks = listOf(
         StackNav(
-            name = AppStack.Articles.stackName,
+            name = AppStack.Listings.stackName,
             children = listOf(routeOf("/listings"))
         ),
         StackNav(
-            name = AppStack.Projects.stackName,
+            name = AppStack.Favorites.stackName,
             children = listOf(routeOf("/favorites"))
         ),
         StackNav(
-            name = AppStack.Talks.stackName,
+            name = AppStack.Explore.stackName,
             children = listOf(routeOf("/explore"))
         ),
         StackNav(
-            name = AppStack.Settings.stackName,
+            name = AppStack.Messages.stackName,
             children = listOf(routeOf("/messages"))
         ),
         StackNav(
-            name = AppStack.Settings.stackName,
+            name = AppStack.Profile.stackName,
             children = listOf(routeOf("/profile"))
         ),
     )
@@ -204,22 +204,22 @@ enum class AppStack(
     val titleRes: Int,
     val icon: ImageVector,
 ) {
-    Articles(
+    Listings(
         stackName = "listings-stack",
         titleRes = R.string.listings,
         icon = Icons.Rounded.Apartment,
     ),
-    Projects(
+    Favorites(
         stackName = "favorites-stack",
         titleRes = R.string.favorites,
         icon = Icons.Rounded.FavoriteBorder,
     ),
-    Talks(
+    Explore(
         stackName = "explore-stack",
         titleRes = R.string.explore,
         icon = Icons.AutoMirrored.Rounded.AirplaneTicket,
     ),
-    Settings(
+    Messages(
         stackName = "messages-stack",
         titleRes = R.string.messages,
         icon = Icons.Rounded.ChatBubbleOutline,
