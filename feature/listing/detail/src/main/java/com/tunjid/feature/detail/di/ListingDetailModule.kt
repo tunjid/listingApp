@@ -20,7 +20,7 @@ import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -60,12 +60,6 @@ internal val RouteParams.initialQuery
 @InstallIn(SingletonComponent::class)
 object ListingDetailModule {
 
-    @IntoSet
-    @Provides
-    fun savedStateType(): SavedStateType = SavedStateType {
-        subclass(State::class)
-    }
-
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
@@ -80,7 +74,7 @@ object ListingDetailModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ListingStateHolderFactory
-    ) = threePaneListDetailStrategy(
+    ) = threePaneEntry(
         paneMapping = { route ->
             mapOf(
                 ThreePane.Primary to route,

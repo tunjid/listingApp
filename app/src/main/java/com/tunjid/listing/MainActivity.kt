@@ -4,17 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.listing.ui.theme.ListingAppTheme
-import com.tunjid.scaffold.globalui.MEDIUM
-import com.tunjid.scaffold.globalui.NavMode
 import com.tunjid.scaffold.globalui.PredictiveBackEffects
-import com.tunjid.scaffold.scaffold.AppState
-import com.tunjid.scaffold.scaffold.ListingApp
+import com.tunjid.scaffold.scaffold.App
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,19 +19,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ListingAppTheme {
-                ListingApp(
+                App(
                     modifier = Modifier,
                     appState = appState,
                 )
                 PredictiveBackEffects(
                     appState = appState,
                 )
-                LaunchedEffect(appState.globalUi.statusBarColor) {
-                    window.statusBarColor = appState.globalUi.statusBarColor
-                }
-                LaunchedEffect(appState.globalUi.navBarColor) {
-                    window.navigationBarColor = appState.globalUi.navBarColor
-                }
             }
         }
     }

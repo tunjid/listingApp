@@ -16,7 +16,7 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
@@ -34,12 +34,6 @@ private const val RoutePattern = "/explore"
 @InstallIn(SingletonComponent::class)
 object ExploreGridModule {
 
-    @IntoSet
-    @Provides
-    fun savedStateType(): SavedStateType = SavedStateType {
-        subclass(State::class)
-    }
-
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
@@ -54,7 +48,7 @@ object ExploreGridModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ExploreGridModelFactory
-    ) = threePaneListDetailStrategy { route ->
+    ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ExploreGridViewModel> {
             factory.create(

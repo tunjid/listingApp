@@ -8,15 +8,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
-import com.tunjid.feature.listinggallery.pager.State
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.di.SavedStateType
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -25,9 +20,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
-import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
-import kotlinx.serialization.modules.subclass
 
 private const val RoutePattern = "/listings/{listingId}/gallery/pager"
 
@@ -46,12 +39,6 @@ internal val RouteParams.initialQuery
 @InstallIn(SingletonComponent::class)
 object PagerGalleryModule {
 
-    @IntoSet
-    @Provides
-    fun savedStateType(): SavedStateType = SavedStateType {
-        subclass(State::class)
-    }
-
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
@@ -66,7 +53,7 @@ object PagerGalleryModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: PagerGalleryStateHolderFactory
-    ) = threePaneListDetailStrategy { route ->
+    ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<PagerGalleryViewModel> {
             factory.create(

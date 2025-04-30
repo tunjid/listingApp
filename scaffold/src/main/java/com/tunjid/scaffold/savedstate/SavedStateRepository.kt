@@ -22,27 +22,26 @@ import javax.inject.Singleton
 
 @Serializable
 data class SavedState(
-    val isEmpty: Boolean,
-    val activeNav: Int = 0,
-    val navigation: List<List<String>>,
-    val routeStates: Map<String, ByteArray>
-) : ByteSerializable
+    val navigation: Navigation,
+) : ByteSerializable {
+    @Serializable
+    data class Navigation(
+        val activeNav: Int = 0,
+        val backStacks: List<List<String>> = emptyList(),
+    )
+}
 
-private val defaultSavedState = SavedState(
-    isEmpty = true,
-    navigation = listOf(
-        listOf("/listings"),
-        listOf("/favorites"),
-        listOf("/explore"),
-        listOf("/messages"),
-        listOf("/profile"),
-    ),
-    routeStates = emptyMap()
+val InitialSavedState = SavedState(
+    navigation = SavedState.Navigation(activeNav = -1),
+)
+
+val EmptySavedState = SavedState(
+    navigation = SavedState.Navigation(activeNav = 0),
 )
 
 interface SavedStateRepository {
     val savedState: StateFlow<SavedState>
-    suspend fun saveState(savedState: SavedState)
+    suspend fun updateState(update: SavedState.() -> SavedState)
 }
 
 @Singleton
@@ -64,18 +63,18 @@ class DataStoreSavedStateRepository @Inject constructor(
     override val savedState = dataStore.data.stateIn(
         scope = appScope,
         started = SharingStarted.Eagerly,
-        initialValue = defaultSavedState
+        initialValue = InitialSavedState,
     )
 
-    override suspend fun saveState(savedState: SavedState) {
-        dataStore.updateData { savedState }
+    override suspend fun updateState(update: SavedState.() -> SavedState) {
+        dataStore.updateData(update)
     }
 }
 
 private class SavedStateOkioSerializer(
     private val byteSerializer: ByteSerializer
 ) : OkioSerializer<SavedState> {
-    override val defaultValue: SavedState = defaultSavedState.copy(isEmpty = false)
+    override val defaultValue: SavedState = EmptySavedState
 
     override suspend fun readFrom(source: BufferedSource): SavedState =
         byteSerializer.fromBytes(source.readByteArray())

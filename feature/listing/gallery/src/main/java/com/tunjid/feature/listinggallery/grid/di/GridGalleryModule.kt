@@ -17,7 +17,7 @@ import com.tunjid.scaffold.globalui.NavVisibility
 import com.tunjid.scaffold.globalui.UiState
 import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -47,12 +47,6 @@ internal val RouteParams.initialQuery
 @InstallIn(SingletonComponent::class)
 object GridGalleryModule {
 
-    @IntoSet
-    @Provides
-    fun savedStateType(): SavedStateType = SavedStateType {
-        subclass(State::class)
-    }
-
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
@@ -67,7 +61,7 @@ object GridGalleryModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: GridGalleryStateHolderFactory
-    ) = threePaneListDetailStrategy { route ->
+    ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<GridGalleryViewModel> {
             factory.create(

@@ -31,7 +31,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.protobuf.ProtoBuf
 import okio.Path
 import okio.Path.Companion.toPath
@@ -43,8 +42,6 @@ interface ScreenStateHolderCreator {
         route: Route,
     ): ViewModel
 }
-
-typealias SavedStateCache = (@JvmSuppressWildcards Route) -> ByteArray?
 
 data class SavedStateType(
     val apply: PolymorphicModuleBuilder<ByteSerializable>.() -> Unit
@@ -78,14 +75,10 @@ object ScaffoldModule {
 
     @Provides
     @Singleton
-    fun byteSerializer(
-        savedStateTypes: Set<@JvmSuppressWildcards SavedStateType>
-    ): ByteSerializer = DelegatingByteSerializer(
+    fun byteSerializer(): ByteSerializer = DelegatingByteSerializer(
         format = ProtoBuf {
             serializersModule = SerializersModule {
-                polymorphic(ByteSerializable::class) {
-                    savedStateTypes.forEach { it.apply(this) }
-                }
+
             }
         }
     )
@@ -100,14 +93,6 @@ object ScaffoldModule {
             .sortedWith(routeMatchingComparator())
             .map(Pair<String, @kotlin.jvm.JvmSuppressWildcards RouteMatcher>::second)
         return routeParserFrom(*(routeMatchers).toTypedArray())
-    }
-
-    @Provides
-    @Singleton
-    fun savedStateCache(
-        savedStateRepository: SavedStateRepository
-    ): SavedStateCache = { route ->
-        savedStateRepository.savedState.value.routeStates[route.id]
     }
 
     @Provides

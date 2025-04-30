@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="go_back">Back</string>
+    <string name="listings">Listings</string>
+    <string name="favorites">Favorites</string>
+    <string name="explore">Explore</string>
+    <string name="messages">Messages</string>
+    <string name="profile">Profile</string>
+</resources>
