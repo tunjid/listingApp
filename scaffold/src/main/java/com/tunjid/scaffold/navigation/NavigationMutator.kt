@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Singleton
 
 typealias NavigationStateHolder = ActionStateMutator<@JvmSuppressWildcards NavigationMutation, @JvmSuppressWildcards StateFlow<MultiStackNav>>
 typealias NavigationMutation = NavigationContext.() -> MultiStackNav
@@ -50,6 +51,7 @@ data class NavItem(
     val selected: Boolean
 )
 
+@Singleton
 class PersistedNavigationStateHolder @Inject constructor(
     appScope: CoroutineScope,
     savedStateRepository: SavedStateRepository,
