@@ -82,8 +82,8 @@ object ExploreGridModule {
                 PaneBottomAppBar(
                     modifier = Modifier
                         .animateEnterExit(
-                            enter = slideInVertically(),
-                            exit = slideOutVertically(),
+                            enter = slideInVertically(initialOffsetY = { it }),
+                            exit = slideOutVertically(targetOffsetY = { it }),
                         )
                 )
             },
