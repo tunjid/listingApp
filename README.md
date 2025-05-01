@@ -23,8 +23,10 @@ The above are used to implement a system design that supports
 
 The above provide a system where "first frame readiness" is guaranteed when navigating between
 navigation destinations, obviating the need for legacy APIs from View such as
-[`Activity.postponeEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition())
-and [`Activity.startPostponedEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()).
+[
+`Activity.postponeEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition())
+and [
+`Activity.startPostponedEnterTransition()`](https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()).
 
 ## App recordings
 

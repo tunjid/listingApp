@@ -1,27 +1,23 @@
 package com.tunjid.feature.detail.di
 
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tunjid.feature.detail.Action
 import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailViewModel
 import com.tunjid.feature.detail.ListingStateHolderFactory
-import com.tunjid.feature.detail.State
 import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.me.scaffold.scaffold.SecondaryPaneCloseBackHandler
+import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.di.SavedStateType
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
-import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.scaffold.configuration.predictiveBackBackgroundModifier
+import com.tunjid.scaffold.scaffold.PaneNavigationRail
+import com.tunjid.scaffold.scaffold.PaneScaffold
+import com.tunjid.scaffold.scaffold.PoppableDestinationTopAppBar
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -31,9 +27,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
-import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
-import kotlinx.serialization.modules.subclass
 
 private const val RoutePattern = "/listings/{listingId}"
 
@@ -61,12 +55,6 @@ internal val RouteParams.initialQuery
 @InstallIn(SingletonComponent::class)
 object ListingDetailModule {
 
-    @IntoSet
-    @Provides
-    fun savedStateType(): SavedStateType = SavedStateType {
-        subclass(State::class)
-    }
-
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
@@ -81,7 +69,7 @@ object ListingDetailModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ListingStateHolderFactory
-    ) = threePaneListDetailStrategy(
+    ) = threePaneEntry<Route>(
         paneMapping = { route ->
             mapOf(
                 ThreePane.Primary to route,
@@ -96,18 +84,35 @@ object ListingDetailModule {
                     route = route,
                 )
             }
-            ScreenUiState(
-                UiState(
-                    navVisibility = NavVisibility.Gone,
-                    insetFlags = InsetFlags.NONE,
-                    statusBarColor = Color.Black.copy(alpha = 0.4f).toArgb()
-                )
-            )
-            ListingDetailScreen(
-                movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-                modifier = Modifier.predictiveBackBackgroundModifier(paneScope = this),
-                state = viewModel.state.collectAsStateWithLifecycle().value,
-                actions = viewModel.accept
+            val state = viewModel.state.collectAsStateWithLifecycle().value
+            PaneScaffold(
+                modifier = Modifier
+                    .predictiveBackBackgroundModifier(paneScope = this),
+                showNavigation = false,
+                topBar = {
+                    PoppableDestinationTopAppBar(
+                        onBackPressed = {
+                            viewModel.accept(Action.Navigation.Pop())
+                        }
+                    )
+                },
+                content = {
+                    ListingDetailScreen(
+                        movableSharedElementScope = this,
+                        modifier = Modifier,
+                        state = state,
+                        actions = viewModel.accept
+                    )
+                    // Close the secondary pane when invoking back since it contains the list view
+                    SecondaryPaneCloseBackHandler(
+                        enabled = paneState.pane == ThreePane.Primary
+                                && route.children.isNotEmpty()
+                                && isMediumScreenWidthOrWider
+                    )
+                },
+                navigationRail = {
+                    PaneNavigationRail()
+                }
             )
         }
     )

@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -34,7 +34,7 @@ object ProfileModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = threePaneListDetailStrategy<Route> { route ->
+    fun routeAdaptiveConfiguration() = threePaneEntry<Route> { route ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -27,31 +24,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
 import com.tunjid.listing.feature.listing.detail.R
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
-import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
-import com.tunjid.scaffold.scaffold.SecondaryPaneCloseBackHandler
 import com.tunjid.tiler.compose.PivotedTilingEffect
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
@@ -71,30 +61,14 @@ fun ListingDetailScreen(
         modifier = modifier
             .verticalScroll(rememberScrollState()),
     ) {
-        Box {
-            ListingMediaPager(
-                movableSharedElementScope = movableSharedElementScope,
-                pagerState = pagerState,
-                listingId = state.listing?.id,
-                listingItems = state.listingItems,
-                totalItemCount = state.mediaAvailable,
-                actions = actions,
-            )
-            FilledTonalIconButton(
-                modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(
-                        vertical = 16.dp,
-                        horizontal = 16.dp
-                    ),
-                onClick = { actions(Action.Navigation.Pop()) }
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = ""
-                )
-            }
-        }
+        ListingMediaPager(
+            movableSharedElementScope = movableSharedElementScope,
+            pagerState = pagerState,
+            listingId = state.listing?.id,
+            listingItems = state.listingItems,
+            totalItemCount = state.mediaAvailable,
+            actions = actions,
+        )
         ListingInfo(
             listing = state.listing,
             host = state.host,
@@ -108,18 +82,6 @@ fun ListingDetailScreen(
             actions(Action.LoadImagesAround(query = query ?: state.currentQuery))
         }
     )
-
-    // Close the secondary pane when invoking back since it contains the list view
-    SecondaryPaneCloseBackHandler(
-        enabled = state.isInPrimaryNav && state.hasSecondaryPanel
-    )
-
-    // If the user fully expands the secondary pane, pop this destination back to the feed
-    LaunchedEffect(state.hasSecondaryPanel, state.paneAnchor) {
-        if (state.hasSecondaryPanel && state.paneAnchor == PaneAnchor.Full) {
-            actions(Action.Navigation.Pop())
-        }
-    }
 }
 
 @Composable

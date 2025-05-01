@@ -1,6 +1,7 @@
 package com.tunjid.explore.pager.di
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -8,15 +9,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.explore.pager.ExplorePagerStateHolderFactory
 import com.tunjid.explore.pager.ExplorePagerViewModel
 import com.tunjid.explore.pager.FullscreenGalleryScreen
-import com.tunjid.explore.pager.State
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.di.SavedStateType
-import com.tunjid.scaffold.globalui.InsetFlags
-import com.tunjid.scaffold.globalui.NavVisibility
-import com.tunjid.scaffold.globalui.ScreenUiState
-import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.scaffold.scaffold.PaneScaffold
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.urlRouteMatcher
@@ -25,9 +20,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
-import dagger.multibindings.IntoSet
 import dagger.multibindings.StringKey
-import kotlinx.serialization.modules.subclass
 
 private const val RoutePattern = "/explore/pager"
 
@@ -43,12 +36,6 @@ internal val RouteParams.initialPage
 @InstallIn(SingletonComponent::class)
 object ExplorePagerModule {
 
-    @IntoSet
-    @Provides
-    fun savedStateType(): SavedStateType = SavedStateType {
-        subclass(State::class)
-    }
-
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
@@ -63,7 +50,7 @@ object ExplorePagerModule {
     @StringKey(RoutePattern)
     fun routeAdaptiveConfiguration(
         factory: ExplorePagerStateHolderFactory
-    ) = threePaneListDetailStrategy { route ->
+    ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ExplorePagerViewModel> {
             factory.create(
@@ -71,18 +58,18 @@ object ExplorePagerModule {
                 route = route,
             )
         }
-        ScreenUiState(
-            UiState(
-                fabShows = false,
-                navVisibility = NavVisibility.Gone,
-                insetFlags = InsetFlags.NONE
-            )
-        )
-        FullscreenGalleryScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
+        PaneScaffold(
             modifier = Modifier,
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            actions = viewModel.accept
+            showNavigation = false,
+            containerColor = Color.Transparent,
+            content = {
+                FullscreenGalleryScreen(
+                    movableSharedElementScope = this,
+                    modifier = Modifier,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    actions = viewModel.accept
+                )
+            },
         )
     }
 }

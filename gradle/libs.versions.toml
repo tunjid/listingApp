@@ -1,38 +1,38 @@
 [versions]
 app-cash-sqldelight = "2.0.0"
-app-cash-turbine = "1.0.0"
-core-ktx = "1.13.1"
+app-cash-turbine = "1.1.0"
+core-ktx = "1.16.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.2.1"
-androidxDataStore = "1.1.1"
-androidxMedia3 = "1.4.1"
-androidxRoom = "2.6.1"
-androidxWindow = "1.4.0-alpha05"
-androidxWork = "2.10.0"
-coil = "2.7.0"
+androidxDataStore = "1.1.5"
+androidxMedia3 = "1.6.1"
+androidxRoom = "2.7.1"
+androidxWindow = "1.4.0-rc02"
+androidxWork = "2.10.1"
+coil = "3.1.0"
 espresso-core = "3.6.1"
 com-android-gradle-plugin = "8.1.4"
-com-android-application = "8.5.2"
-com-android-desugar-JdkLibs = "2.1.3"
-org-jetbrains-kotlin-android = "2.0.21"
+com-android-application = "8.9.2"
+com-android-desugar-JdkLibs = "2.1.5"
+org-jetbrains-kotlin-android = "2.1.20"
 lifecycle-runtime-ktx = "2.8.7"
-activity-compose = "1.10.0"
-compose-bom = "2025.01.00"
-hilt = "2.51"
+activity-compose = "1.10.1"
+compose-bom = "2025.04.00"
+hilt = "2.56.2"
 hiltExt = "1.2.0"
-kotlinxCoroutines = "1.9.0"
-kotlinxDatetime = "0.6.1"
-kotlinxSerialization = "1.7.0-RC"
-ksp = "2.0.21-1.0.27"
-ktor = "2.2.4"
-okio = "3.7.0"
+kotlinxCoroutines = "1.10.2"
+kotlinxDatetime = "0.6.2"
+kotlinxSerialization = "1.7.3"
+ksp = "2.1.20-1.0.32"
+ktor = "3.1.2"
+okio = "3.10.2"
 okhttp = "4.12.0"
 retrofit = "2.11.0"
 retrofitKotlinxSerializationJson = "1.0.0"
 tunjidStateHolder = "1.1.0"
-tunjidTiler = "1.1.0"
-tunjidTreeNav = "0.0.13"
-tunjidComposables = "0.0.13"
+tunjidTiler = "1.2.0-rc01"
+tunjidTreeNav = "0.0.21"
+tunjidComposables = "0.0.16"
 turbine = "0.12.1"
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -79,9 +79,10 @@ androidx-window-core = { group = "androidx.window", name = "window-core", versio
 androidx-window-window = { group = "androidx.window", name = "window", version.ref = "androidxWindow" }
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
-coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
-coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-coil-kt-video = { group = "io.coil-kt", name = "coil-video", version.ref = "coil" }
+coil-kt = { group = "io.coil-kt.coil3", name = "coil", version.ref = "coil" }
+coil-kt-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-kt-ktor = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil" }
+coil-kt-video = { group = "io.coil-kt.coil3", name = "coil-video", version.ref = "coil" }
 com-android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "com-android-desugar-JdkLibs" }
 app-cash-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "app-cash-turbine" }
 app-cash-sqldelight-gradle-plugin = { group = "app.cash.sqldelight", name = "gradle-plugin", version.ref = "app-cash-sqldelight" }
@@ -102,6 +103,7 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 kotlinx-serialization-cbor = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-cbor", version.ref = "kotlinxSerialization" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-serialization-protobuf = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-protobuf", version.ref = "kotlinxSerialization" }
+ktor-client = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 org-jetbrains-kotlin-android-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "org-jetbrains-kotlin-android" }
 org-jetbrains-kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "org-jetbrains-kotlin-android" }

@@ -1,9 +1,10 @@
 package com.tunjid.listing
 
 import android.app.Application
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.decode.VideoFrameDecoder
+import android.content.Context
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.video.VideoFrameDecoder
 import com.tunjid.listing.workmanager.initializers.Sync
 import com.tunjid.scaffold.scaffold.AppState
 import dagger.Binds
@@ -15,23 +16,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @HiltAndroidApp
-class ListingApplication : Application(), ImageLoaderFactory {
+class ListingApplication : Application(), SingletonImageLoader.Factory {
     @Inject
     lateinit var listingApp: ListingApp
 
     override fun onCreate() {
         super.onCreate()
-        ImageLoader.Builder(this)
-            .components {
-                add(VideoFrameDecoder.Factory())
-            }
-            .build()
-
         // Initialize Sync; the system responsible for keeping data in the app up to date.
         Sync.initialize(context = this)
     }
 
-    override fun newImageLoader(): ImageLoader = ImageLoader.Builder(this)
+    override fun newImageLoader(context: Context): ImageLoader = ImageLoader.Builder(context)
         .components {
             add(VideoFrameDecoder.Factory())
         }

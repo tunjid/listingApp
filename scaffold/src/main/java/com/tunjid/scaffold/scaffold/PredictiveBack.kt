@@ -1,4 +1,20 @@
-package com.tunjid.scaffold.scaffold.configuration
+/*
+ *    Copyright 2024 Adetunji Dahunsi
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package com.tunjid.me.scaffold.scaffold
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate
@@ -19,16 +35,9 @@ import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 
-
-//// TODO: This should not be necessary. Figure out why a frame renders without this
-////  being applied and yet the transient primary container is visible.
-//val rememberedBackStatus by rememberUpdatedStateIf(backStatus) {
-//    it is PreviewBackStatus
-//}
-
 @Composable
 fun Modifier.predictiveBackBackgroundModifier(
-    paneScope: PaneScope<ThreePane, *>
+    paneScope: PaneScope<ThreePane, *>,
 ): Modifier {
     if (paneScope.paneState.pane != ThreePane.TransientPrimary)
         return this
@@ -48,5 +57,3 @@ fun Modifier.predictiveBackBackgroundModifier(
         .clip(RoundedCornerShape(16.dp))
 
 }
-
-private const val BACK_PREVIEW_PADDING = 8

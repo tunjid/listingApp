@@ -71,10 +71,6 @@ data class State(
     @Transient
     val mediaAvailable: Long? = null,
     @Transient
-    val isInPrimaryNav: Boolean = false,
-    @Transient
-    val hasSecondaryPanel: Boolean = false,
-    @Transient
     val paneAnchor: PaneAnchor? = null,
     @Transient
     val listing: Listing? = null,

@@ -1,7 +1,6 @@
 package com.tunjid.feature.detail
 
 import androidx.lifecycle.ViewModel
-import androidx.window.core.layout.WindowSizeClass
 import com.tunjid.feature.detail.di.initialQuery
 import com.tunjid.feature.detail.di.listingId
 import com.tunjid.feature.detail.di.startingMediaUrls
@@ -18,9 +17,6 @@ import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.globalui.COMPACT
-import com.tunjid.scaffold.globalui.UiState
-import com.tunjid.scaffold.isInPrimaryNavMutations
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.ListTiler
@@ -31,7 +27,6 @@ import com.tunjid.tiler.distinctBy
 import com.tunjid.tiler.listTiler
 import com.tunjid.tiler.toPivotedTileInputs
 import com.tunjid.tiler.toTiledList
-import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.Route
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -39,7 +34,6 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
@@ -55,8 +49,6 @@ class ListingDetailViewModel @AssistedInject constructor(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
-    uiStateFlow: StateFlow<UiState>,
-    navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (@JvmSuppressWildcards NavigationMutation) -> Unit,
     @Assisted scope: CoroutineScope,
     @Assisted route: Route,
@@ -66,8 +58,6 @@ class ListingDetailViewModel @AssistedInject constructor(
     listingRepository = listingRepository,
     mediaRepository = mediaRepository,
     userRepository = userRepository,
-    uiStateFlow = uiStateFlow,
-    navStateFlow = navStateFlow,
     navigationActions = navigationActions,
     route = route
 )
@@ -76,8 +66,6 @@ private fun CoroutineScope.listingDetailMutator(
     listingRepository: ListingRepository,
     mediaRepository: MediaRepository,
     userRepository: UserRepository,
-    uiStateFlow: StateFlow<UiState>,
-    navStateFlow: StateFlow<MultiStackNav>,
     navigationActions: (NavigationMutation) -> Unit,
     route: Route,
 ): ActionStateMutator<Action, StateFlow<State>> = actionStateFlowMutator(
@@ -94,11 +82,6 @@ private fun CoroutineScope.listingDetailMutator(
             listingRepository = listingRepository,
             userRepository = userRepository
         ),
-        navStateFlow.isInPrimaryNavMutations(
-            route = route,
-            mutation = { copy(isInPrimaryNav = it) }
-        ),
-        uiStateFlow.paneMutations()
     ),
     actionTransform = { actions ->
         actions.toMutationStream(keySelector = Action::key) {
@@ -158,16 +141,6 @@ private suspend fun Flow<Action.LoadImagesAround>.paginationMutations(
         )
         .mapToMutation { medias ->
             copy(listingItems = medias.distinctBy(ListingItem::url))
-        }
-
-private fun StateFlow<UiState>.paneMutations(): Flow<Mutation<State>> =
-    map { (it.windowSizeClass.minWidthDp > WindowSizeClass.COMPACT.minWidthDp) to it.paneAnchor }
-        .distinctUntilChanged()
-        .mapToMutation { (hasSecondaryPanel, paneAnchor) ->
-            copy(
-                hasSecondaryPanel = hasSecondaryPanel,
-                paneAnchor = paneAnchor,
-            )
         }
 
 private fun mediaPivotRequest() = PivotRequest<MediaQuery, ListingItem>(

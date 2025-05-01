@@ -1,42 +1,25 @@
 package com.tunjid.scaffold.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.AirplaneTicket
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Apartment
-import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.MoreVert
+import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.canPop
-import com.tunjid.treenav.minus
+import com.tunjid.treenav.current
 import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.switch
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.scan
 
 val MultiStackNav.canGoUp get() = stacks.getOrNull(currentIndex)?.canPop == true
 
 val MultiStackNav.navItems
     get() = stacks
         .map(StackNav::name)
-        .mapIndexed { index, name ->
+        .mapIndexedNotNull { index, name ->
+            val stack = AppStack.entries.firstOrNull {
+                it.stackName == name
+            } ?: return@mapIndexedNotNull null
             NavItem(
-                name = name.replace(
-                    oldValue = "/",
-                    newValue = ""
-                ),
-                icon = when {
-                    "listings" in name -> Icons.Filled.Apartment
-                    "favorites" in name -> Icons.Filled.FavoriteBorder
-                    "explore" in name -> Icons.AutoMirrored.Filled.AirplaneTicket
-                    "messages" in name -> Icons.Filled.ChatBubbleOutline
-                    "profile" in name -> Icons.Filled.AccountCircle
-                    else -> Icons.Filled.MoreVert
-                },
+                stack = stack,
                 index = index,
                 selected = currentIndex == index,
             )
@@ -47,16 +30,30 @@ fun MultiStackNav.navItemSelected(item: NavItem) =
     else switch(toIndex = item.index)
 
 /**
- * Route diff between consecutive emissions of [MultiStackNav]
+ * Adds the following query parameters to the current [Node] if it is a [Route]
  */
-fun Flow<MultiStackNav>.removedRoutes(): Flow<List<Route>> =
-    distinctUntilChanged()
-        .scan(initial = EmptyNavigationState to EmptyNavigationState) { navPair, newNav ->
-            navPair.copy(first = navPair.second, second = newNav)
+fun MultiStackNav.editCurrentIfRoute(
+    vararg additions: Pair<String, List<String>>
+): MultiStackNav = when (val top = current) {
+    is Route -> copy(
+        stacks = stacks.mapIndexed { index, stack ->
+            if (index == currentIndex) stack.copy(
+                children = stack.children.dropLast(1) + routeOf(
+                    params = RouteParams(
+                        pathAndQueries = top.routeParams.pathAndQueries,
+                        pathArgs = top.routeParams.pathArgs,
+                        queryParams = top.routeParams.queryParams + additions,
+                    ),
+                    children = top.children
+                )
+            )
+            else stack
         }
-        .map { (prevNav: MultiStackNav, currentNav: MultiStackNav) ->
-            (prevNav - currentNav).filterIsInstance<Route>()
-        }
+    )
+
+    else -> this
+}
+
 
 private fun MultiStackNav.popToRoot(indexToPop: Int) = copy(
     stacks = stacks.mapIndexed { index: Int, stackNav: StackNav ->
