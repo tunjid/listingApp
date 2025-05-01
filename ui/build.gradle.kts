@@ -29,8 +29,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.protobuf)
 
     implementation(libs.coil.kt.compose)
-implementation(libs.coil.kt.ktor)
-implementation(libs.ktor.client)
+    implementation(libs.coil.kt.ktor)
+    implementation(libs.ktor.client)
 
     implementation(libs.tunjid.composables)
 }

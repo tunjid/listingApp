@@ -29,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +40,6 @@ import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.User
 import com.tunjid.listing.feature.listing.detail.R
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
-import com.tunjid.scaffold.globalui.PaneAnchor
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.tiler.compose.PivotedTilingEffect

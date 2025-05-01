@@ -19,8 +19,8 @@ dependencies {
     implementation(project(":data:sync"))
 
     implementation(libs.coil.kt.compose)
-implementation(libs.coil.kt.ktor)
-implementation(libs.ktor.client)
+    implementation(libs.coil.kt.ktor)
+    implementation(libs.ktor.client)
     implementation(libs.tunjid.tiler.compose)
     implementation(libs.tunjid.tiler.tiler)
     implementation(project(":data:model:media"))

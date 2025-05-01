@@ -57,8 +57,9 @@ interface PanedSharedElementScope :
     ): Modifier
 }
 
-val PanedSharedElementScope.isPrimaryOrPreview get() =
-    paneState.pane == ThreePane.Primary || paneState.pane == ThreePane.TransientPrimary
+val PanedSharedElementScope.isPrimaryOrPreview
+    get() =
+        paneState.pane == ThreePane.Primary || paneState.pane == ThreePane.TransientPrimary
 
 @Stable
 private class DelegatingPanedSharedElementScope(
@@ -99,7 +100,7 @@ private class DelegatingPanedSharedElementScope(
                     // Share the element
                     else -> sharedElementWithCallerManagedVisibility(
                         sharedContentState = rememberSharedContentState(key),
-                        visible = when(visible) {
+                        visible = when (visible) {
                             null -> paneScope.isActive
                             else -> paneScope.isActive && visible
                         },
