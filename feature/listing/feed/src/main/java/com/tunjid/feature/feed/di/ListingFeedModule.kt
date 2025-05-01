@@ -1,5 +1,7 @@
 package com.tunjid.feature.feed.di
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -112,7 +114,13 @@ object ListingFeedModule {
                 )
             },
             navigationBar = {
-                PaneBottomAppBar()
+                PaneBottomAppBar(
+                    modifier = Modifier
+                        .animateEnterExit(
+                            enter = slideInVertically(),
+                            exit = slideOutVertically(),
+                        )
+                )
             },
             navigationRail = {
                 PaneNavigationRail()

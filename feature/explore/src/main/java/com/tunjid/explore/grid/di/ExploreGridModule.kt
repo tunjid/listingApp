@@ -1,5 +1,7 @@
 package com.tunjid.explore.grid.di
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -14,6 +16,7 @@ import com.tunjid.explore.grid.ExploreGridViewModel
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneBottomAppBar
+import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
@@ -76,8 +79,17 @@ object ExploreGridModule {
                 )
             },
             navigationBar = {
-                PaneBottomAppBar()
+                PaneBottomAppBar(
+                    modifier = Modifier
+                        .animateEnterExit(
+                            enter = slideInVertically(),
+                            exit = slideOutVertically(),
+                        )
+                )
             },
+            navigationRail = {
+                PaneNavigationRail()
+            }
         )
     }
 }

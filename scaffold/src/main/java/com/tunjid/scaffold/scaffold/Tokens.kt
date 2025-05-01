@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.tunjid.me.scaffold.scaffold
+package com.tunjid.scaffold.scaffold
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -22,29 +22,24 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-val AvatarSize = 40.dp
-
 @Stable
 object UiTokens {
-
-    val avatarSize = 40.dp
-
-    val toolbarHeight = 64.dp
-
-    val tabsHeight = 48.dp
-
     val bottomNavHeight: Dp = 80.dp
 
-    val statusBarHeight: Dp
-        @Composable get() = WindowInsets.statusBars.asPaddingValues().run {
-            calculateTopPadding() + calculateBottomPadding()
-        }
-
-    val navigationBarHeight: Dp
-        @Composable get() = WindowInsets.navigationBars.asPaddingValues().run {
-            calculateTopPadding() + calculateBottomPadding()
-        }
+    val navRailWidth: Dp = 54.dp
 }
+
+val WindowInsets.width
+    @Composable get() = asPaddingValues().let {
+        it.calculateTopPadding() + it.calculateBottomPadding()
+    }
+
+val WindowInsets.height
+    @Composable get() = asPaddingValues().let {
+        val layoutDirection = LocalLayoutDirection.current
+        it.calculateLeftPadding(layoutDirection) + it.calculateRightPadding(layoutDirection)
+    }

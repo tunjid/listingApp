@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.scaffold.PaneScaffoldState
+import com.tunjid.scaffold.scaffold.UiTokens
 import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
