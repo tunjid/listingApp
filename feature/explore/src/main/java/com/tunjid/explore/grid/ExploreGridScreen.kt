@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,7 +21,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.lazy.grid.interpolatedFirstItemIndex
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
@@ -47,8 +45,8 @@ fun ExploreGridScreen(
     LazyVerticalGrid(
         modifier = modifier.fillMaxSize(),
         columns = GridCells.Adaptive(180.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
         state = gridState,
     ) {
@@ -68,7 +66,6 @@ fun ExploreGridScreen(
                         state = item.state,
                         modifier = Modifier
                             .aspectRatio(9f / 16)
-                            .clip(RoundedCornerShape(16.dp))
                             .clickable {
                                 val url = item.state.url
                                 actions(Action.Play(url))
