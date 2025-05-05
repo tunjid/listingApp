@@ -22,6 +22,7 @@ import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.scaffold.PaneBottomAppBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
+import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -123,7 +124,7 @@ object ListingFeedModule {
                 )
             },
             navigationRail = {
-                PaneNavigationRail()
+                if (paneState.pane == ThreePane.Primary) PaneNavigationRail()
             }
         )
     }

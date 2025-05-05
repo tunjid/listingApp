@@ -51,9 +51,10 @@ dependencies {
 
     implementation(libs.tunjid.composables)
 
-    implementation(libs.tunjid.treenav.compose.common)
-    implementation(libs.tunjid.treenav.core.common)
-    implementation(libs.tunjid.treenav.strings.common)
+    implementation(libs.tunjid.treenav.compose.threepane)
+    implementation(libs.tunjid.treenav.compose)
+    implementation(libs.tunjid.treenav.core)
+    implementation(libs.tunjid.treenav.strings)
 
     implementation(libs.tunjid.mutator.core.common)
     implementation(libs.tunjid.mutator.coroutines.common)

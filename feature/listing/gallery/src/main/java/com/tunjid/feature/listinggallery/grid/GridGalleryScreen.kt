@@ -1,5 +1,8 @@
 package com.tunjid.feature.listinggallery.grid
 
+import androidx.compose.animation.animateBounds
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,13 +23,13 @@ import androidx.compose.ui.unit.dp
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
+import com.tunjid.scaffold.scaffold.PaneScaffoldState
 import com.tunjid.tiler.compose.PivotedTilingEffect
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun GridGalleryScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit
@@ -54,9 +57,17 @@ fun GridGalleryScreen(
                     // This box constraints the height of the container so the shared element does
                     // not push other items out of the way when animating in.
                     Box(
-                        modifier = Modifier.aspectRatio(1f)
+                        modifier = Modifier
+                            .animateBounds(
+                                lookaheadScope = paneScaffoldState,
+                                boundsTransform = {_, _ ->
+                                    spring(stiffness = Spring.StiffnessMedium)
+                                }
+                            )
+                            .aspectRatio(1f)
+                            .animateItem()
                     ) {
-                        movableSharedElementScope.updatedMovableSharedElementOf(
+                        paneScaffoldState.updatedMovableSharedElementOf(
                             key = thumbnailSharedElementKey(item.url),
                             state = PhotoArgs(
                                 url = item.url,

@@ -41,9 +41,10 @@ dependencies {
 
     "implementation"(libs.findLibrary("squareup.okio").get())
 
-    "implementation"(libs.findLibrary("tunjid.treenav.core.common").get())
-    "implementation"(libs.findLibrary("tunjid.treenav.strings.common").get())
-    "implementation"(libs.findLibrary("tunjid.treenav.compose.common").get())
+    "implementation"(libs.findLibrary("tunjid.treenav.core").get())
+    "implementation"(libs.findLibrary("tunjid.treenav.strings").get())
+    "implementation"(libs.findLibrary("tunjid.treenav.compose").get())
+    "implementation"(libs.findLibrary("tunjid.treenav.compose.threepane").get())
 
     "implementation"(libs.findLibrary("tunjid.mutator.core.common").get())
     "implementation"(libs.findLibrary("tunjid.mutator.coroutines.common").get())
