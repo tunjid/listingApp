@@ -84,8 +84,8 @@ dependencies {
 
     implementation(libs.ktor.client)
 
-    implementation(libs.tunjid.treenav.core.common)
-    implementation(libs.tunjid.treenav.strings.common)
+    implementation(libs.tunjid.treenav.core)
+    implementation(libs.tunjid.treenav.strings)
 
     implementation(libs.tunjid.mutator.core.common)
     implementation(libs.tunjid.mutator.coroutines.common)
