@@ -1,6 +1,5 @@
 package com.tunjid.scaffold.media
 
-import android.webkit.MimeTypeMap
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -30,11 +29,6 @@ fun Photo(
             )
         }
     }
-}
-
-fun String.mimeType(): String? {
-    val extension = MimeTypeMap.getFileExtensionFromUrl(this) ?: return null
-    return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.lowercase())
 }
 
 data class PhotoArgs(

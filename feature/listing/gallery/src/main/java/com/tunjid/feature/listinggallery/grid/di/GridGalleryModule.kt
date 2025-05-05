@@ -16,7 +16,6 @@ import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.feature.listing.gallery.R
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
-import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.PoppableDestinationTopAppBar
 import com.tunjid.treenav.compose.threepane.threePaneEntry
@@ -85,7 +84,7 @@ object GridGalleryModule {
             },
             content = { paddingValues ->
                 GridGalleryScreen(
-                    movableSharedElementScope = this,
+                    paneScaffoldState = this,
                     modifier = Modifier
                         .padding(
                             top = paddingValues.calculateTopPadding()
@@ -94,9 +93,6 @@ object GridGalleryModule {
                     actions = viewModel.accept
                 )
             },
-            navigationRail = {
-                PaneNavigationRail()
-            }
         )
     }
 }
