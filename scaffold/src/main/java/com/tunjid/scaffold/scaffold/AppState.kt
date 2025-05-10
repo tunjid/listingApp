@@ -29,6 +29,7 @@ import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneEntry
+import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.compose.transforms.Transform
@@ -103,12 +104,7 @@ class AppState @Inject constructor(
                 panes = ThreePane.entries.toList(),
                 navigationState = multiStackNavState,
                 backStackTransform = { multiStackNav ->
-                    multiStackNav.backStack(
-                        includeCurrentDestinationChildren = true,
-                        placeChildrenBeforeParent = true,
-                    )
-                        .filterIsInstance<Route>()
-                        .toList()
+                    multiStackNav.multiPaneDisplayBackstack<Route>()
                 },
                 destinationTransform = { multiStackNav ->
                     multiStackNav.current as? Route ?: unknownRoute("")
