@@ -35,6 +35,7 @@ import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
+import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteTrie
@@ -103,12 +104,8 @@ class AppState @Inject constructor(
             MultiPaneDisplayState(
                 panes = ThreePane.entries.toList(),
                 navigationState = multiStackNavState,
-                backStackTransform = { multiStackNav ->
-                    multiStackNav.multiPaneDisplayBackstack<Route>()
-                },
-                destinationTransform = { multiStackNav ->
-                    multiStackNav.current as? Route ?: unknownRoute("")
-                },
+                backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
+                destinationTransform = MultiStackNav::requireCurrent,
                 entryProvider = { node ->
                     configurationTrie[node] ?: threePaneEntry(
                         render = { },
