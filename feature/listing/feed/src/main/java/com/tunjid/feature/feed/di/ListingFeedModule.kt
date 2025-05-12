@@ -22,6 +22,7 @@ import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.scaffold.PaneBottomAppBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
+import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
@@ -92,7 +93,7 @@ object ListingFeedModule {
                 route = route,
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .predictiveBackBackgroundModifier(paneScope = this),
             showNavigation = false,

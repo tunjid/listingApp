@@ -11,6 +11,7 @@ import com.tunjid.explore.pager.ExplorePagerViewModel
 import com.tunjid.explore.pager.FullscreenGalleryScreen
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneScaffold
+import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -58,7 +59,7 @@ object ExplorePagerModule {
                 route = route,
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier,
             showNavigation = false,
             containerColor = Color.Transparent,

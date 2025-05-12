@@ -16,14 +16,11 @@
 
 package com.tunjid.scaffold.scaffold
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -66,7 +63,7 @@ import kotlin.math.abs
 
 class PaneScaffoldState internal constructor(
     internal val density: Density,
-    private val appState: AppState,
+    internal val appState: AppState,
     paneMovableElementSharedTransitionScope: PaneMovableElementSharedTransitionScope<Route>,
 ) : PaneMovableElementSharedTransitionScope<Route> by paneMovableElementSharedTransitionScope {
     val isMediumScreenWidthOrWider get() = appState.isMediumScreenWidthOrWider
@@ -111,7 +108,7 @@ fun PaneScope<ThreePane, Route>.rememberPaneScaffoldState(): PaneScaffoldState {
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PaneScope<ThreePane, Route>.PaneScaffold(
+fun PaneScaffoldState.PaneScaffold(
     modifier: Modifier = Modifier,
     showNavigation: Boolean = true,
     containerColor: Color = MaterialTheme.colorScheme.background,
@@ -123,37 +120,21 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
     navigationRail: @Composable PaneScaffoldState.() -> Unit = {},
     content: @Composable PaneScaffoldState.(PaddingValues) -> Unit,
 ) {
-    val density = LocalDensity.current
-    val appState = LocalAppState.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val paneMovableElementSharedTransitionScope = rememberPaneMovableElementSharedTransitionScope()
-    val paneScaffoldState = remember(paneMovableElementSharedTransitionScope) {
-        PaneScaffoldState(
-            appState = appState,
-            paneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
-            density = density,
-        )
-    }
-
-    RowPaneScaffold(
+    PaneNavigationRailScaffold(
         modifier = modifier,
         navigationRail = {
-            if (paneScaffoldState.canShowNavRail) Box(
-                modifier = Modifier
-                    .zIndex(2f),
-            ) {
-                paneScaffoldState.navigationRail()
-            }
+            navigationRail()
         },
         content = {
             Scaffold(
                 modifier = Modifier
                     .animateBounds(
-                        lookaheadScope = paneMovableElementSharedTransitionScope,
+                        lookaheadScope = this,
                         boundsTransform = remember {
                             scaffoldBoundsTransform(
                                 appState = appState,
-                                paneScaffoldState = paneScaffoldState,
+                                paneScaffoldState = this,
                             )
                         }
                     )
@@ -161,23 +142,23 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
                         horizontal = if (appState.filteredPaneOrder.size > 1) 8.dp else 0.dp
                     )
                     .onSizeChanged {
-                        paneScaffoldState.scaffoldCurrentSize = it
+                        scaffoldCurrentSize = it
                     },
                 containerColor = containerColor,
                 topBar = {
-                    paneScaffoldState.topBar()
+                    topBar()
                 },
                 floatingActionButton = {
-                    paneScaffoldState.floatingActionButton()
+                    floatingActionButton()
                 },
                 bottomBar = {
-                    paneScaffoldState.navigationBar()
+                    navigationBar()
                 },
                 snackbarHost = {
                     SnackbarHost(snackbarHostState)
                 },
                 content = { paddingValues ->
-                    paneScaffoldState.content(paddingValues)
+                    content(paddingValues)
                 },
             )
         }
@@ -203,7 +184,7 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
 }
 
 @Composable
-private inline fun RowPaneScaffold(
+private inline fun PaneScaffoldState.PaneNavigationRailScaffold(
     modifier: Modifier = Modifier,
     navigationRail: @Composable () -> Unit,
     content: @Composable () -> Unit,
@@ -211,9 +192,10 @@ private inline fun RowPaneScaffold(
     Row(
         modifier = modifier,
         content = {
-            Box(
+            if (canShowNavRail) Box(
                 modifier = Modifier
                     .widthIn(max = 80.dp)
+                    .zIndex(2f),
             ) {
                 navigationRail()
             }
