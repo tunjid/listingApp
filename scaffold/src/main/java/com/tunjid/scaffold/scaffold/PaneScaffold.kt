@@ -188,7 +188,7 @@ fun PaneScaffoldState.PaneScaffold(
 }
 
 @Composable
-private inline fun PaneScaffoldState.PaneNavigationRailScaffold(
+private inline fun PaneNavigationRailScaffold(
     modifier: Modifier = Modifier,
     navigationRail: @Composable () -> Unit,
     content: @Composable () -> Unit,
