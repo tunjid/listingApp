@@ -95,6 +95,20 @@ class PaneScaffoldState internal constructor(
                 && abs(scaffoldCurrentSize.height - scaffoldTargetSize.height) <= 2
 }
 
+@Composable
+fun PaneScope<ThreePane, Route>.rememberPaneScaffoldState(): PaneScaffoldState {
+    val density = LocalDensity.current
+    val appState = LocalAppState.current
+    val paneMovableElementSharedTransitionScope = rememberPaneMovableElementSharedTransitionScope()
+    return remember(appState) {
+        PaneScaffoldState(
+            appState = appState,
+            paneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
+            density = density,
+        )
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PaneScope<ThreePane, Route>.PaneScaffold(
@@ -154,24 +168,10 @@ fun PaneScope<ThreePane, Route>.PaneScaffold(
                     paneScaffoldState.topBar()
                 },
                 floatingActionButton = {
-                    AnimatedVisibility(
-                        visible = paneScaffoldState.canShowFab,
-                        enter = slideInVertically(initialOffsetY = { it }),
-                        exit = slideOutVertically(targetOffsetY = { it }),
-                        content = {
-                            paneScaffoldState.floatingActionButton()
-                        },
-                    )
+                    paneScaffoldState.floatingActionButton()
                 },
                 bottomBar = {
-                    AnimatedVisibility(
-                        visible = paneScaffoldState.canShowBottomNavigation,
-                        enter = slideInVertically(initialOffsetY = { it }),
-                        exit = slideOutVertically(targetOffsetY = { it }),
-                        content = {
-                            paneScaffoldState.navigationBar()
-                        },
-                    )
+                    paneScaffoldState.navigationBar()
                 },
                 snackbarHost = {
                     SnackbarHost(snackbarHostState)
