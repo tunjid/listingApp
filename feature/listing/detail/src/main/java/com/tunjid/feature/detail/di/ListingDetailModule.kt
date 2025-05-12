@@ -16,6 +16,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.PoppableDestinationTopAppBar
+import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.Route
@@ -85,7 +86,7 @@ object ListingDetailModule {
                 )
             }
             val state = viewModel.state.collectAsStateWithLifecycle().value
-            PaneScaffold(
+            rememberPaneScaffoldState().PaneScaffold(
                 modifier = Modifier
                     .predictiveBackBackgroundModifier(paneScope = this),
                 showNavigation = false,

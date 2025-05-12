@@ -18,6 +18,7 @@ import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.PoppableDestinationTopAppBar
+import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
@@ -68,7 +69,7 @@ object GridGalleryModule {
                 route = route,
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .predictiveBackBackgroundModifier(paneScope = this),
             showNavigation = true,
