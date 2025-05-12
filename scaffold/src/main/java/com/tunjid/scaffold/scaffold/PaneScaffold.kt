@@ -62,11 +62,14 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.abs
 
 class PaneScaffoldState internal constructor(
-    internal val density: Density,
+    density: Density,
     internal val appState: AppState,
     paneMovableElementSharedTransitionScope: PaneMovableElementSharedTransitionScope<Route>,
 ) : PaneMovableElementSharedTransitionScope<Route> by paneMovableElementSharedTransitionScope {
+
     val isMediumScreenWidthOrWider get() = appState.isMediumScreenWidthOrWider
+
+    internal var density by mutableStateOf(density)
 
     internal val canShowBottomNavigation get() = !appState.isMediumScreenWidthOrWider
 
@@ -104,6 +107,7 @@ fun PaneScope<ThreePane, Route>.rememberPaneScaffoldState(): PaneScaffoldState {
             density = density,
         )
     }
+        .also { it.density = density }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
