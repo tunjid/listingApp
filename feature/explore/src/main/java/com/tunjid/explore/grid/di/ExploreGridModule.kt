@@ -70,7 +70,7 @@ object ExploreGridModule {
             },
             content = { paddingValues ->
                 ExploreGridScreen(
-                    movableSharedElementScope = this,
+                    scaffoldState = this,
                     modifier = Modifier
                         .padding(
                             top = paddingValues.calculateTopPadding()

@@ -99,7 +99,7 @@ object ListingDetailModule {
                 },
                 content = {
                     ListingDetailScreen(
-                        movableSharedElementScope = this,
+                        scaffoldState = this,
                         modifier = Modifier,
                         state = state,
                         actions = viewModel.accept

@@ -42,13 +42,13 @@ import com.tunjid.listing.feature.listing.detail.R
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
+import com.tunjid.scaffold.scaffold.PaneScaffoldState
 import com.tunjid.tiler.compose.PivotedTilingEffect
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun ListingDetailScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit
@@ -62,7 +62,7 @@ fun ListingDetailScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         ListingMediaPager(
-            movableSharedElementScope = movableSharedElementScope,
+            scaffoldState = scaffoldState,
             pagerState = pagerState,
             listingId = state.listing?.id,
             listingItems = state.listingItems,
@@ -86,7 +86,7 @@ fun ListingDetailScreen(
 
 @Composable
 private fun ListingMediaPager(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     pagerState: PagerState,
     listingId: String?,
     listingItems: List<ListingItem>,
@@ -105,7 +105,7 @@ private fun ListingMediaPager(
             key = { index -> listingItems[index].url }
         ) { index ->
             val item = listingItems[index]
-            movableSharedElementScope.updatedMovableSharedElementOf(
+            scaffoldState.updatedMovableSharedElementOf(
                 key = thumbnailSharedElementKey(item.url),
                 state = PhotoArgs(
                     url = item.url,

@@ -106,7 +106,7 @@ object ListingFeedModule {
             },
             content = { paddingValues ->
                 ListingFeedScreen(
-                    movableSharedElementScope = this,
+                    scaffoldState = this,
                     modifier = Modifier
                         .padding(
                             top = paddingValues.calculateTopPadding()

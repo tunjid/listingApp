@@ -1,5 +1,6 @@
 package com.tunjid.feature.feed
 
+import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -13,14 +14,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -65,15 +63,15 @@ import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
+import com.tunjid.scaffold.scaffold.PaneScaffoldState
 import com.tunjid.tiler.compose.PivotedTilingEffect
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import com.tunjid.ui.FastScrollbar
 import kotlinx.coroutines.flow.first
 
 @Composable
 fun ListingFeedScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit,
@@ -112,10 +110,11 @@ fun ListingFeedScreen(
                 },
                 itemContent = { feedItem ->
                     FeedItemCard(
-                        movableSharedElementScope = movableSharedElementScope,
+                        scaffoldState = scaffoldState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .animateItem(fadeInSpec = null),
+                            .animateItem(fadeInSpec = null)
+                            .animateBounds(scaffoldState),
                         feedItem = feedItem,
                         actions = actions,
                     )
@@ -131,8 +130,6 @@ fun ListingFeedScreen(
 
         FastScrollbar(
             modifier = Modifier
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(top = 56.dp)
                 .align(Alignment.BottomEnd)
                 .width(12.dp),
             state = scrollbarState,
@@ -148,8 +145,6 @@ fun ListingFeedScreen(
             state = pullRefreshState,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(64.dp)
         )
         EmptyView(
             modifier = Modifier
@@ -170,7 +165,7 @@ fun ListingFeedScreen(
 
 @Composable
 private fun FeedItemCard(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     feedItem: FeedItem,
     actions: (Action) -> Unit,
@@ -193,7 +188,7 @@ private fun FeedItemCard(
                         },
                 ) {
                     FeedMediaPager(
-                        movableSharedElementScope = movableSharedElementScope,
+                        scaffoldState = scaffoldState,
                         pagerState = pagerState,
                         feedItem = feedItem,
                         actions = actions
@@ -250,7 +245,7 @@ private fun EmptyView(
 
 @Composable
 private fun FeedMediaPager(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     pagerState: PagerState,
     feedItem: FeedItem,
     actions: (Action) -> Unit
@@ -260,7 +255,7 @@ private fun FeedMediaPager(
         key = { index -> feedItem.media[index].url }
     ) { index ->
         val media = feedItem.media[index]
-        movableSharedElementScope.updatedMovableSharedElementOf(
+        scaffoldState.updatedMovableSharedElementOf(
             key = thumbnailSharedElementKey(media.url),
             state = PhotoArgs(
                 url = media.url,
