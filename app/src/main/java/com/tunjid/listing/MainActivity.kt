@@ -27,6 +27,13 @@ class MainActivity : ComponentActivity() {
                     appState = appState,
                 )
             }
+            App(
+                modifier = Modifier,
+                appState = appState,
+            )
+            PredictiveBackEffects(
+                appState = appState,
+            )
         }
     }
 }

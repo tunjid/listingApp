@@ -137,5 +137,5 @@ class AppState @Inject constructor(
 }
 
 internal val LocalAppState = staticCompositionLocalOf<AppState> {
-    TODO()
+    throw IllegalStateException("CompositionLocal LocalAppState not present")
 }
