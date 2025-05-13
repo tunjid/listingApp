@@ -1,6 +1,10 @@
 package com.tunjid.feature.listinggallery.grid.di
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -14,6 +18,7 @@ import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.grid.GridGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.feature.listing.gallery.R
+import com.tunjid.me.scaffold.scaffold.PaneFab
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneScaffold
@@ -94,6 +99,21 @@ object GridGalleryModule {
                     actions = viewModel.accept
                 )
             },
+            floatingActionButton = {
+                PaneFab(
+                    modifier = Modifier
+                        .animateEnterExit(
+                            enter = slideInVertically(initialOffsetY = { it }),
+                            exit = slideOutVertically(targetOffsetY = { it }),
+                        ),
+                    text = stringResource(R.string.favorite),
+                    icon = Icons.Rounded.Favorite,
+                    expanded = true,
+                    onClick = {
+
+                    }
+                )
+            }
         )
     }
 }
