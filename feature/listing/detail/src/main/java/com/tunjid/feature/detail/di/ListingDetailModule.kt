@@ -1,6 +1,11 @@
 package com.tunjid.feature.detail.di
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Sell
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -10,6 +15,8 @@ import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailViewModel
 import com.tunjid.feature.detail.ListingStateHolderFactory
 import com.tunjid.listing.data.model.MediaQuery
+import com.tunjid.listing.feature.listing.detail.R
+import com.tunjid.me.scaffold.scaffold.PaneFab
 import com.tunjid.me.scaffold.scaffold.SecondaryPaneCloseBackHandler
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
@@ -99,7 +106,7 @@ object ListingDetailModule {
                 },
                 content = {
                     ListingDetailScreen(
-                        movableSharedElementScope = this,
+                        scaffoldState = this,
                         modifier = Modifier,
                         state = state,
                         actions = viewModel.accept
@@ -113,6 +120,21 @@ object ListingDetailModule {
                 },
                 navigationRail = {
                     PaneNavigationRail()
+                },
+                floatingActionButton = {
+                    PaneFab(
+                        modifier = Modifier
+                            .animateEnterExit(
+                                enter = slideInVertically(initialOffsetY = { it }),
+                                exit = slideOutVertically(targetOffsetY = { it }),
+                            ),
+                        text = stringResource(R.string.book),
+                        icon = Icons.Rounded.Sell,
+                        expanded = true,
+                        onClick = {
+
+                        }
+                    )
                 }
             )
         }

@@ -5,4 +5,5 @@
     <string name="meet_your_host">Meet your host</string>
     <string name="superhost">Superhost</string>
     <string name="item_count">%1$s/%2$s</string>
+    <string name="book">Book</string>
 </resources>

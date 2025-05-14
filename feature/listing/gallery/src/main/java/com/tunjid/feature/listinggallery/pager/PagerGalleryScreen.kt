@@ -10,13 +10,13 @@ import com.tunjid.me.scaffold.scaffold.dragToPop
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
+import com.tunjid.scaffold.scaffold.PaneScaffoldState
 import com.tunjid.tiler.compose.PivotedTilingEffect
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @Composable
 fun FullscreenGalleryScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit
@@ -31,7 +31,7 @@ fun FullscreenGalleryScreen(
         key = { index -> state.items[index].url }
     ) { index ->
         val item = state.items[index]
-        movableSharedElementScope.updatedMovableSharedElementOf(
+        scaffoldState.updatedMovableSharedElementOf(
             key = thumbnailSharedElementKey(item.url),
             state = PhotoArgs(
                 url = item.url,

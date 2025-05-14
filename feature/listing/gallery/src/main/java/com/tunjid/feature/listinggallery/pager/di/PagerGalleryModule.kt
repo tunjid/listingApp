@@ -69,7 +69,7 @@ object PagerGalleryModule {
             containerColor = Color.Transparent,
             content = {
                 FullscreenGalleryScreen(
-                    movableSharedElementScope = this,
+                    scaffoldState = this,
                     modifier = Modifier,
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     actions = viewModel.accept

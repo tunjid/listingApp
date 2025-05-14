@@ -26,7 +26,7 @@ import com.tunjid.composables.lazy.grid.interpolatedFirstItemIndex
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.PlayerStatus
 import com.tunjid.scaffold.media.Video
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.scaffold.scaffold.PaneScaffoldState
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.min
@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun ExploreGridScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    scaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     state: State,
     actions: (Action) -> Unit,
@@ -61,7 +61,7 @@ fun ExploreGridScreen(
                         .aspectRatio(9f / 16)
                         .animateItem()
                 ) {
-                    movableSharedElementScope.updatedMovableSharedElementOf(
+                    scaffoldState.updatedMovableSharedElementOf(
                         key = thumbnailSharedElementKey(item.state.url),
                         state = item.state,
                         modifier = Modifier

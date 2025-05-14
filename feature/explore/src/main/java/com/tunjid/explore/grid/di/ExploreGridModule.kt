@@ -2,10 +2,13 @@ package com.tunjid.explore.grid.di
 
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.round
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -18,6 +21,7 @@ import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneBottomAppBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
+import com.tunjid.scaffold.scaffold.bottomNavigationNestedScrollConnection
 import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
@@ -57,9 +61,14 @@ object ExploreGridModule {
                 route = route,
             )
         }
+
+        val bottomNavigationOffsetConnection =
+            bottomNavigationNestedScrollConnection()
+
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
-                .predictiveBackBackgroundModifier(paneScope = this),
+                .predictiveBackBackgroundModifier(paneScope = this)
+                .nestedScroll(bottomNavigationOffsetConnection),
             showNavigation = false,
             topBar = {
                 TopAppBar(
@@ -70,7 +79,7 @@ object ExploreGridModule {
             },
             content = { paddingValues ->
                 ExploreGridScreen(
-                    movableSharedElementScope = this,
+                    scaffoldState = this,
                     modifier = Modifier
                         .padding(
                             top = paddingValues.calculateTopPadding()
@@ -82,6 +91,9 @@ object ExploreGridModule {
             navigationBar = {
                 PaneBottomAppBar(
                     modifier = Modifier
+                        .offset {
+                            bottomNavigationOffsetConnection.offset.round()
+                        }
                         .animateEnterExit(
                             enter = slideInVertically(initialOffsetY = { it }),
                             exit = slideOutVertically(targetOffsetY = { it }),
