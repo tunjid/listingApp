@@ -32,6 +32,7 @@ import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -85,6 +86,12 @@ fun PaneScaffoldState.PaneFab(
     onClick: () -> Unit,
 ) {
     AnimatedVisibility(
+        modifier = modifier
+            .paneSharedElement(
+                key = FabSharedElementKey,
+                visible = visible,
+                zIndexInOverlay = FabSharedElementZIndex,
+            ),
         visible = canShowFab,
         enter = enterTransition,
         exit = exitTransition,
@@ -92,13 +99,7 @@ fun PaneScaffoldState.PaneFab(
             // The material3 ExtendedFloatingActionButton does not allow for placing
             // Modifier.animateContentSize() on its row.
             FloatingActionButton(
-                modifier = modifier
-                    .animateFabSize()
-                    .paneSharedElement(
-                        key = FabSharedElementKey,
-                        visible = visible,
-                        zIndexInOverlay = FabSharedElementZIndex,
-                    ),
+                modifier = Modifier,
                 onClick = onClick,
                 shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
                 content = {
@@ -106,7 +107,8 @@ fun PaneScaffoldState.PaneFab(
                         modifier = Modifier
                             .animateFabSize()
                             .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
                     ) {
                         if (icon != null) FabIcon(icon)
                         if (icon == null || expanded) {

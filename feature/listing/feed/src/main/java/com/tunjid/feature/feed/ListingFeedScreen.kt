@@ -61,6 +61,7 @@ import com.tunjid.composables.scrollbars.scrollable.grid.scrollbarState
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.listing.sync.SyncStatus
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
+import com.tunjid.scaffold.media.ImageCornerRadii
 import com.tunjid.scaffold.media.Photo
 import com.tunjid.scaffold.media.PhotoArgs
 import com.tunjid.scaffold.scaffold.PaneScaffoldState
@@ -259,7 +260,8 @@ private fun FeedMediaPager(
             key = thumbnailSharedElementKey(media.url),
             state = PhotoArgs(
                 url = media.url,
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                radii = FeedImageRadii,
             ),
             modifier = Modifier
                 .fillMaxSize()
@@ -439,3 +441,10 @@ fun shimmerBrush(
         )
     )
 }
+
+private val FeedImageRadii = ImageCornerRadii(
+    topStart = 8.dp,
+    topEnd = 8.dp,
+    bottomStart = 8.dp,
+    bottomEnd = 8.dp,
+)

@@ -31,8 +31,13 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.AccumulatedOffsetNestedScrollConnection
+import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.rememberAccumulatedOffsetNestedScrollConnection
 import com.tunjid.me.scaffold.scaffold.BottomNavSharedElementZIndex
 import com.tunjid.scaffold.navigation.AppStack
 
@@ -48,18 +53,17 @@ fun PaneScaffoldState.PaneBottomAppBar(
 ) {
     val appState = LocalAppState.current
     AnimatedVisibility(
+        modifier = modifier
+            .sharedElement(
+                sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
+                animatedVisibilityScope = this,
+                zIndexInOverlay = BottomNavSharedElementZIndex,
+            ),
         visible = canShowBottomNavigation,
         enter = enterTransition,
         exit = exitTransition,
         content = {
-            NavigationBar(
-                modifier = modifier
-                    .sharedElement(
-                        sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
-                        animatedVisibilityScope = this,
-                        zIndexInOverlay = BottomNavSharedElementZIndex,
-                    ),
-            ) {
+            NavigationBar {
                 appState.navItems.forEach { item ->
                     NavigationBarItem(
                         icon = {
@@ -97,13 +101,12 @@ fun PaneScaffoldState.PaneNavigationRail(
 ) {
     val appState = LocalAppState.current
     AnimatedVisibility(
+        modifier = modifier,
         visible = canShowNavRail,
         enter = enterTransition,
         exit = exitTransition,
         content = {
-            NavigationRail(
-                modifier = modifier,
-            ) {
+            NavigationRail {
                 appState.navItems.forEach { item ->
                     NavigationRailItem(
                         selected = item.selected,
@@ -128,6 +131,22 @@ fun PaneScaffoldState.PaneNavigationRail(
                 }
             }
         }
+    )
+}
+
+
+@Composable
+fun bottomNavigationNestedScrollConnection(): AccumulatedOffsetNestedScrollConnection {
+    val navigationBarHeight by rememberUpdatedState(UiTokens.bottomNavHeight)
+    return rememberAccumulatedOffsetNestedScrollConnection(
+        invert = true,
+        maxOffset = maxOffset@{
+            Offset(
+                x = 0f,
+                y = (navigationBarHeight + UiTokens.bottomNavHeight).toPx()
+            )
+        },
+        minOffset = { Offset.Zero },
     )
 }
 
