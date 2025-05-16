@@ -101,7 +101,12 @@ fun PaneScaffoldState.PaneNavigationRail(
 ) {
     val appState = LocalAppState.current
     AnimatedVisibility(
-        modifier = modifier,
+        modifier = modifier
+            .sharedElement(
+                sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
+                animatedVisibilityScope = this,
+                zIndexInOverlay = BottomNavSharedElementZIndex,
+            ),
         visible = canShowNavRail,
         enter = enterTransition,
         exit = exitTransition,
@@ -151,3 +156,5 @@ fun bottomNavigationNestedScrollConnection(): AccumulatedOffsetNestedScrollConne
 }
 
 private data object BottomNavSharedElementKey
+
+private data object NavRailSharedElementKey
