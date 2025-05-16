@@ -38,7 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.AccumulatedOffsetNestedScrollConnection
 import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.rememberAccumulatedOffsetNestedScrollConnection
-import com.tunjid.me.scaffold.scaffold.BottomNavSharedElementZIndex
+import com.tunjid.me.scaffold.scaffold.NavigationSharedElementZIndex
 import com.tunjid.scaffold.navigation.AppStack
 
 
@@ -57,7 +57,7 @@ fun PaneScaffoldState.PaneBottomAppBar(
             .sharedElement(
                 sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
                 animatedVisibilityScope = this,
-                zIndexInOverlay = BottomNavSharedElementZIndex,
+                zIndexInOverlay = NavigationSharedElementZIndex,
             ),
         visible = canShowBottomNavigation,
         enter = enterTransition,
@@ -105,7 +105,7 @@ fun PaneScaffoldState.PaneNavigationRail(
             .sharedElement(
                 sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
                 animatedVisibilityScope = this,
-                zIndexInOverlay = BottomNavSharedElementZIndex,
+                zIndexInOverlay = NavigationSharedElementZIndex,
             ),
         visible = canShowNavRail,
         enter = enterTransition,
