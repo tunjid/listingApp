@@ -30,5 +30,4 @@ internal inline fun <T> rememberUpdatedStateIf(
     mutableStateOf(value)
 }.also { if (predicate(value)) it.value = value }
 
-internal const val NavigationSharedElementZIndex = 2f
 internal const val FabSharedElementZIndex = 4f
