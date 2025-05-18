@@ -104,13 +104,11 @@ fun PaneScaffoldState.PaneNavigationRail(
                 onNavItemReselected,
                 badge,
             )
-            else {
-                appState.PaneNavigationRail(
-                    modifier = Modifier,
-                    onNavItemReselected = onNavItemReselected,
-                    badge = badge,
-                )
-            }
+            else appState.PaneNavigationRail(
+                modifier = Modifier,
+                onNavItemReselected = onNavItemReselected,
+                badge = badge,
+            )
         }
     )
 }

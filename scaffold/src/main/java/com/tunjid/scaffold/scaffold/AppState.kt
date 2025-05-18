@@ -27,7 +27,6 @@ import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.navItemSelected
 import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneEntry
@@ -143,7 +142,6 @@ class AppState @Inject constructor(
         DisposableEffect(Unit) {
             val job = CoroutineScope(Dispatchers.Main.immediate).launch {
                 navigationStateHolder.state.collect { multiStackNav ->
-                    println(multiStackNav.backStack(includeCurrentDestinationChildren = true, placeChildrenBeforeParent = true).map { it.id })
                     multiStackNavState.value = multiStackNav
                 }
             }
