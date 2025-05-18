@@ -88,25 +88,21 @@ class AppState @Inject constructor(
     internal val movableNavigationBar = movableContentOf<
             Modifier,
                 () -> Boolean,
-            @Composable (AppStack) -> Unit
-            > { modifier, onNavItemReselected, badge ->
+            > { modifier, onNavItemReselected ->
         PaneNavigationBar(
             modifier = modifier,
             onNavItemReselected = onNavItemReselected,
-            badge = badge,
         )
     }
 
     internal val movableNavigationRail = movableContentOf<
             Modifier,
                 () -> Boolean,
-            @Composable (AppStack) -> Unit
-            > { modifier, onNavItemReselected, badge ->
+            > { modifier, onNavItemReselected ->
 
         PaneNavigationRail(
             modifier = modifier,
             onNavItemReselected = onNavItemReselected,
-            badge = badge,
         )
     }
 

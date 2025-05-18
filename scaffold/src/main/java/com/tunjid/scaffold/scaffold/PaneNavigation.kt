@@ -40,7 +40,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.AccumulatedOffsetNestedScrollConnection
 import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.rememberAccumulatedOffsetNestedScrollConnection
-import com.tunjid.scaffold.navigation.AppStack
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -50,7 +49,6 @@ fun PaneScaffoldState.PaneBottomAppBar(
     enterTransition: EnterTransition = slideInVertically(initialOffsetY = { it }),
     exitTransition: ExitTransition = slideOutVertically(targetOffsetY = { it }),
     onNavItemReselected: () -> Boolean = { false },
-    badge: @Composable (AppStack) -> Unit = {},
 ) {
     AnimatedVisibility(
         modifier = modifier
@@ -67,12 +65,10 @@ fun PaneScaffoldState.PaneBottomAppBar(
             if (canUseMovableNavigationBar) appState.movableNavigationBar(
                 Modifier,
                 onNavItemReselected,
-                badge,
             )
             else appState.PaneNavigationBar(
                 modifier = Modifier,
                 onNavItemReselected = onNavItemReselected,
-                badge = badge,
             )
         },
     )
@@ -84,7 +80,6 @@ fun PaneScaffoldState.PaneNavigationRail(
     enterTransition: EnterTransition = slideInHorizontally(initialOffsetX = { -it }),
     exitTransition: ExitTransition = slideOutHorizontally(targetOffsetX = { -it }),
     onNavItemReselected: () -> Boolean = { false },
-    badge: @Composable (AppStack) -> Unit = {},
 ) {
     AnimatedVisibility(
         modifier = modifier
@@ -102,12 +97,10 @@ fun PaneScaffoldState.PaneNavigationRail(
             if (canUseMovableNavigationRail) appState.movableNavigationRail(
                 Modifier,
                 onNavItemReselected,
-                badge,
             )
             else appState.PaneNavigationRail(
                 modifier = Modifier,
                 onNavItemReselected = onNavItemReselected,
-                badge = badge,
             )
         }
     )
@@ -118,7 +111,6 @@ fun PaneScaffoldState.PaneNavigationRail(
 internal fun AppState.PaneNavigationBar(
     modifier: Modifier = Modifier,
     onNavItemReselected: () -> Boolean,
-    badge: @Composable (AppStack) -> Unit,
 ) {
     NavigationBar(
         modifier = modifier,
@@ -128,7 +120,6 @@ internal fun AppState.PaneNavigationBar(
                 icon = {
                     BadgedBox(
                         badge = {
-                            badge(item.stack)
                         },
                         content = {
                             Icon(
@@ -152,7 +143,6 @@ internal fun AppState.PaneNavigationBar(
 internal fun AppState.PaneNavigationRail(
     modifier: Modifier = Modifier,
     onNavItemReselected: () -> Boolean,
-    badge: @Composable (AppStack) -> Unit,
 ) {
     NavigationRail(
         modifier = modifier,
@@ -163,7 +153,6 @@ internal fun AppState.PaneNavigationRail(
                 icon = {
                     BadgedBox(
                         badge = {
-                            badge(item.stack)
                         },
                         content = {
                             Icon(
