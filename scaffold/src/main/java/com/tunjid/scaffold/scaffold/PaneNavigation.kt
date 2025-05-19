@@ -61,7 +61,6 @@ fun PaneScaffoldState.PaneBottomAppBar(
         enter = enterTransition,
         exit = exitTransition,
         content = {
-            val appState = LocalAppState.current
             if (canUseMovableNavigationBar) appState.movableNavigationBar(
                 Modifier,
                 onNavItemReselected,
@@ -93,7 +92,6 @@ fun PaneScaffoldState.PaneNavigationRail(
         enter = enterTransition,
         exit = exitTransition,
         content = {
-            val appState = LocalAppState.current
             if (canUseMovableNavigationRail) appState.movableNavigationRail(
                 Modifier,
                 onNavItemReselected,

@@ -16,17 +16,7 @@ class MainActivity : ComponentActivity() {
         val app = applicationContext as ListingApplication
         val listingApp = app.listingApp
         val appState = listingApp.appState
-
         setContent {
-            ListingAppTheme {
-                App(
-                    modifier = Modifier,
-                    appState = appState,
-                )
-                PredictiveBackEffects(
-                    appState = appState,
-                )
-            }
             App(
                 modifier = Modifier,
                 appState = appState,
