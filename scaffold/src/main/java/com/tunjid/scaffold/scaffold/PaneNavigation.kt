@@ -82,9 +82,9 @@ fun PaneScaffoldState.PaneNavigationRail(
 ) {
     AnimatedVisibility(
         modifier = modifier
-            .sharedElementWithCallerManagedVisibility(
+            .sharedElement(
                 sharedContentState = rememberSharedContentState(NavigationRailSharedElementKey),
-                visible = canShowNavigationRail,
+                animatedVisibilityScope = this,
                 zIndexInOverlay = NavigationSharedElementZIndex,
                 boundsTransform = NavigationRailBoundsTransform,
             ),
