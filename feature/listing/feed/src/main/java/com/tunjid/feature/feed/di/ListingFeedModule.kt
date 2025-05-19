@@ -22,7 +22,7 @@ import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
-import com.tunjid.scaffold.scaffold.PaneBottomAppBar
+import com.tunjid.scaffold.scaffold.PaneNavigationBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.bottomNavigationNestedScrollConnection
@@ -125,7 +125,7 @@ object ListingFeedModule {
                 )
             },
             navigationBar = {
-                PaneBottomAppBar(
+                PaneNavigationBar(
                     modifier = Modifier
                         .offset {
                             bottomNavigationOffsetConnection.offset.round()

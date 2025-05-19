@@ -44,7 +44,7 @@ import com.tunjid.composables.accumulatedoffsetnestedscrollconnection.rememberAc
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PaneScaffoldState.PaneBottomAppBar(
+fun PaneScaffoldState.PaneNavigationBar(
     modifier: Modifier = Modifier,
     enterTransition: EnterTransition = slideInVertically(initialOffsetY = { it }),
     exitTransition: ExitTransition = slideOutVertically(targetOffsetY = { it }),
