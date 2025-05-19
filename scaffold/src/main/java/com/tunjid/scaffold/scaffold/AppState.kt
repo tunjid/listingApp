@@ -21,7 +21,6 @@ import com.tunjid.me.scaffold.scaffold.DragToPopState
 import com.tunjid.me.scaffold.scaffold.PaneAnchorState
 import com.tunjid.me.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.me.scaffold.scaffold.SecondaryPaneMinWidthBreakpointDp
-import com.tunjid.scaffold.navigation.AppStack
 import com.tunjid.scaffold.navigation.NavItem
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.navItemSelected
@@ -99,7 +98,6 @@ class AppState @Inject constructor(
             Modifier,
                 () -> Boolean,
             > { modifier, onNavItemReselected ->
-
         PaneNavigationRail(
             modifier = modifier,
             onNavItemReselected = onNavItemReselected,
