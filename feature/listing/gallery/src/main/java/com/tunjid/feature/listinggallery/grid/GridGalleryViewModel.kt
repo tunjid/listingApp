@@ -65,7 +65,7 @@ private fun CoroutineScope.mutator(
     route: Route,
 ): GridGalleryStateHolder = actionStateFlowMutator(
     initialState = State(
-        currentQuery = route.routeParams.initialQuery,
+        currentQuery = route.initialQuery,
         items = route.preSeededNavigationItems()
     ),
     actionTransform = { actions ->
@@ -85,8 +85,8 @@ private fun CoroutineScope.mutator(
 
 private fun Route.preSeededNavigationItems() = buildTiledList {
     this.addAll(
-        query = routeParams.initialQuery,
-        items = routeParams.startingMediaUrls.mapIndexed(GalleryItem::Preview)
+        query = initialQuery,
+        items = startingMediaUrls.mapIndexed(GalleryItem::Preview)
     )
 }
 

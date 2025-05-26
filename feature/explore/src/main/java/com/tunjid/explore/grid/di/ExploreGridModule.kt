@@ -17,7 +17,6 @@ import com.tunjid.explore.grid.ExploreGridModelFactory
 import com.tunjid.explore.grid.ExploreGridScreen
 import com.tunjid.explore.grid.ExploreGridViewModel
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
-import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.scaffold.PaneNavigationBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
@@ -25,6 +24,7 @@ import com.tunjid.scaffold.scaffold.bottomNavigationNestedScrollConnection
 import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 import com.tunjid.treenav.strings.RouteMatcher
+import com.tunjid.treenav.strings.routeOf
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides

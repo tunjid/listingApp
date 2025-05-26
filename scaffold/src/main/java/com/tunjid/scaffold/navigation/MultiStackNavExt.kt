@@ -1,6 +1,6 @@
 package com.tunjid.scaffold.navigation
 
-import com.tunjid.scaffold.adaptive.routeOf
+import com.tunjid.treenav.strings.routeOf
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.canPop

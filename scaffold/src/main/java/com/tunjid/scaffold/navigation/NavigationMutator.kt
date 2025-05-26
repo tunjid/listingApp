@@ -12,7 +12,7 @@ import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
-import com.tunjid.scaffold.adaptive.routeOf
+import com.tunjid.treenav.strings.routeOf
 import com.tunjid.scaffold.savedstate.EmptySavedState
 import com.tunjid.scaffold.savedstate.InitialSavedState
 import com.tunjid.scaffold.savedstate.SavedState
