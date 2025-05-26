@@ -20,7 +20,6 @@ import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
-import com.tunjid.scaffold.adaptive.routeOf
 import com.tunjid.scaffold.di.ScreenStateHolderCreator
 import com.tunjid.scaffold.scaffold.PaneNavigationBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
@@ -29,8 +28,13 @@ import com.tunjid.scaffold.scaffold.bottomNavigationNestedScrollConnection
 import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
+import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
 import com.tunjid.treenav.strings.RouteParams
+import com.tunjid.treenav.strings.mappedRouteQuery
+import com.tunjid.treenav.strings.optionalRouteQuery
+import com.tunjid.treenav.strings.routeOf
+import com.tunjid.treenav.strings.routeQuery
 import com.tunjid.treenav.strings.urlRouteMatcher
 import dagger.Module
 import dagger.Provides
@@ -43,19 +47,23 @@ internal const val FeedPattern = "/listings"
 internal const val FavoritesPattern = "/favorites"
 private const val DefaultItemsPerQuery = 10L
 
-internal val RouteParams.limit
-    get() = queryParams["limit"]?.firstOrNull()?.toLongOrNull()
-        ?: DefaultItemsPerQuery
+internal val Route.limit by mappedRouteQuery(
+    default = DefaultItemsPerQuery,
+    mapper = String::toLong,
+)
 
-internal val RouteParams.offset get() = queryParams["offset"]?.firstOrNull()?.toLongOrNull() ?: 0L
+internal val Route.offset by mappedRouteQuery(
+    default = 0L,
+    mapper = String::toLong,
+)
 
-internal val RouteParams.propertyType get() = queryParams["propertyType"]?.firstOrNull()
+internal val Route.propertyType by optionalRouteQuery()
 
-internal val RouteParams.isFavorites get() = pathAndQueries.contains("favorites")
+internal val Route.isFavorites get() = routeParams.pathAndQueries.contains("favorites")
 
-internal val RouteParams.startingMediaUrls get() = queryParams["url"]?.take(3) ?: emptyList()
+internal val Route.startingMediaUrls get() = routeParams.queryParams["url"]?.take(3) ?: emptyList()
 
-internal val RouteParams.initialQuery
+internal val Route.initialQuery
     get() = ListingQuery(
         propertyType = propertyType,
         limit = limit,

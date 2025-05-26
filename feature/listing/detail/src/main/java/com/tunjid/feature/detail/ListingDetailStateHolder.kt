@@ -70,15 +70,15 @@ private fun CoroutineScope.listingDetailMutator(
     route: Route,
 ): ActionStateMutator<Action, StateFlow<State>> = actionStateFlowMutator(
     initialState = State(
-        currentQuery = route.routeParams.initialQuery,
+        currentQuery = route.initialQuery,
         listingItems = route.preSeededNavigationItems()
     ),
     inputs = listOf(
         mediaRepository.countMutations(
-            listingId = route.routeParams.listingId
+            listingId = route.listingId
         ),
         fetchListingMutations(
-            listingId = route.routeParams.listingId,
+            listingId = route.listingId,
             listingRepository = listingRepository,
             userRepository = userRepository
         ),
@@ -102,8 +102,8 @@ private fun CoroutineScope.listingDetailMutator(
 
 private fun Route.preSeededNavigationItems() = buildTiledList {
     addAll(
-        query = routeParams.initialQuery,
-        items = routeParams.startingMediaUrls.mapIndexed(ListingItem::Preview)
+        query = initialQuery,
+        items = startingMediaUrls.mapIndexed(ListingItem::Preview)
     )
 }
 

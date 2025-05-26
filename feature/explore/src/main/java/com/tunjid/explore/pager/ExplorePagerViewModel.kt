@@ -51,7 +51,7 @@ private fun CoroutineScope.mutator(
     route: Route,
 ): ExplorePageStateHolder = actionStateFlowMutator(
     initialState = State(
-        initialPage = route.routeParams.initialPage,
+        initialPage = route.initialPage,
         items = route.preSeededNavigationItems(playerManager)
     ),
     actionTransform = { actions ->
@@ -81,4 +81,4 @@ private fun Flow<Action.ToggleDebug>.debugMutations(
 }
 
 private fun Route.preSeededNavigationItems(playerManager: PlayerManager) =
-    routeParams.startingUrls.map { GalleryItem.Preview(playerManager.stateFor(it)) }
+    startingUrls.map { GalleryItem.Preview(playerManager.stateFor(it)) }

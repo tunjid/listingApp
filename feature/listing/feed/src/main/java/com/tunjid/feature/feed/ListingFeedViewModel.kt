@@ -86,7 +86,7 @@ fun CoroutineScope.mutator(
     route: Route,
 ): ListingFeedStateHolder = actionStateFlowMutator(
     initialState = State(
-        currentQuery = route.routeParams.initialQuery,
+        currentQuery = route.initialQuery,
         listings = route.preSeededNavigationItems(),
     ),
     started = SharingStarted.WhileSubscribed(3000),
@@ -97,7 +97,7 @@ fun CoroutineScope.mutator(
         actions.toMutationStream(keySelector = Action::key) {
             when (val action = type()) {
                 is Action.LoadFeed -> action.flow.fetchListingFeedMutations(
-                    isFavorites = route.routeParams.isFavorites,
+                    isFavorites = route.isFavorites,
                     listingRepository = listingRepository,
                     mediaRepository = mediaRepository,
                     favoriteRepository = favoriteRepository,
@@ -121,12 +121,12 @@ fun CoroutineScope.mutator(
 
 private fun Route.preSeededNavigationItems() = buildTiledList<ListingQuery, FeedItem> {
     this.addAll(
-        query = routeParams.initialQuery,
+        query = initialQuery,
         items = listOf(
             FeedItem.Preview(
                 index = 0,
-                key = "${routeParams.initialQuery}-0",
-                media = routeParams.startingMediaUrls.map(::FeedMedia)
+                key = "${initialQuery}-0",
+                media = startingMediaUrls.map(::FeedMedia)
             )
         )
     )

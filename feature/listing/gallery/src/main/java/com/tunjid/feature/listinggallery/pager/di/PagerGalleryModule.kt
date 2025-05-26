@@ -10,7 +10,7 @@ import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
 import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
 import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
-import com.tunjid.scaffold.adaptive.routeOf
+import com.tunjid.treenav.strings.routeOf
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.threePaneEntry
