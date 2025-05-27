@@ -66,7 +66,7 @@ dependencies {
     implementation(project(":feature-profile"))
     implementation(project(":feature-explore"))
 
-    implementation(project(":app:workmanager"))
+    implementation(project(":data-sync-workmanager"))
 
     implementation(libs.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

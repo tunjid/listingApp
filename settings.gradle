@@ -20,7 +20,6 @@ dependencyResolutionManagement {
 rootProject.name = "AirbnbListing"
 
 include(":app")
-include(":app:workmanager")
 
 include(":scaffold")
 
@@ -29,6 +28,7 @@ include(":data-database")
 include(":data-model")
 include(":data-network")
 include(":data-sync")
+include(":data-sync-workmanager")
 include(":data-test")
 
 include(":feature-listing-feed")
