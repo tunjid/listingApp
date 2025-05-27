@@ -6,11 +6,9 @@ plugins {
 }
 
 android {
-    namespace = "com.tunjid.listing.data.favorite"
+    namespace = "com.tunjid.listing.data.model"
 }
 
 dependencies {
-    implementation(project(":data:model:listing:database"))
-
     implementation(libs.kotlinx.serialization.protobuf)
 }

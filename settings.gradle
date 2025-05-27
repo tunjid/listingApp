@@ -24,20 +24,8 @@ include(":app:workmanager")
 
 include(":scaffold")
 
-include(":data")
 include(":data-database")
-
-include(":data:model:listing")
-include(":data:model:listing:database")
-
 include(":data-model")
-
-include(":data:model:media")
-include(":data:model:media:database")
-
-include(":data:model:user")
-include(":data:model:user:database")
-
 include(":data:network")
 
 include(":feature-listing-feed")
