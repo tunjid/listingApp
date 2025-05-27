@@ -1,8 +1,8 @@
 package com.tunjid.listing.data.model
 
-import com.tunjid.data.media.Media
-import com.tunjid.data.media.database.MediaDao
-import com.tunjid.data.media.database.model.MediaEntity
+import com.tunjid.data.database.dao.MediaDao
+import com.tunjid.data.database.entities.MediaEntity
+import com.tunjid.data.favorite.database.model.Media
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull

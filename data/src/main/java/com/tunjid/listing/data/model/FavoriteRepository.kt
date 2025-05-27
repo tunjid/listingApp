@@ -1,6 +1,6 @@
 package com.tunjid.listing.data.model
 
-import com.tunjid.data.listing.Listing
+import com.tunjid.data.favorite.database.model.Listing
 import kotlinx.coroutines.flow.Flow
 
 interface FavoriteRepository {

@@ -10,22 +10,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":data:database"))
-
-    implementation(project(":data:model:favorite"))
-    implementation(project(":data:model:favorite:database"))
-
-    implementation(project(":data:model:listing"))
-    implementation(project(":data:model:listing:database"))
-
-    implementation(project(":data:model:media"))
-    implementation(project(":data:model:media:database"))
-
-    implementation(project(":data:model:user"))
-    implementation(project(":data:model:user:database"))
-
-    implementation(project(":data:network"))
-    implementation(project(":data:sync"))
+    implementation(project(":data-database"))
+    implementation(project(":data-model"))
+    implementation(project(":data-network"))
+    implementation(project(":data-sync"))
 
     implementation(libs.kotlinx.serialization.protobuf)
 }

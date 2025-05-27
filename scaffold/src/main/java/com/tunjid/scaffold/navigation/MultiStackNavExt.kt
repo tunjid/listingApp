@@ -1,12 +1,12 @@
 package com.tunjid.scaffold.navigation
 
-import com.tunjid.treenav.strings.routeOf
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.canPop
 import com.tunjid.treenav.current
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParams
+import com.tunjid.treenav.strings.routeOf
 import com.tunjid.treenav.switch
 
 val MultiStackNav.canGoUp get() = stacks.getOrNull(currentIndex)?.canPop == true

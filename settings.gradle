@@ -20,39 +20,23 @@ dependencyResolutionManagement {
 rootProject.name = "AirbnbListing"
 
 include(":app")
-include(":app:workmanager")
 
 include(":scaffold")
 
 include(":data")
-include(":data:database")
+include(":data-database")
+include(":data-model")
+include(":data-network")
+include(":data-sync")
+include(":data-sync-workmanager")
+include(":data-test")
 
-include(":data:model:listing")
-include(":data:model:listing:database")
+include(":feature-listing-feed")
+include(":feature-listing-detail")
+include(":feature-listing-gallery")
+include(":feature-profile")
+include(":feature-favorites")
+include(":feature-messages")
+include(':feature-explore')
 
-include(":data:model:favorite")
-include(":data:model:favorite:database")
-
-include(":data:model:media")
-include(":data:model:media:database")
-
-include(":data:model:user")
-include(":data:model:user:database")
-
-include(":data:network")
-
-include(":feature:listing:feed")
-include(":feature:listing:detail")
-include(":feature:listing:gallery")
-
-include(":feature:profile")
-
-include(":feature:favorites")
-
-include(":feature:messages")
-
-include(':feature:explore')
-
-include(":data:sync")
-include(":data:test")
 include(":ui")

@@ -12,7 +12,6 @@ import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
-import com.tunjid.treenav.strings.routeOf
 import com.tunjid.scaffold.savedstate.EmptySavedState
 import com.tunjid.scaffold.savedstate.InitialSavedState
 import com.tunjid.scaffold.savedstate.SavedState
@@ -21,6 +20,7 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteParser
+import com.tunjid.treenav.strings.routeOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
