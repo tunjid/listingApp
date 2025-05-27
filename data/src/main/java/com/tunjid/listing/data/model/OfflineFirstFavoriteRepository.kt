@@ -1,6 +1,6 @@
 package com.tunjid.listing.data.model
 
-import com.tunjid.data.favorite.database.FavoriteDao
+import com.tunjid.data.database.dao.FavoriteDao
 import com.tunjid.data.favorite.database.model.FavoriteEntity
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.listing.database.model.ListingEntity

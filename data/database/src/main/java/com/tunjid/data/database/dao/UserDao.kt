@@ -1,4 +1,4 @@
-package com.tunjid.data.listing.database
+package com.tunjid.data.database.dao
 
 import androidx.room.Dao
 import androidx.room.Query
