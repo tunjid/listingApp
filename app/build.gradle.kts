@@ -59,9 +59,9 @@ dependencies {
     implementation(project(":scaffold"))
 
     implementation(project(":feature-favorites"))
-    implementation(project(":feature-listing:detail"))
-    implementation(project(":feature-listing:feed"))
-    implementation(project(":feature-listing:gallery"))
+    implementation(project(":feature-listing-detail"))
+    implementation(project(":feature-listing-feed"))
+    implementation(project(":feature-listing-gallery"))
     implementation(project(":feature-messages"))
     implementation(project(":feature-profile"))
     implementation(project(":feature-explore"))
