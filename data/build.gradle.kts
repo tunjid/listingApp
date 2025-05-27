@@ -12,8 +12,7 @@ android {
 dependencies {
     implementation(project(":data-database"))
 
-    implementation(project(":data:model:favorite"))
-    implementation(project(":data:model:favorite:database"))
+    implementation(project(":data-model"))
 
     implementation(project(":data:model:listing"))
     implementation(project(":data:model:listing:database"))

@@ -11,7 +11,6 @@ android {
 
 dependencies {
     implementation(project(":data:model:listing:database"))
-    implementation(project(":data:model:favorite:database"))
 
     implementation(libs.kotlinx.serialization.protobuf)
 }

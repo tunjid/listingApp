@@ -1,13 +1,12 @@
-package com.tunjid.data.favorite.database.model
+package com.tunjid.data.database.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.tunjid.data.listing.database.model.ListingEntity
 
 @Entity(
-    tableName = "favorite",
+    tableName = "media",
     foreignKeys = [
         ForeignKey(
             entity = ListingEntity::class,
@@ -17,10 +16,14 @@ import com.tunjid.data.listing.database.model.ListingEntity
         )
     ]
 )
-data class FavoriteEntity(
+data class MediaEntity(
     @PrimaryKey
+    @ColumnInfo(name = "id")
+    val id: String,
     @ColumnInfo(name = "listing_id")
     val listingId: String,
-    @ColumnInfo(name = "isFavorite")
-    val isFavorite: Boolean,
+    @ColumnInfo(name = "url")
+    val url: String,
+    @ColumnInfo(name = "ally_content_description")
+    val a11yContentDescription: String
 )

@@ -4,13 +4,13 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.tunjid.data.database.dao.FavoriteDao
-import com.tunjid.data.favorite.database.model.FavoriteEntity
 import com.tunjid.data.database.dao.ListingDao
-import com.tunjid.data.database.dao.UserDao
-import com.tunjid.data.listing.database.model.ListingEntity
-import com.tunjid.data.listing.database.model.UserEntity
 import com.tunjid.data.database.dao.MediaDao
-import com.tunjid.data.media.database.model.MediaEntity
+import com.tunjid.data.database.dao.UserDao
+import com.tunjid.data.database.entities.FavoriteEntity
+import com.tunjid.data.database.entities.ListingEntity
+import com.tunjid.data.database.entities.MediaEntity
+import com.tunjid.data.database.entities.UserEntity
 
 @Database(
     entities = [

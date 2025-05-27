@@ -30,8 +30,7 @@ include(":data-database")
 include(":data:model:listing")
 include(":data:model:listing:database")
 
-include(":data:model:favorite")
-include(":data:model:favorite:database")
+include(":data-model")
 
 include(":data:model:media")
 include(":data:model:media:database")

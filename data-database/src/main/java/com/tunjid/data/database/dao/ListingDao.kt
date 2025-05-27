@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import com.tunjid.data.listing.database.model.ListingEntity
+import com.tunjid.data.database.entities.ListingEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

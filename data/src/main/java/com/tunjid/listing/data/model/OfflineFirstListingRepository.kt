@@ -3,10 +3,10 @@ package com.tunjid.listing.data.model
 import com.tunjid.data.listing.Listing
 import com.tunjid.data.database.dao.ListingDao
 import com.tunjid.data.database.dao.UserDao
-import com.tunjid.data.listing.database.model.ListingEntity
-import com.tunjid.data.listing.database.model.UserEntity
+import com.tunjid.data.database.entities.ListingEntity
+import com.tunjid.data.database.entities.UserEntity
 import com.tunjid.data.database.dao.MediaDao
-import com.tunjid.data.media.database.model.MediaEntity
+import com.tunjid.data.database.entities.MediaEntity
 import com.tunjid.listing.sync.Synchronizer
 import com.tunjid.network.ListingNetworkDataSource
 import com.tunjid.network.model.NetworkHost

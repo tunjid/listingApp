@@ -2,7 +2,7 @@ package com.tunjid.listing.data.model
 
 import com.tunjid.data.listing.User
 import com.tunjid.data.database.dao.UserDao
-import com.tunjid.data.listing.database.model.UserEntity
+import com.tunjid.data.database.entities.UserEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull

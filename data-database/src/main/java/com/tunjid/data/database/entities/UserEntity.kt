@@ -1,4 +1,4 @@
-package com.tunjid.data.listing.database.model
+package com.tunjid.data.database.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

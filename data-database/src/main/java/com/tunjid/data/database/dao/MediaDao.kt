@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import com.tunjid.data.media.database.model.MediaEntity
+import com.tunjid.data.database.entities.MediaEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
