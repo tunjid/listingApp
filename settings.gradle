@@ -25,7 +25,7 @@ include(":app:workmanager")
 include(":scaffold")
 
 include(":data")
-include(":data:database")
+include(":data-database")
 
 include(":data:model:listing")
 include(":data:model:listing:database")

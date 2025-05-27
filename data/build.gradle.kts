@@ -10,7 +10,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":data:database"))
+    implementation(project(":data-database"))
 
     implementation(project(":data:model:favorite"))
     implementation(project(":data:model:favorite:database"))
