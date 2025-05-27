@@ -10,7 +10,7 @@ android {
 dependencies {
     api(project(":data"))
     api(project(":data-model"))
-    api(project(":data:sync"))
+    api(project(":data-sync"))
 
     api(libs.kotlinx.coroutines.android)
     api(libs.kotlinx.coroutines.test)

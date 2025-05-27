@@ -13,7 +13,7 @@ android {
 dependencies {
     implementation(project(":data"))
     implementation(project(":data-model"))
-    implementation(project(":data:sync"))
+    implementation(project(":data-sync"))
     implementation(project(":ui"))
 
     implementation(libs.coil.kt.compose)
@@ -23,5 +23,5 @@ dependencies {
     implementation(libs.tunjid.tiler.tiler)
     implementation(libs.tunjid.composables)
 
-    testImplementation(project(":data:test"))
+    testImplementation(project(":data-test"))
 }

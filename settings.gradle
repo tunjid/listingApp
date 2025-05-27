@@ -24,9 +24,12 @@ include(":app:workmanager")
 
 include(":scaffold")
 
+include(":data")
 include(":data-database")
 include(":data-model")
-include(":data:network")
+include(":data-network")
+include(":data-sync")
+include(":data-test")
 
 include(":feature-listing-feed")
 include(":feature-listing-detail")
@@ -36,6 +39,4 @@ include(":feature-favorites")
 include(":feature-messages")
 include(':feature-explore')
 
-include(":data:sync")
-include(":data:test")
 include(":ui")

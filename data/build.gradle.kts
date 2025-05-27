@@ -12,8 +12,8 @@ android {
 dependencies {
     implementation(project(":data-database"))
     implementation(project(":data-model"))
-    implementation(project(":data:network"))
-    implementation(project(":data:sync"))
+    implementation(project(":data-network"))
+    implementation(project(":data-sync"))
 
     implementation(libs.kotlinx.serialization.protobuf)
 }

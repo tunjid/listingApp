@@ -12,7 +12,7 @@ android {
 
 dependencies {
     implementation(project(":data"))
-    implementation(project(":data:sync"))
+    implementation(project(":data-sync"))
 
     implementation(libs.androidx.work.ktx)
     implementation(libs.hilt.ext.work)
