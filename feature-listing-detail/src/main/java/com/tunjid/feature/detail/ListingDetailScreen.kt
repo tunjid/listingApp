@@ -36,8 +36,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.tunjid.data.listing.Listing
-import com.tunjid.data.listing.User
+import com.tunjid.data.favorite.database.model.Listing
+import com.tunjid.data.favorite.database.model.User
 import com.tunjid.listing.feature.listing.detail.R
 import com.tunjid.scaffold.adaptive.thumbnailSharedElementKey
 import com.tunjid.scaffold.media.Photo

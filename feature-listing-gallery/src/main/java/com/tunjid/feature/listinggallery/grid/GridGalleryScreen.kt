@@ -60,7 +60,7 @@ fun GridGalleryScreen(
                         modifier = Modifier
                             .animateBounds(
                                 lookaheadScope = paneScaffoldState,
-                                boundsTransform = {_, _ ->
+                                boundsTransform = { _, _ ->
                                     spring(stiffness = Spring.StiffnessMedium)
                                 }
                             )

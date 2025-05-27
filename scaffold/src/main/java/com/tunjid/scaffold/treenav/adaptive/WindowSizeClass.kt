@@ -17,6 +17,8 @@
 package com.tunjid.treenav.adaptive
 
 import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.BREAKPOINTS_V1
+import androidx.window.core.layout.computeWindowSizeClass
 
 internal val WindowSizeClass.Companion.COMPACT get() = WINDOW_SIZE_CLASS_COMPACT
 
@@ -24,17 +26,17 @@ internal val WindowSizeClass.Companion.MEDIUM get() = WINDOW_SIZE_CLASS_MEDIUM
 
 internal val WindowSizeClass.Companion.EXPANDED get() = WINDOW_SIZE_CLASS_EXPANDED
 
-private val WINDOW_SIZE_CLASS_COMPACT = WindowSizeClass.compute(
-    dpWidth = 0f,
-    dpHeight = 0f,
+private val WINDOW_SIZE_CLASS_COMPACT = BREAKPOINTS_V1.computeWindowSizeClass(
+    widthDp = 0f,
+    heightDp = 0f
 )
 
-private val WINDOW_SIZE_CLASS_MEDIUM = WindowSizeClass.compute(
-    dpWidth = 600f,
-    dpHeight = 480f,
+private val WINDOW_SIZE_CLASS_MEDIUM = BREAKPOINTS_V1.computeWindowSizeClass(
+    widthDp = 600f,
+    heightDp = 480f
 )
 
-private val WINDOW_SIZE_CLASS_EXPANDED = WindowSizeClass.compute(
-    dpWidth = 800f,
-    dpHeight = 900f,
+private val WINDOW_SIZE_CLASS_EXPANDED = BREAKPOINTS_V1.computeWindowSizeClass(
+    widthDp = 800f,
+    heightDp = 900f
 )

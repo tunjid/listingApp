@@ -1,8 +1,8 @@
 package com.tunjid.feature.detail
 
-import com.tunjid.data.listing.Listing
-import com.tunjid.data.listing.User
-import com.tunjid.data.media.Media
+import com.tunjid.data.favorite.database.model.Listing
+import com.tunjid.data.favorite.database.model.Media
+import com.tunjid.data.favorite.database.model.User
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.scaffold.ByteSerializable

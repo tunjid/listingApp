@@ -1,7 +1,7 @@
 package com.tunjid.feature.feed
 
 import androidx.compose.runtime.Immutable
-import com.tunjid.data.listing.Listing
+import com.tunjid.data.favorite.database.model.Listing
 import com.tunjid.feature.feed.di.FavoritesPattern
 import com.tunjid.feature.feed.di.FeedPattern
 import com.tunjid.listing.data.model.ListingQuery

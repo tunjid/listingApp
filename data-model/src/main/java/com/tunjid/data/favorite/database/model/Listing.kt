@@ -1,4 +1,4 @@
-package com.tunjid.data.listing
+package com.tunjid.data.favorite.database.model
 
 import kotlinx.serialization.Serializable
 

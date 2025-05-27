@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.Modifier
-import com.tunjid.listing.ui.theme.ListingAppTheme
 import com.tunjid.scaffold.globalui.PredictiveBackEffects
 import com.tunjid.scaffold.scaffold.App
 

@@ -1,6 +1,6 @@
 package com.tunjid.feature.listinggallery.grid
 
-import com.tunjid.data.media.Media
+import com.tunjid.data.favorite.database.model.Media
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.scaffold.ByteSerializable

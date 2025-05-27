@@ -12,10 +12,7 @@ android {
 
 dependencies {
     implementation(project(":data"))
-    implementation(project(":data:model:listing"))
-    implementation(project(":data:model:media"))
-    implementation(project(":data:model:user"))
-
+    implementation(project(":data-model"))
     implementation(project(":data:sync"))
 
     implementation(libs.coil.kt.compose)
@@ -24,8 +21,6 @@ dependencies {
     implementation(libs.tunjid.tiler.compose)
     implementation(libs.tunjid.tiler.tiler)
     implementation(libs.tunjid.composables)
-
-    implementation(project(":data:model:media"))
 
     testImplementation(project(":data:test"))
 }

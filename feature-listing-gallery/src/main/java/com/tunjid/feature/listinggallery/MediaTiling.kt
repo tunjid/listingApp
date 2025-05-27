@@ -1,6 +1,6 @@
 package com.tunjid.feature.listinggallery
 
-import com.tunjid.data.media.Media
+import com.tunjid.data.favorite.database.model.Media
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.data.model.MediaRepository
 import com.tunjid.tiler.ListTiler

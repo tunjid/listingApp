@@ -1,4 +1,4 @@
-package com.tunjid.data.media
+package com.tunjid.data.favorite.database.model
 
 import kotlinx.serialization.Serializable
 

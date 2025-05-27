@@ -3,8 +3,8 @@ package com.tunjid.data.database.di
 import com.tunjid.data.database.ListingDatabase
 import com.tunjid.data.database.dao.FavoriteDao
 import com.tunjid.data.database.dao.ListingDao
-import com.tunjid.data.database.dao.UserDao
 import com.tunjid.data.database.dao.MediaDao
+import com.tunjid.data.database.dao.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

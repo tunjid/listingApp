@@ -10,7 +10,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":data:model:listing"))
+    implementation(project(":data-model"))
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp.logging)
