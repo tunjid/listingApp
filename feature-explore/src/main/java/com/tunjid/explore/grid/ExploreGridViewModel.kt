@@ -6,7 +6,7 @@ import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 typealias ExploreGridStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface ExploreGridModelFactory : ScreenStateHolderCreator {
+interface ExploreGridModelFactory : AssistedViewModelFactory {
     override fun create(
         scope: CoroutineScope,
         route: Route,
@@ -36,17 +36,7 @@ class ExploreGridViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ExploreGridStateHolder by scope.mutator(
-    playerManager = playerManager,
-    navigationActions = navigationActions,
-    route = route
-)
-
-fun CoroutineScope.mutator(
-    playerManager: PlayerManager,
-    navigationActions: (NavigationMutation) -> Unit,
-    route: Route,
-): ExploreGridStateHolder = actionStateFlowMutator(
+), ExploreGridStateHolder by scope.actionStateFlowMutator(
     initialState = State(
         items = VideoUrls.map { url ->
             VideoItem(

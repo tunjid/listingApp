@@ -18,7 +18,7 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.PivotRequest
@@ -51,7 +51,7 @@ import kotlinx.coroutines.flow.scan
 typealias ListingFeedStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface ListingFeedStateHolderFactory : ScreenStateHolderCreator {
+interface ListingFeedViewModelFactory : AssistedViewModelFactory {
     override fun create(
         scope: CoroutineScope,
         route: Route,
@@ -68,23 +68,7 @@ class ListingFeedViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ListingFeedStateHolder by scope.mutator(
-    listingRepository = listingRepository,
-    mediaRepository = mediaRepository,
-    favoriteRepository = favoriteRepository,
-    syncManager = syncManager,
-    navigationActions = navigationActions,
-    route = route
-)
-
-fun CoroutineScope.mutator(
-    listingRepository: ListingRepository,
-    mediaRepository: MediaRepository,
-    favoriteRepository: FavoriteRepository,
-    syncManager: SyncManager,
-    navigationActions: (NavigationMutation) -> Unit,
-    route: Route,
-): ListingFeedStateHolder = actionStateFlowMutator(
+), ListingFeedStateHolder by scope.actionStateFlowMutator(
     initialState = State(
         currentQuery = route.initialQuery,
         listings = route.preSeededNavigationItems(),

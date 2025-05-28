@@ -7,7 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.listinggallery.pager.FullscreenGalleryScreen
-import com.tunjid.feature.listinggallery.pager.PagerGalleryStateHolderFactory
+import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModelFactory
 import com.tunjid.feature.listinggallery.pager.PagerGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.scaffold.scaffold.PaneScaffold
@@ -53,8 +53,8 @@ object PagerGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration(
-        factory: PagerGalleryStateHolderFactory
+    fun routeNavEntry(
+        factory: PagerGalleryViewModelFactory
     ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<PagerGalleryViewModel> {

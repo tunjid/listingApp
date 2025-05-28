@@ -14,7 +14,7 @@ import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.listinggallery.grid.Action
 import com.tunjid.feature.listinggallery.grid.GridGalleryScreen
-import com.tunjid.feature.listinggallery.grid.GridGalleryStateHolderFactory
+import com.tunjid.feature.listinggallery.grid.GridGalleryViewModelFactory
 import com.tunjid.feature.listinggallery.grid.GridGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.feature.listing.gallery.R
@@ -65,8 +65,8 @@ object GridGalleryModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration(
-        factory: GridGalleryStateHolderFactory
+    fun routeNavEntry(
+        factory: GridGalleryViewModelFactory
     ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<GridGalleryViewModel> {

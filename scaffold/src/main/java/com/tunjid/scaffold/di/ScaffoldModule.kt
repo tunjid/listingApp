@@ -36,26 +36,11 @@ import okio.Path
 import okio.Path.Companion.toPath
 import javax.inject.Singleton
 
-interface ScreenStateHolderCreator {
+interface AssistedViewModelFactory {
     fun create(
         scope: CoroutineScope,
         route: Route,
     ): ViewModel
-}
-
-data class SavedStateType(
-    val apply: PolymorphicModuleBuilder<ByteSerializable>.() -> Unit
-)
-
-inline fun <reified T : ByteSerializable> ByteSerializer.restoreState(savedState: ByteArray?): T? {
-    return try {
-        // Polymorphic serialization requires that the compile time type used to serialize, must also be used to
-        // deserialize. See https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/polymorphism.md
-        if (savedState != null) fromBytes<ByteSerializable>(savedState) as? T else null
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
 }
 
 @Module
@@ -115,10 +100,7 @@ interface ScaffoldBindModule {
     fun defaultRouteMatchers(): Map<String, @JvmSuppressWildcards RouteMatcher>
 
     @Multibinds
-    fun defaultSavedState(): Set<@JvmSuppressWildcards SavedStateType>
-
-    @Multibinds
-    fun defaultStateHolderCreators(): Map<Class<*>, @JvmSuppressWildcards ScreenStateHolderCreator>
+    fun defaultStateHolderCreators(): Map<Class<*>, @JvmSuppressWildcards AssistedViewModelFactory>
 
     @Binds
     fun bindNavigationStateHolder(
