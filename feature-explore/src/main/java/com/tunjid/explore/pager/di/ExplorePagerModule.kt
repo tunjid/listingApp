@@ -6,7 +6,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.explore.pager.ExplorePagerStateHolderFactory
+import com.tunjid.explore.pager.ExplorePagerViewModelFactory
 import com.tunjid.explore.pager.ExplorePagerViewModel
 import com.tunjid.explore.pager.FullscreenGalleryScreen
 import com.tunjid.scaffold.scaffold.PaneScaffold
@@ -50,8 +50,8 @@ object ExplorePagerModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration(
-        factory: ExplorePagerStateHolderFactory
+    fun routeNavEntry(
+        factory: ExplorePagerViewModelFactory
     ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ExplorePagerViewModel> {

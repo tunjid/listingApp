@@ -51,7 +51,7 @@ object ExploreGridModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration(
+    fun routeNavEntry(
         factory: ExploreGridModelFactory
     ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope

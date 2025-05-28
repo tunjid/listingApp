@@ -13,7 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.detail.Action
 import com.tunjid.feature.detail.ListingDetailScreen
 import com.tunjid.feature.detail.ListingDetailViewModel
-import com.tunjid.feature.detail.ListingStateHolderFactory
+import com.tunjid.feature.detail.ListingViewModelFactory
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.feature.listing.detail.R
 import com.tunjid.me.scaffold.scaffold.PaneFab
@@ -76,8 +76,8 @@ object ListingDetailModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration(
-        factory: ListingStateHolderFactory
+    fun routeNavEntry(
+        factory: ListingViewModelFactory
     ) = threePaneEntry<Route>(
         paneMapping = { route ->
             mapOf(

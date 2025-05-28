@@ -13,7 +13,7 @@ import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.PivotRequest
@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.scan
 typealias GridGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface GridGalleryStateHolderFactory : ScreenStateHolderCreator {
+interface GridGalleryViewModelFactory : AssistedViewModelFactory {
     override fun create(
         scope: CoroutineScope,
         route: Route,
@@ -53,17 +53,7 @@ class GridGalleryViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), GridGalleryStateHolder by scope.mutator(
-    mediaRepository = mediaRepository,
-    navigationActions = navigationActions,
-    route = route
-)
-
-private fun CoroutineScope.mutator(
-    mediaRepository: MediaRepository,
-    navigationActions: (NavigationMutation) -> Unit,
-    route: Route,
-): GridGalleryStateHolder = actionStateFlowMutator(
+), GridGalleryStateHolder by scope.actionStateFlowMutator(
     initialState = State(
         currentQuery = route.initialQuery,
         items = route.preSeededNavigationItems()

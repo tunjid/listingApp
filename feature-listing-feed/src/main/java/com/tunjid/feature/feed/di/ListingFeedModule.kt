@@ -15,12 +15,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.feature.feed.ListingFeedScreen
-import com.tunjid.feature.feed.ListingFeedStateHolderFactory
+import com.tunjid.feature.feed.ListingFeedViewModelFactory
 import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.feature.listing.feed.R
 import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.scaffold.PaneNavigationBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
@@ -93,8 +93,8 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
-    fun feedAdaptiveConfiguration(
-        factory: ListingFeedStateHolderFactory
+    fun feedNavEntry(
+        factory: ListingFeedViewModelFactory
     ) = threePaneEntry { route ->
         val lifecycleCoroutineScope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ListingFeedViewModel> {
@@ -151,14 +151,14 @@ object ListingFeedModule {
     @IntoMap
     @Provides
     @StringKey(FavoritesPattern)
-    fun favoritesAdaptiveConfiguration(
-        factory: ListingFeedStateHolderFactory
-    ) = feedAdaptiveConfiguration(factory)
+    fun favoritesNavEntry(
+        factory: ListingFeedViewModelFactory
+    ) = feedNavEntry(factory)
 
     @IntoMap
     @Provides
     @StringKey(FeedPattern)
     fun listingFeedStateHolderCreator(
-        factory: ListingFeedStateHolderFactory
-    ): ScreenStateHolderCreator = factory
+        factory: ListingFeedViewModelFactory
+    ): AssistedViewModelFactory = factory
 }

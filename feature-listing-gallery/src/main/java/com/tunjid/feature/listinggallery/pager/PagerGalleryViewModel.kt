@@ -12,7 +12,7 @@ import com.tunjid.mutator.coroutines.SuspendingStateHolder
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.buildTiledList
@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.map
 typealias PagerGalleryStateHolder = ActionStateMutator<Action, StateFlow<State>>
 
 @AssistedFactory
-interface PagerGalleryStateHolderFactory : ScreenStateHolderCreator {
+interface PagerGalleryViewModelFactory : AssistedViewModelFactory {
     override fun create(
         scope: CoroutineScope,
         route: Route,
@@ -45,17 +45,7 @@ class PagerGalleryViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), PagerGalleryStateHolder by scope.mutator(
-    mediaRepository = mediaRepository,
-    navigationActions = navigationActions,
-    route = route
-)
-
-private fun CoroutineScope.mutator(
-    mediaRepository: MediaRepository,
-    navigationActions: (NavigationMutation) -> Unit,
-    route: Route,
-): PagerGalleryStateHolder = actionStateFlowMutator(
+), PagerGalleryStateHolder by scope.actionStateFlowMutator(
     initialState = State(
         currentQuery = route.routeParams.initialQuery,
         items = route.preSeededNavigationItems()

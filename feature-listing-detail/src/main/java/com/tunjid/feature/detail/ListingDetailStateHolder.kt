@@ -16,7 +16,7 @@ import com.tunjid.mutator.coroutines.mapLatestToManyMutations
 import com.tunjid.mutator.coroutines.mapLatestToMutation
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
-import com.tunjid.scaffold.di.ScreenStateHolderCreator
+import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.consumeNavigationActions
 import com.tunjid.tiler.ListTiler
@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
 @AssistedFactory
-interface ListingStateHolderFactory : ScreenStateHolderCreator {
+interface ListingViewModelFactory : AssistedViewModelFactory {
     override fun create(
         scope: CoroutineScope,
         route: Route,
@@ -54,21 +54,7 @@ class ListingDetailViewModel @AssistedInject constructor(
     @Assisted route: Route,
 ) : ViewModel(
     viewModelScope = scope,
-), ActionStateMutator<Action, StateFlow<State>> by scope.listingDetailMutator(
-    listingRepository = listingRepository,
-    mediaRepository = mediaRepository,
-    userRepository = userRepository,
-    navigationActions = navigationActions,
-    route = route
-)
-
-private fun CoroutineScope.listingDetailMutator(
-    listingRepository: ListingRepository,
-    mediaRepository: MediaRepository,
-    userRepository: UserRepository,
-    navigationActions: (NavigationMutation) -> Unit,
-    route: Route,
-): ActionStateMutator<Action, StateFlow<State>> = actionStateFlowMutator(
+), ActionStateMutator<Action, StateFlow<State>> by scope.actionStateFlowMutator(
     initialState = State(
         currentQuery = route.initialQuery,
         listingItems = route.preSeededNavigationItems()

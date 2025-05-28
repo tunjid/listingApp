@@ -34,7 +34,7 @@ object MessagesModule {
     @IntoMap
     @Provides
     @StringKey(RoutePattern)
-    fun routeAdaptiveConfiguration() = threePaneEntry<Route> { route ->
+    fun routeNavEntry() = threePaneEntry<Route> { route ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
