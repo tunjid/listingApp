@@ -27,8 +27,7 @@ ksp = "2.1.21-2.0.1"
 ktor = "3.1.2"
 okio = "3.11.0"
 okhttp = "4.12.0"
-retrofit = "2.11.0"
-retrofitKotlinxSerializationJson = "1.0.0"
+retrofit = "3.0.0"
 tunjidStateHolder = "1.1.0"
 tunjidTiler = "1.2.0"
 tunjidTreeNav = "0.0.27"
@@ -108,7 +107,7 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 org-jetbrains-kotlin-android-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "org-jetbrains-kotlin-android" }
 org-jetbrains-kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "org-jetbrains-kotlin-android" }
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
-retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
+retrofit-kotlin-serialization = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofit" }
 squareup-okio = { group = "com.squareup.okio", name = "okio", version.ref = "okio" }
 tunjid-mutator-core-common = { group = "com.tunjid.mutator", name = "core", version.ref = "tunjidStateHolder" }
 tunjid-mutator-coroutines-common = { group = "com.tunjid.mutator", name = "coroutines", version.ref = "tunjidStateHolder" }
