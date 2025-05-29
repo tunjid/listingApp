@@ -1,6 +1,6 @@
 package com.tunjid.explore.grid
 
-import com.tunjid.scaffold.ByteSerializable
+import com.tunjid.data.model.ByteSerializable
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation

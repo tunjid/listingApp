@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.tunjid.me.scaffold.scaffold
+package com.tunjid.scaffold.scaffold
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -66,7 +66,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.scaffold.navigation.BackHandler
-import com.tunjid.scaffold.scaffold.LocalAppState
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min

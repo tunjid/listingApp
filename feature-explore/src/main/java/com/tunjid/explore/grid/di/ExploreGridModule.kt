@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.explore.grid.ExploreGridModelFactory
 import com.tunjid.explore.grid.ExploreGridScreen
 import com.tunjid.explore.grid.ExploreGridViewModel
-import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
+import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.scaffold.PaneNavigationBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold

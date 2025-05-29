@@ -1,12 +1,11 @@
 package com.tunjid.feature.detail
 
-import com.tunjid.data.favorite.database.model.Listing
-import com.tunjid.data.favorite.database.model.Media
-import com.tunjid.data.favorite.database.model.User
+import com.tunjid.data.model.Listing
+import com.tunjid.data.model.Media
+import com.tunjid.data.model.User
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.globalui.PaneAnchor
+import com.tunjid.data.model.ByteSerializable
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.editCurrentIfRoute
@@ -70,8 +69,6 @@ data class State(
     val currentQuery: MediaQuery,
     @Transient
     val mediaAvailable: Long? = null,
-    @Transient
-    val paneAnchor: PaneAnchor? = null,
     @Transient
     val listing: Listing? = null,
     @Transient

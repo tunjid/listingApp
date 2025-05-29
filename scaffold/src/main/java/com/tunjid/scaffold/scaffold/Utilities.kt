@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.tunjid.me.scaffold.scaffold
+package com.tunjid.scaffold.scaffold
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State

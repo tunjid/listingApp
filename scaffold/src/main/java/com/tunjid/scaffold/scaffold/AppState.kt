@@ -17,12 +17,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.tunjid.composables.backpreview.BackPreviewState
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.me.scaffold.scaffold.DragToPopState
-import com.tunjid.me.scaffold.scaffold.PaneAnchorState
-import com.tunjid.me.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
-import com.tunjid.me.scaffold.scaffold.SecondaryPaneMinWidthBreakpointDp
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.scaffold.navigation.NavItem
 import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.scaffold.navigation.RouteNotFound
 import com.tunjid.scaffold.navigation.navItemSelected
 import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.treenav.MultiStackNav
@@ -84,31 +82,27 @@ class AppState @Inject constructor(
 
     internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, Route>?>(null)
 
-    internal val movableNavigationBar = movableContentOf<
-            Modifier,
-                () -> Boolean,
-            > { modifier, onNavItemReselected ->
-        PaneNavigationBar(
-            modifier = modifier,
-            onNavItemReselected = onNavItemReselected,
-        )
-    }
+    internal val movableNavigationBar =
+        movableContentOf<Modifier, () -> Boolean> { modifier, onNavItemReselected ->
+            PaneNavigationBar(
+                modifier = modifier,
+                onNavItemReselected = onNavItemReselected,
+            )
+        }
 
-    internal val movableNavigationRail = movableContentOf<
-            Modifier,
-                () -> Boolean,
-            > { modifier, onNavItemReselected ->
-        PaneNavigationRail(
-            modifier = modifier,
-            onNavItemReselected = onNavItemReselected,
-        )
-    }
+    internal val movableNavigationRail =
+        movableContentOf<Modifier, () -> Boolean> { modifier, onNavItemReselected ->
+            PaneNavigationRail(
+                modifier = modifier,
+                onNavItemReselected = onNavItemReselected,
+            )
+        }
 
     internal val filteredPaneOrder: List<ThreePane> by derivedStateOf {
         paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
     }
 
-    private val configurationTrie = RouteTrie<PaneEntry<ThreePane, Route>>().apply {
+    private val navEntryTrie = RouteTrie<PaneEntry<ThreePane, Route>>().apply {
         routeConfigurationMap
             .mapKeys { (template) -> PathPattern(template) }
             .forEach { set(it.key, it.value) }
@@ -125,10 +119,8 @@ class AppState @Inject constructor(
                 navigationState = multiStackNavState,
                 backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
                 destinationTransform = MultiStackNav::requireCurrent,
-                entryProvider = { node ->
-                    configurationTrie[node] ?: threePaneEntry(
-                        render = { },
-                    )
+                entryProvider = { route ->
+                    navEntryTrie[route] ?: threePaneEntry { RouteNotFound() }
                 },
                 transforms = transforms,
             )

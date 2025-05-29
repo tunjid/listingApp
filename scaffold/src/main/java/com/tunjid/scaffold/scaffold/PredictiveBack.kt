@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.tunjid.me.scaffold.scaffold
+package com.tunjid.scaffold.scaffold
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate

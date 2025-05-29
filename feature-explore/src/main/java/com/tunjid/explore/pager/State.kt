@@ -1,7 +1,7 @@
 package com.tunjid.explore.pager
 
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.scaffold.ByteSerializable
+import com.tunjid.data.model.ByteSerializable
 import com.tunjid.scaffold.media.VideoState
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
