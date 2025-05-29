@@ -82,31 +82,27 @@ class AppState @Inject constructor(
 
     internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, Route>?>(null)
 
-    internal val movableNavigationBar = movableContentOf<
-            Modifier,
-                () -> Boolean,
-            > { modifier, onNavItemReselected ->
-        PaneNavigationBar(
-            modifier = modifier,
-            onNavItemReselected = onNavItemReselected,
-        )
-    }
+    internal val movableNavigationBar =
+        movableContentOf<Modifier, () -> Boolean> { modifier, onNavItemReselected ->
+            PaneNavigationBar(
+                modifier = modifier,
+                onNavItemReselected = onNavItemReselected,
+            )
+        }
 
-    internal val movableNavigationRail = movableContentOf<
-            Modifier,
-                () -> Boolean,
-            > { modifier, onNavItemReselected ->
-        PaneNavigationRail(
-            modifier = modifier,
-            onNavItemReselected = onNavItemReselected,
-        )
-    }
+    internal val movableNavigationRail =
+        movableContentOf<Modifier, () -> Boolean> { modifier, onNavItemReselected ->
+            PaneNavigationRail(
+                modifier = modifier,
+                onNavItemReselected = onNavItemReselected,
+            )
+        }
 
     internal val filteredPaneOrder: List<ThreePane> by derivedStateOf {
         paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
     }
 
-    private val configurationTrie = RouteTrie<PaneEntry<ThreePane, Route>>().apply {
+    private val navEntryTrie = RouteTrie<PaneEntry<ThreePane, Route>>().apply {
         routeConfigurationMap
             .mapKeys { (template) -> PathPattern(template) }
             .forEach { set(it.key, it.value) }
@@ -123,8 +119,8 @@ class AppState @Inject constructor(
                 navigationState = multiStackNavState,
                 backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
                 destinationTransform = MultiStackNav::requireCurrent,
-                entryProvider = { node ->
-                    configurationTrie[node] ?: threePaneEntry { RouteNotFound() }
+                entryProvider = { route ->
+                    navEntryTrie[route] ?: threePaneEntry { RouteNotFound() }
                 },
                 transforms = transforms,
             )
