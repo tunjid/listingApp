@@ -20,6 +20,7 @@ import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.scaffold.navigation.NavItem
 import com.tunjid.scaffold.navigation.NavigationStateHolder
+import com.tunjid.scaffold.navigation.RouteNotFound
 import com.tunjid.scaffold.navigation.navItemSelected
 import com.tunjid.scaffold.navigation.navItems
 import com.tunjid.treenav.MultiStackNav
@@ -123,9 +124,7 @@ class AppState @Inject constructor(
                 backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
                 destinationTransform = MultiStackNav::requireCurrent,
                 entryProvider = { node ->
-                    configurationTrie[node] ?: threePaneEntry(
-                        render = { },
-                    )
+                    configurationTrie[node] ?: threePaneEntry { RouteNotFound() }
                 },
                 transforms = transforms,
             )
