@@ -1,7 +1,6 @@
 package com.tunjid.network.retrofit
 
 import android.content.Context
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.tunjid.network.ListingNetworkDataSource
 import com.tunjid.network.model.NetworkListing
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -15,6 +14,7 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.GET
 import javax.inject.Inject
 import javax.inject.Singleton
