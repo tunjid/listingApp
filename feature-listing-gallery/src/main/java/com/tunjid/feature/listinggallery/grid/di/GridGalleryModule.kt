@@ -18,8 +18,8 @@ import com.tunjid.feature.listinggallery.grid.GridGalleryViewModelFactory
 import com.tunjid.feature.listinggallery.grid.GridGalleryViewModel
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.feature.listing.gallery.R
-import com.tunjid.me.scaffold.scaffold.PaneFab
-import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
+import com.tunjid.scaffold.scaffold.PaneFab
+import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.PoppableDestinationTopAppBar
 import com.tunjid.scaffold.scaffold.rememberPaneScaffoldState

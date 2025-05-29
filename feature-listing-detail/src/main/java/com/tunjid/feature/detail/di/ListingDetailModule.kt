@@ -16,9 +16,9 @@ import com.tunjid.feature.detail.ListingDetailViewModel
 import com.tunjid.feature.detail.ListingViewModelFactory
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.listing.feature.listing.detail.R
-import com.tunjid.me.scaffold.scaffold.PaneFab
-import com.tunjid.me.scaffold.scaffold.SecondaryPaneCloseBackHandler
-import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
+import com.tunjid.scaffold.scaffold.PaneFab
+import com.tunjid.scaffold.scaffold.SecondaryPaneCloseBackHandler
+import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
 import com.tunjid.scaffold.scaffold.PaneScaffold
 import com.tunjid.scaffold.scaffold.PoppableDestinationTopAppBar

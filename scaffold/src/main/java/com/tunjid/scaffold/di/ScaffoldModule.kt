@@ -68,10 +68,10 @@ object ScaffoldModule {
 interface ScaffoldBindModule {
 
     @Multibinds
-    fun defaultRouteMatchers(): Map<String, @JvmSuppressWildcards RouteMatcher>
+    fun routePatternsToRouteMatchers(): Map<String, @JvmSuppressWildcards RouteMatcher>
 
     @Multibinds
-    fun defaultStateHolderCreators(): Map<Class<*>, @JvmSuppressWildcards AssistedViewModelFactory>
+    fun viewmodelClassesToAssistedViewModelFactories(): Map<Class<*>, @JvmSuppressWildcards AssistedViewModelFactory>
 
     @Binds
     fun bindNavigationStateHolder(

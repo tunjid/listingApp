@@ -18,10 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.constrainedsize.constrainedSizePlacement
 import com.tunjid.composables.splitlayout.SplitLayout
-import com.tunjid.me.scaffold.scaffold.DragToPopLayout
-import com.tunjid.me.scaffold.scaffold.PaneAnchorState.Companion.DraggableThumb
-import com.tunjid.me.scaffold.scaffold.SecondaryPaneMinWidthBreakpointDp
-import com.tunjid.me.scaffold.scaffold.TertiaryPaneMinWidthBreakpointDp
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.DraggableThumb
 import com.tunjid.scaffold.ui.theme.AppTheme
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.MultiPaneDisplay

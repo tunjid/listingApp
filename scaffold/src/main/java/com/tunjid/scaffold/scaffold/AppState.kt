@@ -17,10 +17,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.tunjid.composables.backpreview.BackPreviewState
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.me.scaffold.scaffold.DragToPopState
-import com.tunjid.me.scaffold.scaffold.PaneAnchorState
-import com.tunjid.me.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
-import com.tunjid.me.scaffold.scaffold.SecondaryPaneMinWidthBreakpointDp
+import com.tunjid.scaffold.scaffold.PaneAnchorState.Companion.MinPaneWidth
 import com.tunjid.scaffold.navigation.NavItem
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.navItemSelected

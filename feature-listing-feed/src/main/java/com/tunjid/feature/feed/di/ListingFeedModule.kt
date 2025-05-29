@@ -19,7 +19,7 @@ import com.tunjid.feature.feed.ListingFeedViewModelFactory
 import com.tunjid.feature.feed.ListingFeedViewModel
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.feature.listing.feed.R
-import com.tunjid.me.scaffold.scaffold.predictiveBackBackgroundModifier
+import com.tunjid.scaffold.scaffold.predictiveBackBackgroundModifier
 import com.tunjid.scaffold.di.AssistedViewModelFactory
 import com.tunjid.scaffold.scaffold.PaneNavigationBar
 import com.tunjid.scaffold.scaffold.PaneNavigationRail
