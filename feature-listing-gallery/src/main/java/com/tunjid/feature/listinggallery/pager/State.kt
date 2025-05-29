@@ -1,9 +1,9 @@
 package com.tunjid.feature.listinggallery.pager
 
-import com.tunjid.data.favorite.database.model.Media
+import com.tunjid.data.model.Media
 import com.tunjid.listing.data.model.MediaQuery
 import com.tunjid.mutator.coroutines.SuspendingStateHolder
-import com.tunjid.scaffold.ByteSerializable
+import com.tunjid.data.model.ByteSerializable
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.editCurrentIfRoute

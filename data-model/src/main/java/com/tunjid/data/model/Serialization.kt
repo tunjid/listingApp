@@ -1,4 +1,4 @@
-package com.tunjid.scaffold
+package com.tunjid.data.model
 
 import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.decodeFromByteArray

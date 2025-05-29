@@ -3,7 +3,7 @@ package com.tunjid.listing.data.model
 import com.tunjid.data.database.dao.FavoriteDao
 import com.tunjid.data.database.entities.FavoriteEntity
 import com.tunjid.data.database.entities.ListingEntity
-import com.tunjid.data.favorite.database.model.Listing
+import com.tunjid.data.model.Listing
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map

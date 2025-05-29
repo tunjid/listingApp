@@ -1,6 +1,6 @@
 package com.tunjid.listing.data.model
 
-import com.tunjid.data.favorite.database.model.Listing
+import com.tunjid.data.model.Listing
 import com.tunjid.listing.sync.Syncable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable

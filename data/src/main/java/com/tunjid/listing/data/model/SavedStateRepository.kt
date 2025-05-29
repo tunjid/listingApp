@@ -1,13 +1,13 @@
-package com.tunjid.scaffold.savedstate
+package com.tunjid.listing.data.model
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.okio.OkioSerializer
 import androidx.datastore.core.okio.OkioStorage
-import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.fromBytes
-import com.tunjid.scaffold.toBytes
+import com.tunjid.data.model.ByteSerializable
+import com.tunjid.data.model.ByteSerializer
+import com.tunjid.data.model.fromBytes
+import com.tunjid.data.model.toBytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

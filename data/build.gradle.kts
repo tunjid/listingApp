@@ -15,5 +15,9 @@ dependencies {
     implementation(project(":data-network"))
     implementation(project(":data-sync"))
 
+    implementation(libs.androidx.datastore.core.okio)
+
+    implementation(libs.squareup.okio)
+
     implementation(libs.kotlinx.serialization.protobuf)
 }

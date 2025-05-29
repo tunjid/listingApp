@@ -1,12 +1,12 @@
 package com.tunjid.feature.feed
 
 import androidx.compose.runtime.Immutable
-import com.tunjid.data.favorite.database.model.Listing
+import com.tunjid.data.model.Listing
 import com.tunjid.feature.feed.di.FavoritesPattern
 import com.tunjid.feature.feed.di.FeedPattern
 import com.tunjid.listing.data.model.ListingQuery
 import com.tunjid.listing.sync.SyncStatus
-import com.tunjid.scaffold.ByteSerializable
+import com.tunjid.data.model.ByteSerializable
 import com.tunjid.scaffold.navigation.NavigationAction
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.tiler.TiledList

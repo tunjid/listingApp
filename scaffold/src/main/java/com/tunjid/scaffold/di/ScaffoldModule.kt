@@ -1,18 +1,11 @@
 package com.tunjid.scaffold.di
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.tunjid.scaffold.ByteSerializable
-import com.tunjid.scaffold.ByteSerializer
-import com.tunjid.scaffold.DelegatingByteSerializer
-import com.tunjid.scaffold.fromBytes
 import com.tunjid.scaffold.media.ExoPlayerManager
 import com.tunjid.scaffold.media.PlayerManager
 import com.tunjid.scaffold.navigation.NavigationMutation
 import com.tunjid.scaffold.navigation.NavigationStateHolder
 import com.tunjid.scaffold.navigation.PersistedNavigationStateHolder
-import com.tunjid.scaffold.savedstate.DataStoreSavedStateRepository
-import com.tunjid.scaffold.savedstate.SavedStateRepository
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.strings.Route
 import com.tunjid.treenav.strings.RouteMatcher
@@ -22,18 +15,12 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.Multibinds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.protobuf.ProtoBuf
-import okio.Path
-import okio.Path.Companion.toPath
 import javax.inject.Singleton
 
 interface AssistedViewModelFactory {
@@ -50,22 +37,6 @@ object ScaffoldModule {
     @Singleton
     fun appScope(): CoroutineScope = CoroutineScope(
         context = SupervisorJob() + Dispatchers.Main.immediate
-    )
-
-    @Provides
-    @Singleton
-    fun savedStatePath(
-        @ApplicationContext context: Context
-    ): Path = context.filesDir.resolve("savedState").absolutePath.toPath()
-
-    @Provides
-    @Singleton
-    fun byteSerializer(): ByteSerializer = DelegatingByteSerializer(
-        format = ProtoBuf {
-            serializersModule = SerializersModule {
-
-            }
-        }
     )
 
     @Provides
@@ -106,11 +77,6 @@ interface ScaffoldBindModule {
     fun bindNavigationStateHolder(
         persistedNavigationStateHolder: PersistedNavigationStateHolder
     ): NavigationStateHolder
-
-    @Binds
-    fun bindSavedStateRepository(
-        dataStoreSavedStateRepository: DataStoreSavedStateRepository
-    ): SavedStateRepository
 
     @Binds
     fun bindPlayerManager(

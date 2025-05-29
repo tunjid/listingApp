@@ -7,15 +7,17 @@ import androidx.compose.material.icons.rounded.Apartment
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.tunjid.listing.data.model.SavedStateRepository
+import com.tunjid.listing.data.model.InitialSavedState
+import com.tunjid.listing.data.model.EmptySavedState
+import com.tunjid.listing.data.model.SavedState
+
 import com.tunjid.listing.scaffold.R
 import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
-import com.tunjid.scaffold.savedstate.EmptySavedState
-import com.tunjid.scaffold.savedstate.InitialSavedState
-import com.tunjid.scaffold.savedstate.SavedState
-import com.tunjid.scaffold.savedstate.SavedStateRepository
+
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.strings.Route
